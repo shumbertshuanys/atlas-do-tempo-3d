@@ -18,6 +18,7 @@ venv/
 # Saídas regeneráveis (os relatórios de referência em db/reports/ são versionados de propósito;
 # saídas ad-hoc fora de db/reports/ não precisam ir ao git)
 /tmp-out/
+/out/
 
 # Claude Code — estado pessoal/máquina (não compartilhar)
 .claude/settings.local.json

@@ -58,8 +58,19 @@ Estas não são opiniões de estilo — são garantias estruturais já provadas 
 | `test_a4.py` — simultaneidade gateada A4-T1..T10 | ✅ 10/10 |
 | Frame 3D de produção (`frame/atlas-3d-frame-v1.html`) | ⚠️ **ainda usa espelho curado estático** (arrays `ITEMS`/`CLAIMSETS` hardcoded). **Não consome o banco ao vivo.** |
 
-Os artefatos de banco em `db/` são **byte-idênticos** ao que passou verde no sandbox. Não os
-reescreva "para melhorar" sem antes rodar os testes e mantê-los verdes.
+Sobre os artefatos em `db/`:
+
+- **`db/ddl/` e `db/read-layer/`** (esquema reificado + camada de leitura gateada) permanecem
+  **byte-idênticos** ao sandbox e **não foram tocados** — é o miolo provado. **Não reescrever.**
+- **`db/migration/{migrate,verify,test_a4}.py`** receberam mudanças **só de portabilidade
+  (Windows/Linux)** — caminho de saída relativo ao script, criação automática de `out/`, e stdout
+  em UTF-8. **Sem alteração de lógica, semântica de teste ou esquema.**
+- **"Reconstruível do bootstrap" está PROVADO em Windows e Linux:**
+  `docker compose down -v && bash scripts/bootstrap.sh` fecha **10/10 + 10/10** em volume novo,
+  sem contornos manuais.
+
+A regra do miolo continua valendo: não reescreva `db/ddl/`/`db/read-layer/` "para melhorar" sem
+antes rodar os testes e mantê-los verdes.
 
 ---
 

@@ -13,9 +13,20 @@ Eixo canônico (3Z): canonical_start/end/scalar em anos rel. a T0=2000.0 CE.
 
 Não promove seeded a corpus. Não inventa fontes para seeded. [N1] vale na carga.
 """
-import json, psycopg2
+import json, os, sys, psycopg2
+
+# saída em UTF-8 mesmo em consoles legados (ex.: cp1252 no Windows) — o relatório
+# contém '∩'/'⊂'. Não muda o conteúdo, só o encoding do stdout.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 DSN = "host=localhost dbname=atlas user=atlas password=atlas"
+
+# diretório de saída relativo ao próprio script (db/migration -> raiz/out),
+# independente do diretório de trabalho e do SO.
+OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "out")
 
 # --------------------------------------------------------------------------
 # 35 itens extraídos do protótipo. Campos canônicos (cs,ce,scalar,stb,disp,prec,unc)
@@ -327,7 +338,8 @@ def main():
       "exibivel_curatorial": one("SELECT count(*) FROM core.v_displayable_curatorial"),
       "publicavel_publico": one("SELECT count(*) FROM core.v_publishable_public"),
     }
-    with open("out/migration_report.json","w",encoding="utf-8") as f:
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(os.path.join(OUT_DIR, "migration_report.json"),"w",encoding="utf-8") as f:
         json.dump(rep,f,ensure_ascii=False,indent=2)
     print(json.dumps(rep,ensure_ascii=False,indent=2))
     cu.close(); cx.close()

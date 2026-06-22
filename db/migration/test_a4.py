@@ -19,10 +19,22 @@ Instantes canônicos: 1789 = -211 (intervalo do ano [-212,-210]);
 GOE ≈ -2,4e9; K-Pg ≈ -6,6e7.
 """
 import json
+import os
 import sys
 import psycopg2
 
+# saída em UTF-8 mesmo em consoles legados (ex.: cp1252 no Windows) — o relatório
+# contém '⊂'/'⟂'. Não muda o conteúdo, só o encoding do stdout.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 DSN = "host=localhost dbname=atlas user=atlas password=atlas"
+
+# diretório de saída relativo ao próprio script (db/migration -> raiz/out),
+# independente do diretório de trabalho e do SO.
+OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "out")
 
 INSTANTES = {
     "1789 (intervalo do ano)": (-212.0, -210.0),
@@ -192,7 +204,8 @@ report = {
     "instantes_canonicos": {k: list(v) for k, v in INSTANTES.items()},
     "testes": testes,
 }
-out_path = "/home/claude/atlas-a4/out/test_a4_report.json"
+os.makedirs(OUT_DIR, exist_ok=True)
+out_path = os.path.join(OUT_DIR, "test_a4_report.json")
 with open(out_path, "w", encoding="utf-8") as f:
     json.dump(report, f, ensure_ascii=False, indent=2)
 

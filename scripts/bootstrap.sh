@@ -8,12 +8,27 @@ cd "$(dirname "$0")/.."   # raiz do repo
 
 DSN="host=localhost port=5432 dbname=atlas user=atlas password=atlas"
 
+# Interpretador Python: 'python3' (Linux/macOS) ou 'python' (Windows). Override com PY=...
+# Valida EXECUÇÃO real, não só presença no PATH: no Windows o alias da Microsoft
+# Store cria um 'python3.exe' que aparece no PATH mas não roda (abre a loja).
+PY="${PY:-}"
+py_ok() { command -v "$1" >/dev/null 2>&1 && "$1" -c 'import sys' >/dev/null 2>&1; }
+if [ -z "$PY" ]; then
+  if   py_ok python3; then PY=python3
+  elif py_ok python;  then PY=python
+  else echo "ERRO: Python executável não encontrado (instale python3 ou python)"; exit 1; fi
+fi
+
 echo "==> (1/6) subindo Postgres + PostGIS (volume persistente atlas-pgdata)…"
 docker compose up -d
 
 echo "==> (2/6) aguardando o banco ficar pronto…"
+# Checa prontidão via TCP (-h 127.0.0.1), não pelo socket: durante a 1ª init o
+# entrypoint sobe um servidor TEMPORÁRIO com listen_addresses='' (só socket) e
+# depois reinicia. O socket responderia cedo demais e o passo seguinte morreria
+# com "the database system is shutting down". Só o servidor REAL aceita TCP.
 for i in $(seq 1 60); do
-  if docker compose exec -T db pg_isready -U atlas -d atlas >/dev/null 2>&1; then break; fi
+  if docker compose exec -T db pg_isready -h 127.0.0.1 -U atlas -d atlas >/dev/null 2>&1; then break; fi
   sleep 1
   if [ "$i" -eq 60 ]; then echo "ERRO: banco não respondeu em 60s"; exit 1; fi
 done
@@ -25,12 +40,12 @@ echo "==> (4/6) aplicando camada de leitura gateada…"
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/read-layer/010-leitura-simultaneidade.sql
 
 echo "==> (5/6) instalando deps Python e migrando 35 itens…"
-python3 -m pip install -q -r db/requirements.txt
-python3 db/migration/migrate.py
+"$PY" -m pip install -q -r db/requirements.txt
+"$PY" db/migration/migrate.py
 
 echo "==> (6/6) verificando invariantes (T1–T10) e simultaneidade A4 (A4-T1..T10)…"
-python3 db/migration/verify.py
-python3 db/migration/test_a4.py
+"$PY" db/migration/verify.py
+"$PY" db/migration/test_a4.py
 
 echo ""
 echo "==> OK. Banco persistente pronto."
