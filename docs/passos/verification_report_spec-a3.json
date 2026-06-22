@@ -1,0 +1,87 @@
+{
+  "total": 10,
+  "passaram": 10,
+  "falharam": 0,
+  "testes": [
+    {
+      "id": "T1",
+      "invariante": "[N1]",
+      "tipo": "negativo (deve falhar)",
+      "esperado": "aresta afirmativa sem proveniência é rejeitada",
+      "passou": true,
+      "detalhe": "rejeitada por n1_affirmative_needs_provenance (CHECK)."
+    },
+    {
+      "id": "T2",
+      "invariante": "[N1]",
+      "tipo": "positivo",
+      "esperado": "toda aresta afirmativa carregada tem provenance_ref",
+      "passou": true,
+      "detalhe": "3 arestas afirmativas, todas com proveniência; 0 sem proveniência."
+    },
+    {
+      "id": "T3",
+      "invariante": "Art.6",
+      "tipo": "positivo",
+      "esperado": "view curatorial não contém pending/legal-review/rejected",
+      "passou": true,
+      "detalhe": "0 itens não-aprovados vazaram; 23 itens exibíveis no total."
+    },
+    {
+      "id": "T4",
+      "invariante": "Art.6",
+      "tipo": "dinâmico (estrutural)",
+      "esperado": "item legal-review existe na base porém é invisível na view",
+      "passou": true,
+      "detalhe": "na tabela base: 1; visível na view curatorial: 0 (o portão filtra, não os dados)."
+    },
+    {
+      "id": "T5",
+      "invariante": "§9 / Art.6",
+      "tipo": "positivo",
+      "esperado": "view pública = approved ∩ corpus ∩ fonte-confirmada; zero seeded-demo",
+      "passou": true,
+      "detalhe": "seeded-demo vazados ao público: 0; total público: 11; itens públicos fora do contrato: 0."
+    },
+    {
+      "id": "T6",
+      "invariante": "[N3]/Art.11",
+      "tipo": "negativo (deve falhar)",
+      "esperado": "kc_service não acessa o schema iso",
+      "passou": true,
+      "detalhe": "permissão negada no schema iso para kc_service (REVOKE efetivo)."
+    },
+    {
+      "id": "T7",
+      "invariante": "[N2]",
+      "tipo": "misto (estrutural + negativo)",
+      "esperado": "cache derivado não é nó autoritativo e não pode carregar proveniência",
+      "passou": true,
+      "detalhe": "FKs de derived_cache para entity_node: 0; aceita carries_provenance=false: True; rejeita carries_provenance=true: True."
+    },
+    {
+      "id": "T8",
+      "invariante": "Art.11/D-B2.4",
+      "tipo": "misto",
+      "esperado": "SA rejeitado no media-store, aceito no isolated-store",
+      "passou": true,
+      "detalhe": "asset ShareAlike no media-store rejeitado: True; no isolated-store aceito: True."
+    },
+    {
+      "id": "T9",
+      "invariante": "Art.12/§8",
+      "tipo": "negativo (deve falhar)",
+      "esperado": "paleogeometria não-reconstrução é rejeitada",
+      "passou": true,
+      "detalhe": "rejeitada por paleo_is_always_reconstruction (CHECK)."
+    },
+    {
+      "id": "T10",
+      "invariante": "carga/3Z",
+      "tipo": "positivo",
+      "esperado": "contagens batem; claims_total = claims_de_item + claims_membros",
+      "passou": true,
+      "detalhe": "obtido {'itens': 35, 'approved': 23, 'pending': 12, 'legal_review': 0, 'seeded': 8, 'corpus': 27, 'claims_total': 39, 'claims_de_item': 35, 'claims_membros': 4, 'claimsets': 2}."
+    }
+  ]
+}

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revisão de governança v0 — reconstituída</title>
+<style>
+  :root{
+    --paper:#f6f5f2;
+    --ink:#1c1b19;
+    --muted:#6b6760;
+    --line:#e2ddd4;
+    --keep:#1f5d53;        /* inegociável / Constituição — estável, fundo */
+    --keep-soft:#e8f1ee;
+    --change:#b5641e;      /* proposta / Playbook — ativo */
+    --change-soft:#f6ebe0;
+    --card:#ffffff;
+    --note:#8a5a2b;
+    --note-bg:#fbf3e8;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    line-height:1.55; font-size:17px;
+  }
+  main{max-width:860px; margin:0 auto; padding:32px 22px 80px}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+
+  /* provenance banner */
+  .banner{
+    border:1px solid var(--note); background:var(--note-bg); color:#5d3c16;
+    border-radius:10px; padding:16px 18px; margin:8px 0 36px; font-size:14.5px; line-height:1.5;
+  }
+  .banner b{color:#4a2f10}
+  .banner .tag{
+    display:inline-block; font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.08em;
+    text-transform:uppercase; background:var(--note); color:#fff; padding:2px 8px; border-radius:5px; margin-bottom:8px;
+  }
+
+  h1{
+    font-size:30px; line-height:1.15; margin:0 0 6px; letter-spacing:-.01em; font-weight:600;
+  }
+  .dek{color:var(--muted); font-size:16px; margin:0 0 28px}
+
+  section{margin:0 0 30px}
+  .eyebrow{
+    font-family:ui-monospace,Menlo,monospace; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); margin:0 0 6px; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{content:""; width:22px; height:2px; background:currentColor; display:inline-block}
+  .eyebrow.keep{color:var(--keep)} .eyebrow.change{color:var(--change)}
+  h2{font-size:23px; margin:0 0 14px; letter-spacing:-.01em; font-weight:600}
+
+  .transition{font-size:18px; border-left:3px solid var(--ink); padding:2px 0 2px 16px; margin:26px 0; color:var(--ink)}
+
+  /* keep box */
+  .keepbox{border:1px solid var(--keep); background:var(--keep-soft); border-radius:12px; padding:20px 20px 18px}
+  .keepbox .hd{display:flex; align-items:center; gap:9px; font-size:14px; color:var(--keep); margin-bottom:10px}
+  .keepbox .hd .dot{color:var(--keep); font-size:13px}
+  .keepbox .sub{font-size:14.5px; color:#3f4a47; margin:0 0 16px}
+  ul.inv{list-style:none; margin:0; padding:0; display:grid; gap:9px}
+  ul.inv li{position:relative; padding-left:22px; font-size:15.5px}
+  ul.inv li::before{content:"●"; color:var(--keep); position:absolute; left:0; top:1px; font-size:10px}
+  .keepbox .foot{margin:16px 0 0; padding-top:14px; border-top:1px solid #cfe1db; font-size:14.5px; color:#34433f}
+
+  .lead{font-size:16px; color:var(--muted); margin:0 0 18px}
+
+  /* cards */
+  .cards{display:grid; gap:16px}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-top:3px solid var(--change);
+    border-radius:11px; padding:18px 18px 16px;
+  }
+  .card.keepcard{border-top-color:var(--keep)}
+  .card .top{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+  .card .num{
+    font-family:ui-monospace,Menlo,monospace; font-weight:700; font-size:13px; color:#fff;
+    background:var(--change); padding:3px 8px; border-radius:6px; letter-spacing:.03em;
+  }
+  .card.keepcard .num{background:var(--keep)}
+  .card h3{font-size:18px; margin:0; font-weight:600; flex:1 1 240px; line-height:1.25}
+  .card .ext{
+    font-family:ui-monospace,Menlo,monospace; font-size:11px; color:var(--muted);
+    background:#f0ece4; padding:3px 8px; border-radius:5px; white-space:nowrap;
+  }
+  dl.rows{margin:0; display:grid; grid-template-columns:max-content 1fr; gap:7px 14px}
+  dl.rows dt{
+    font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); padding-top:2px;
+  }
+  dl.rows dt.p{color:var(--change)} dl.rows dt.g{color:var(--keep)}
+  dl.rows dd{margin:0; font-size:15px}
+  .watch{margin:13px 0 0; padding:9px 12px; background:var(--change-soft); border-radius:7px; font-size:13.5px; color:#7a4818}
+
+  .reconly{
+    font-size:12px; color:var(--note); font-style:italic; margin-top:10px; padding-top:9px; border-top:1px dashed #e2cdb0;
+  }
+
+  /* risk + next */
+  .panel{border:1px solid var(--line); border-radius:11px; padding:18px; background:#fff}
+  .risk{padding:11px 0; border-bottom:1px solid var(--line); font-size:15px}
+  .risk:last-child{border-bottom:0}
+  .risk .m{color:var(--muted)}
+  .next p{font-size:15.5px}
+  .next .q{font-size:16px; font-weight:600; margin-top:14px}
+
+  footer{margin-top:40px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:13.5px; line-height:1.6}
+
+  @media (max-width:560px){
+    body{font-size:16px}
+    h1{font-size:25px}
+    dl.rows{grid-template-columns:1fr; gap:2px 0}
+    dl.rows dt{padding-top:8px}
+    .card .ext{white-space:normal}
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <div class="banner">
+    <span class="tag">Documento reconstituído</span><br>
+    <b>Reconstituído em 2026-06-21</b> a partir do chat de autoria <i>"Análise e status do projeto"</i> (21 jun), onde este HTML foi originalmente gerado. Todo o <b>conteúdo em prosa</b> abaixo — os dez invariantes do piso epistêmico, a regra de ouro, os sete cartões PG1–PG7 (Hoje / Fricção / Proposta / Ganho), os riscos, os próximos passos e o rodapé — foi <b>recuperado verbatim</b> da conversa. <b>Refeito (não recuperado):</b> o CSS/estilo visual original; o cabeçalho/diagnóstico de abertura (omitido); e a linha "Ganho" do cartão PG7 (marcada no próprio cartão). A seção de riscos foi recuperada parcialmente (marcada).
+  </div>
+
+  <h1>Revisão de governança — v0</h1>
+  <p class="dek">Proposta para ratificação · não altera nenhum invariante por si só. Convenção: o normativo é a <i>propriedade</i>, nunca o número que a realiza.</p>
+
+  <p class="transition"><b>O gargalo não é falta de regra</b> — é a conversão de regra-texto em regra que prende a realidade.</p>
+
+  <!-- KEEP -->
+  <section>
+    <p class="eyebrow keep">O que não muda</p>
+    <h2>A Constituição — o piso epistêmico</h2>
+    <div class="keepbox">
+      <div class="hd"><span class="dot">●</span><b>Inegociável · preservado 100% por todas as mudanças abaixo</b></div>
+      <p class="sub">Estes não são "processo". São a proposta de valor — o que nos diferencia de qualquer wiki ou banco de imagens. A Etapa 14 já os enumera com clareza; aqui apenas reafirmo que a otimização que proponho é de <b>vazão e conversão-para-real</b>, jamais do rigor.</p>
+      <ul class="inv">
+        <li><b>Forma muda, fato não</b> — linguagem e mídia se adaptam; o claim, não.</li>
+        <li><b>Nada pending/legal-review/rejected aparece como fato</b> (invariante de exibição).</li>
+        <li><b>Claim-first</b> — todo fato é um <i>Claim</i> tipado com <i>Source</i>; não há fato órfão.</li>
+        <li><b>Sem falsa equivalência</b> — debate legítimo ≠ negacionismo; ClaimSet com fronteira.</li>
+        <li><b>Incerteza sempre rotulada</b> — estimativa, inferência e reconstrução nunca viram "fato".</li>
+        <li><b>Licença governa expressão/asset</b>, nunca o fato recodificado.</li>
+        <li><b>QA bloqueia, não sugere</b> · <b>escala nunca reduz revisão</b>.</li>
+        <li><b>Menores → minimização máxima de dados</b>; analytics mede operação, não o aluno.</li>
+        <li><b>Correção cria versão, nunca apaga</b> · degradação nunca remove o piso.</li>
+        <li><b>Wikidata é índice, não autoridade</b> · fonte sempre classificada.</li>
+      </ul>
+      <p class="foot">Regra de ouro herdada da Etapa 14, mantida intacta: <b>qualquer dúvida de fonte, licença, claim, data, geometria, sensibilidade, acessibilidade ou privacidade resulta em bloqueio/revisão — nunca em publicação automática.</b></p>
+    </div>
+  </section>
+
+  <!-- CHANGE -->
+  <section>
+    <p class="eyebrow change">O que proponho mudar</p>
+    <h2>O Playbook — sete ajustes de processo</h2>
+    <p class="lead">Cada um nasce de uma fricção concreta (da fatia ou da própria estrutura dos documentos) e <b>estende</b> uma etapa existente, em vez de duplicá-la. Formato: o que é hoje, a fricção, a proposta, o ganho.</p>
+
+    <div class="cards">
+
+      <!-- P1 -->
+      <article class="card">
+        <div class="top"><span class="num">PG1</span><h3>"Pronto" passa a exigir evidência executável</h3><span class="ext">estende Prompt-mestre §10</span></div>
+        <dl class="rows">
+          <dt class="h">Hoje</dt><dd>Uma etapa está "pronta" quando o documento de 9 seções está completo.</dd>
+          <dt class="f">Fricção</dt><dd>28 specs, zero sistema. "Completo" nunca significou "funciona".</dd>
+          <dt class="p">Proposta</dt><dd>Toda etapa futura fecha só com <b>≥ 1 artefato falsificável</b> que mostre uma regra prendendo algo real — um teste que passa, um registro povoado, uma saída renderizada. A fatia de 1789 foi o primeiro.</dd>
+          <dt class="g">Ganho</dt><dd>"Done" deixa de ser volume de texto e vira evidência. Ataca direto a razão documentação/código.</dd>
+        </dl>
+      </article>
+
+      <!-- P2 -->
+      <article class="card">
+        <div class="top"><span class="num">PG2</span><h3>Licença permanente para fatias verticais descartáveis</h3><span class="ext">estende Prompt-mestre §10</span></div>
+        <dl class="rows">
+          <dt class="h">Hoje</dt><dd>"Não avance para código sem autorização" — pétrea, aplicada a tudo.</dd>
+          <dt class="f">Fricção</dt><dd>A regra que protege contra build prematuro também nos travou em 100% spec. A fatia só aconteceu por pedido explícito.</dd>
+          <dt class="p">Proposta</dt><dd>Manter a autorização para builds de produção; conceder <b>licença permanente a fatias throwaway</b> (sem banco/auth, fiéis aos dados, descartáveis) como instrumento padrão de validação.</dd>
+          <dt class="g">Ganho</dt><dd>Aprender construindo vira rotina barata, não exceção.</dd>
+        </dl>
+        <p class="watch"><b>vigiar:</b> a fatia virar produto / scope creep. Mitigação: throwaway por contrato — não vira base nem entra no KC.</p>
+      </article>
+
+      <!-- P3 -->
+      <article class="card">
+        <div class="top"><span class="num">PG3</span><h3>Operar a governança em escala-fatia antes de escalar</h3><span class="ext">estende Etapa 14</span></div>
+        <dl class="rows">
+          <dt class="h">Hoje</dt><dd>A E14 especifica 12 filas, SLAs e 38 riscos — para "depois do MVP e do pipeline real".</dd>
+          <dt class="f">Fricção</dt><dd>Governança riquíssima que ainda não tocou um único item. Risco de só descobrir furos no volume.</dd>
+          <dt class="p">Proposta</dt><dd>Instanciar a <b>menor versão real</b> dos invariantes da E14 sobre os ~24 itens da fatia: <i>readinessStatus</i> aplicado de verdade, <i>gatingReason</i> anexado, uma fila de revisão real com esses itens. "Operar 24 antes de 24 mil."</dd>
+          <dt class="g">Ganho</dt><dd>A E14 prova que prende a realidade em pequena escala — antes do custo de escalar.</dd>
+        </dl>
+      </article>
+
+      <!-- P4 -->
+      <article class="card">
+        <div class="top"><span class="num">PG4</span><h3>Um "Definition of Ready" para o item publicável</h3><span class="ext">estende Etapas 2 + 3.1</span></div>
+        <dl class="rows">
+          <dt class="h">Hoje</dt><dd>Claim-first é regra, mas o <b>contrato mínimo</b> de um item para entrar em revisão não está fixado como porta.</dd>
+          <dt class="f">Fricção</dt><dd>A fatia mostrou que cada item exige claim tipado + fonte + texto por faixa etária + tag de sensibilidade + ClaimSet-com-fronteira se controverso. Descobrir isso item a item é caro e tardio.</dd>
+          <dt class="p">Proposta</dt><dd>Um <b>DoR</b> — campos mínimos obrigatórios — que um claim precisa cumprir para entrar na fila. Sem DoR, não entra.</dd>
+          <dt class="g">Ganho</dt><dd>Revisão previsível; o custo editorial aparece no planejamento, não na surpresa.</dd>
+        </dl>
+      </article>
+
+      <!-- P5 -->
+      <article class="card">
+        <div class="top"><span class="num">PG5</span><h3>Pré-classificar sensibilidade na modelagem, não na revisão</h3><span class="ext">estende Etapas 2 + 3.1</span></div>
+        <dl class="rows">
+          <dt class="h">Hoje</dt><dd>A sensibilidade (Leis 10.639/11.645) é tratada na revisão; ~37 de 60 itens caem em <i>pending</i> e você descobre um a um.</dd>
+          <dt class="f">Fricção</dt><dd>O split público/mediado de uma cena só é conhecido <b>depois</b> de construí-la.</dd>
+          <dt class="p">Proposta</dt><dd>Uma <b>taxonomia de sensibilidade aplicada na hora da modelagem</b> → o backlog de revisão e a proporção pública passam a ser previsíveis antes do build.</dd>
+          <dt class="g">Ganho</dt><dd>"Descoberta" vira "planejamento": dá para estimar quanto de uma cena nasce público.</dd>
+        </dl>
+      </article>
+
+      <!-- P6 -->
+      <article class="card">
+        <div class="top"><span class="num">PG6</span><h3>ClaimSet e mapa esquemático viram contratos normativos de marca</h3><span class="ext">estende Etapas 3.1 + 10</span></div>
+        <dl class="rows">
+          <dt class="h">Hoje</dt><dd>"Sem equivalência" e "mapa esquemático" existem como prática e descrição conceitual.</dd>
+          <dt class="f">Fricção</dt><dd>A fatia mostrou que ambos são <b>decisões de produto</b>, não detalhes: a fronteira escrita à mão do ClaimSet é o nosso moat; o mapa esquemático é epistemicamente <i>superior</i> a fronteiras inventadas.</dd>
+          <dt class="p">Proposta</dt><dd>Elevar os dois a <b>regra normativa com contrato visual</b>: ClaimSet sempre com fronteira moral/factual explícita + resumo por faixa etária; mapa esquemático rotulado por padrão, fronteira histórica nunca inventada.</dd>
+          <dt class="g">Ganho</dt><dd>O que nos diferencia deixa de ser implícito e vira padrão obrigatório.</dd>
+        </dl>
+      </article>
+
+      <!-- P7 -->
+      <article class="card keepcard">
+        <div class="top"><span class="num">PG7</span><h3>Separar a Constituição do Playbook, com changelog</h3><span class="ext">meta-regra · estende Prompt-mestre</span></div>
+        <dl class="rows">
+          <dt class="h">Hoje</dt><dd>O Prompt-mestre mistura invariantes pétreos e regras de processo num bloco único.</dd>
+          <dt class="f">Fricção</dt><dd>Você está <b>pedindo para mudar as regras</b> — e isso é arriscado quando tudo é um bloco: mexer no processo ameaça o núcleo.</dd>
+          <dt class="p">Proposta</dt><dd>Extrair os ~12 invariantes para uma <b>Constituição</b> curta (muda raramente, exige "reabrir") e mover cadência, templates e autorização para um <b>Playbook</b> revisável — como esta própria revisão.</dd>
+          <dt class="g">Ganho</dt><dd>Mexer no processo deixa de ameaçar o núcleo; toda mudança fica rastreável no changelog.</dd>
+        </dl>
+        <p class="reconly">Nota de reconstituição: a linha "Ganho" deste cartão é a única em prosa não recuperada verbatim — foi reescrita de forma fiel à intenção registrada (a antifragilidade de PG7). Todo o restante do cartão é verbatim.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- RISK -->
+  <section>
+    <p class="eyebrow">Riscos &amp; mitigações <span style="text-transform:none;letter-spacing:0;font-style:italic;color:var(--note)">· recuperação parcial</span></p>
+    <h2>O que vigiar</h2>
+    <div class="panel">
+      <div class="risk"><b>Migrar o Prompt-mestre para Constituição/Playbook.</b> <span class="m"><b>Mitigação:</b> a migração inicial é revisada item a item; sair da Constituição exige "reabrir", como qualquer invariante.</span></div>
+      <div class="risk"><b>Operar a E14 cedo</b> custa montar até a versão mínima da governança. <span class="m"><b>Mitigação:</b> é exatamente o custo de descobrir furos barato, em 24 itens, antes de 24 mil.</span></div>
+      <div class="risk">E o risco que eu <i>não</i> assumo: nada aqui toca o piso epistêmico. Se alguma proposta parecer afrouxar rigor, ela está errada e deve ser cortada — não o rigor.</div>
+    </div>
+  </section>
+
+  <!-- NEXT -->
+  <section class="next">
+    <p class="eyebrow change">Próximo passo</p>
+    <h2>O que eu faria agora</h2>
+    <div class="panel">
+      <p><b>PG1, PG2 e PG7 são meta e baratas</b> — podem ser ratificadas já, e passam a valer da próxima etapa em diante sem nenhum trabalho extra de conteúdo. <b>PG4 e PG5</b> rendem mais se aplicadas na hora de modelar a próxima cena. E <b>PG3</b> combina naturalmente com a continuação do build que eu havia recomendado: a segunda cena, agora fechada sob o novo "done por evidência".</p>
+      <p>Sou um conselheiro aqui, não quem decide: estas são propostas para você ratificar, ajustar ou recusar — uma a uma.</p>
+      <p class="q">Quer que eu transforme esta revisão na dupla <b>Constituição + Playbook v1.0</b> (dois documentos curtos para o corpus, em markdown), ou prefere primeiro debater proposta por proposta antes de eu escrever a versão oficial?</p>
+    </div>
+  </section>
+
+  <footer>
+    Revisão de governança v0 · proposta para ratificação · não altera nenhum invariante por si só.<br>
+    Ancorada nas Etapas 0–15 (em especial a Etapa 14 — Operação/Governança/QA) e nos aprendizados da fatia vertical de 1789.<br>
+    Convenção mantida: o normativo é a <i>propriedade</i> (ex.: "QA bloqueia"), nunca o número que a realiza.<br>
+    <span style="color:var(--note)">— Reconstituído a partir do chat de autoria; numeração já desambiguada para PG# (era P# no original).</span>
+  </footer>
+
+</main>
+</body>
+</html>

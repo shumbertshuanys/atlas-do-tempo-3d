@@ -1,0 +1,20 @@
+{
+  "itens": 35,
+  "corpus": 27,
+  "seeded_demo": 8,
+  "approved": 23,
+  "pending": 12,
+  "legal_review": 0,
+  "claims_de_item": 35,
+  "claims_membros": 4,
+  "claims_total": 39,
+  "claimsets": 2,
+  "relacoes": 5,
+  "arestas_afirmativas": 5,
+  "n1_rejected": 0,
+  "geometrias": 14,
+  "fontes": 17,
+  "fontes_por_asset_pendentes": 11,
+  "exibivel_curatorial": 23,
+  "publicavel_publico": 11
+}

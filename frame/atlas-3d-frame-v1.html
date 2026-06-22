@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atlas do Tempo 3D — Frame de Produção (A3 · incremento 1)</title>
+<style>
+  :root{
+    --ink:#070a12; --panel:rgba(13,20,36,.82); --panel-solid:#0d1424;
+    --line:rgba(120,150,200,.18); --line2:rgba(120,150,200,.30);
+    --txt:#dce6f7; --txt-dim:#8da0c2; --txt-faint:#5d6f92;
+    --instrument:#37e0d8;
+    --warn:#ff6b6b; --ok:#5fe0a0; --seed:#ffb347;
+    --mono:ui-monospace,"Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;width:100%;overflow:hidden;background:var(--ink);color:var(--txt);
+    font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  #stage{position:fixed;inset:0}
+  canvas{display:block}
+  #c2d{position:fixed;inset:0;display:none}
+  #cStatic{position:fixed;inset:0;display:none;overflow:auto;padding:84px 18px 150px;
+    background:radial-gradient(120% 90% at 50% 0%,#0d1626 0%,var(--ink) 70%)}
+
+  #top{position:fixed;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;gap:14px;
+    padding:11px 16px;background:linear-gradient(180deg,rgba(7,10,18,.92),rgba(7,10,18,0));pointer-events:none}
+  #top>*{pointer-events:auto}
+  .brand{font-family:var(--mono);font-size:12px;letter-spacing:.12em;color:var(--txt-dim);
+    text-transform:uppercase;white-space:nowrap}
+  .brand b{color:var(--instrument);font-weight:600}
+  .brand .epoch{color:var(--txt-faint);font-size:10.5px}
+  .spacer{flex:1}
+  .modegroup{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:rgba(8,12,22,.7)}
+  .modegroup button{background:transparent;border:0;color:var(--txt-dim);font-family:var(--mono);font-size:11px;
+    letter-spacing:.06em;padding:7px 11px;cursor:pointer;transition:.15s}
+  .modegroup button.on{background:var(--instrument);color:#03110f;font-weight:600}
+  .modegroup button:not(.on):hover{color:var(--txt);background:rgba(55,224,216,.08)}
+
+  #timebar{position:fixed;left:0;right:0;bottom:0;z-index:30;
+    background:linear-gradient(0deg,rgba(7,10,18,.96),rgba(7,10,18,.55) 70%,transparent);padding:14px 20px 16px}
+  #timeline-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;gap:12px}
+  #epoch-name{font-family:var(--mono);font-size:14px;color:var(--instrument);letter-spacing:.03em}
+  #epoch-time{font-family:var(--mono);font-size:11.5px;color:var(--txt-dim);text-align:right}
+  #epoch-time .scalar{color:var(--txt-faint);font-size:10.5px}
+  .track{position:relative;height:34px}
+  #scrub{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;cursor:ew-resize;
+    position:relative;z-index:3;margin:0}
+  #scrub::-webkit-slider-runnable-track{height:34px;background:transparent}
+  #scrub::-webkit-slider-thumb{-webkit-appearance:none;width:4px;height:34px;border-radius:2px;background:var(--instrument);
+    box-shadow:0 0 12px var(--instrument),0 0 2px #fff;cursor:ew-resize}
+  #scrub::-moz-range-thumb{width:4px;height:34px;border:0;border-radius:2px;background:var(--instrument);
+    box-shadow:0 0 12px var(--instrument)}
+  .ticks{position:absolute;inset:0;pointer-events:none}
+  .tick{position:absolute;top:0;height:34px;display:flex;flex-direction:column;align-items:center}
+  .tick i{width:1px;height:9px;background:var(--line2);display:block}
+  .tick.major i{height:13px;background:var(--txt-faint)}
+  .tick span{font-family:var(--mono);font-size:9.5px;color:var(--txt-faint);margin-top:3px;white-space:nowrap}
+  .axis-base{position:absolute;left:0;right:0;top:13px;height:1px;
+    background:linear-gradient(90deg,#1c7a76,var(--line2) 40%,var(--line2) 90%,var(--instrument))}
+  #playbtn{position:absolute;left:20px;bottom:62px;z-index:31;width:34px;height:34px;border-radius:50%;
+    border:1px solid var(--line2);background:rgba(8,12,22,.8);color:var(--instrument);cursor:pointer;font-size:13px;
+    display:flex;align-items:center;justify-content:center;transition:.15s}
+  #playbtn:hover{border-color:var(--instrument);background:rgba(55,224,216,.12)}
+
+  #lens{position:fixed;left:16px;top:60px;z-index:25;width:212px;background:var(--panel);backdrop-filter:blur(13px);
+    border:1px solid var(--line);border-radius:12px;padding:13px}
+  .lens-title{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--txt-faint);
+    text-transform:uppercase;margin-bottom:3px}
+  .lens-sub{font-size:11px;color:var(--txt-dim);line-height:1.4;margin-bottom:11px}
+  .lens-sub b{color:var(--txt)}
+  .domchip{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:7px;cursor:pointer;
+    transition:.12s;user-select:none}
+  .domchip:hover{background:rgba(120,150,200,.07)}
+  .domchip .dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+  .domchip .nm{font-size:12.5px;color:var(--txt);flex:1}
+  .domchip .ct{font-family:var(--mono);font-size:10px;color:var(--txt-faint)}
+  .domchip.off{opacity:.32}
+  .domchip.off .nm{text-decoration:line-through}
+  .lens-foot{margin-top:9px;padding-top:9px;border-top:1px solid var(--line);font-size:10.5px;
+    color:var(--txt-faint);line-height:1.45}
+
+  #gatebox{position:fixed;left:16px;bottom:96px;z-index:25;width:212px;background:var(--panel);
+    backdrop-filter:blur(13px);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
+  .gate-row{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--txt-dim);padding:3px 0;cursor:pointer}
+  .gate-row input{accent-color:var(--instrument);cursor:pointer}
+  .gate-row .badge{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:4px;margin-left:auto;letter-spacing:.04em}
+  .badge.fact{background:rgba(111,211,255,.16);color:#6fd3ff}
+  .badge.seed{background:rgba(255,179,71,.16);color:var(--seed)}
+  .badge.pend{background:rgba(155,180,214,.16);color:#9bb4d6}
+
+  #detail{position:fixed;right:16px;top:60px;bottom:96px;z-index:25;width:340px;background:var(--panel);
+    backdrop-filter:blur(13px);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;
+    overflow:hidden;transition:transform .25s}
+  #detail.hidden{transform:translateX(calc(100% + 22px))}
+  .det-head{padding:14px 15px 12px;border-bottom:1px solid var(--line);position:relative}
+  .det-close{position:absolute;right:11px;top:11px;width:22px;height:22px;border-radius:6px;border:1px solid var(--line2);
+    background:transparent;color:var(--txt-faint);cursor:pointer;font-size:13px;line-height:1}
+  .det-close:hover{color:var(--txt);border-color:var(--txt-faint)}
+  .det-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-faint);
+    display:flex;align-items:center;gap:7px;margin-bottom:7px}
+  .det-eyebrow .glyph{font-size:13px}
+  .det-title{font-size:17px;line-height:1.25;color:#fff;font-weight:600;padding-right:24px}
+  .det-when{font-family:var(--mono);font-size:11px;color:var(--instrument);margin-top:5px}
+  .det-body{padding:13px 15px;overflow-y:auto;flex:1}
+  .det-claim{font-size:13.5px;line-height:1.5;color:var(--txt);margin-bottom:14px}
+  .meta-grid{display:grid;grid-template-columns:auto 1fr;gap:8px 11px;font-size:11.5px;align-items:start}
+  .meta-k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--txt-faint);text-transform:uppercase;
+    white-space:nowrap;padding-top:2px}
+  .meta-v{color:var(--txt-dim);line-height:1.4}
+  .meta-v b{color:var(--txt)}
+  .typechip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:2px 8px;
+    border-radius:5px;font-weight:600}
+  .typechip .g{font-size:12px}
+  .uband{margin-top:2px}
+  .uband .bar{position:relative;height:8px;border-radius:4px;background:rgba(120,150,200,.12);overflow:hidden;margin:5px 0 3px}
+  .uband .span{position:absolute;top:0;bottom:0;border-radius:4px;
+    background:repeating-linear-gradient(45deg,rgba(255,209,102,.55),rgba(255,209,102,.55) 4px,rgba(255,209,102,.22) 4px,rgba(255,209,102,.22) 8px)}
+  .uband .lbl{font-family:var(--mono);font-size:9.5px;color:var(--txt-faint);display:flex;justify-content:space-between}
+  .conf{display:inline-flex;gap:3px;align-items:center}
+  .conf .pip{width:13px;height:5px;border-radius:2px;background:rgba(120,150,200,.2)}
+  .conf .pip.on{background:var(--instrument)}
+  .src{margin-top:13px;padding-top:11px;border-top:1px solid var(--line);font-size:11px;color:var(--txt-dim);line-height:1.5}
+  .src .tier{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(94,224,160,.14);
+    color:var(--ok);margin-left:5px}
+  .src .tier.b{background:rgba(255,209,102,.14);color:#ffd166}
+  .src .tier.demo{background:rgba(255,179,71,.14);color:var(--seed)}
+  .notice{margin-top:11px;padding:9px 11px;border-radius:8px;font-size:11px;line-height:1.45;border:1px solid;display:flex;gap:8px}
+  .notice.anachro{border-color:rgba(255,158,109,.4);background:rgba(255,158,109,.08);color:#ffcdb2}
+  .notice.seedn{border-color:rgba(255,179,71,.4);background:rgba(255,179,71,.08);color:#ffd9a0}
+  .notice.pendn{border-color:rgba(155,180,214,.4);background:rgba(155,180,214,.08);color:#c7d5ec}
+  .notice .ic{font-size:14px;flex-shrink:0}
+  .cset{margin-top:14px;border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+  .cset-h{padding:9px 12px;background:rgba(120,150,200,.06);font-size:11px;color:var(--txt-dim);display:flex;
+    align-items:center;gap:7px;flex-wrap:wrap}
+  .cset-h .lab{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:1px 6px;
+    border-radius:4px;background:rgba(199,155,255,.16);color:#c79bff}
+  .side{padding:9px 12px;border-top:1px solid var(--line)}
+  .side .top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .side .wbar{flex:1;height:6px;border-radius:3px;background:rgba(120,150,200,.12);overflow:hidden}
+  .side .wfill{height:100%;background:linear-gradient(90deg,#c79bff,#9b6fd6)}
+  .side .wnum{font-family:var(--mono);font-size:10px;color:var(--txt-dim);min-width:34px;text-align:right}
+  .side .stmt{font-size:12px;color:var(--txt);line-height:1.4}
+  .noeq{padding:9px 12px;border-top:1px solid var(--line);background:rgba(255,107,107,.05);font-size:10.5px;
+    color:#ffb0b0;line-height:1.45;display:flex;gap:7px}
+
+  #labels{position:fixed;inset:0;z-index:15;pointer-events:none;overflow:hidden}
+  .lab3d{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;will-change:transform}
+  .lab3d .pin{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);
+    box-shadow:0 0 0 1.5px currentColor,0 1px 6px rgba(0,0,0,.6);position:relative}
+  .lab3d .pin::after{content:attr(data-g);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:8px;color:var(--ink);font-weight:700}
+  .lab3d .flag{position:absolute;left:17px;top:-8px;white-space:nowrap;font-size:11px;background:rgba(8,12,22,.86);
+    border:1px solid var(--line2);border-radius:6px;padding:3px 8px;color:var(--txt);backdrop-filter:blur(6px);
+    display:flex;align-items:center;gap:6px;opacity:0;transform:translateX(-4px);transition:.16s}
+  .lab3d:hover .flag,.lab3d.sel .flag{opacity:1;transform:translateX(0)}
+  .lab3d .flag .mini{font-family:var(--mono);font-size:9px;color:var(--txt-faint)}
+  .lab3d .seeddot{position:absolute;right:-3px;top:-3px;width:7px;height:7px;border-radius:50%;background:var(--seed);border:1.5px solid var(--ink)}
+  .lab3d .penddot{position:absolute;right:-3px;top:-3px;width:7px;height:7px;border-radius:50%;background:#9bb4d6;border:1.5px solid var(--ink)}
+
+  .c2d-cap{position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:16;font-family:var(--mono);font-size:11px;
+    color:var(--txt-faint);letter-spacing:.05em;background:rgba(8,12,22,.7);padding:5px 12px;border-radius:6px;
+    border:1px solid var(--line);display:none}
+
+  .static-head{max-width:760px;margin:0 auto 18px;text-align:center}
+  .static-head h1{font-size:20px;color:#fff;font-weight:600;margin-bottom:5px}
+  .static-head p{font-size:12.5px;color:var(--txt-dim);line-height:1.5}
+  .scard{max-width:760px;margin:0 auto 11px;background:var(--panel-solid);border:1px solid var(--line);
+    border-left:3px solid var(--line2);border-radius:9px;padding:13px 15px}
+  .scard .sc-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px}
+  .scard .sc-when{font-family:var(--mono);font-size:11px;color:var(--instrument);margin-left:auto}
+  .scard .sc-title{font-size:15px;color:#fff;font-weight:600;margin-bottom:5px;width:100%}
+  .scard .sc-claim{font-size:12.5px;color:var(--txt);line-height:1.5;margin-bottom:9px}
+  .scard .sc-meta{font-size:11px;color:var(--txt-dim);line-height:1.55}
+  .scard .sc-meta .row{display:flex;gap:8px;margin-bottom:2px}
+  .scard .sc-meta .k{font-family:var(--mono);font-size:9.5px;color:var(--txt-faint);min-width:80px;text-transform:uppercase;
+    letter-spacing:.04em;padding-top:2px}
+  .sgroup-h{max-width:760px;margin:22px auto 10px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--txt-faint);border-bottom:1px solid var(--line);padding-bottom:6px}
+
+  #loading{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--ink);gap:14px}
+  #loading .ring{width:34px;height:34px;border:2px solid var(--line2);border-top-color:var(--instrument);border-radius:50%;
+    animation:spin 1s linear infinite}
+  #loading .t{font-family:var(--mono);font-size:12px;color:var(--txt-dim);letter-spacing:.06em}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .hint{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:20;font-family:var(--mono);font-size:10.5px;
+    color:var(--txt-faint);letter-spacing:.05em;background:rgba(8,12,22,.6);padding:5px 12px;border-radius:14px;
+    border:1px solid var(--line);pointer-events:none;transition:opacity .5s}
+
+  @media (max-width:880px){#lens,#gatebox{width:178px}#detail{width:308px}}
+  @media (max-width:680px){#lens,#gatebox,#detail{display:none}.brand .epoch{display:none}}
+</style>
+</head>
+<body>
+  <div id="loading"><div class="ring"></div><div class="t">compondo o cosmos…</div></div>
+  <div id="stage"></div>
+  <canvas id="c2d"></canvas>
+  <div id="cStatic"></div>
+  <div id="labels"></div>
+  <div class="c2d-cap" id="c2dcap">projeção esquemática · rótulos preservados (Art. 12)</div>
+
+  <div id="top">
+    <div class="brand">ATLAS DO TEMPO <b>3D</b> &nbsp;·&nbsp; <span class="epoch">frame de produção — incremento 1 (A3)</span></div>
+    <div class="spacer"></div>
+    <div class="modegroup" id="modegroup">
+      <button data-mode="3d" class="on">3D</button>
+      <button data-mode="2d">2D</button>
+      <button data-mode="static">ESTÁTICO</button>
+    </div>
+  </div>
+
+  <div id="lens">
+    <div class="lens-title">Lente · domínio</div>
+    <div class="lens-sub">O que se sabe <b>neste instante</b>, visto por estas lentes. Desligar uma lente é uma pergunta legítima — <b>lente vazia é informação</b>.</div>
+    <div id="domlist"></div>
+    <div class="lens-foot" id="lensfoot"></div>
+  </div>
+
+  <div id="gatebox">
+    <div class="lens-title" style="margin-bottom:8px">Portão de exibição</div>
+    <label class="gate-row"><input type="checkbox" id="g-fact" checked disabled> fato (corpus, aprovado) <span class="badge fact">sempre</span></label>
+    <label class="gate-row"><input type="checkbox" id="g-pend" checked> em revisão <span class="badge pend">pending</span></label>
+    <label class="gate-row"><input type="checkbox" id="g-seed" checked> demonstração <span class="badge seed">seeded</span></label>
+    <div class="lens-foot" style="margin-top:9px">Não-fato nunca é exibido <i>como</i> fato. Selos persistem em todos os modos.</div>
+  </div>
+
+  <div id="detail" class="hidden">
+    <div class="det-head">
+      <button class="det-close" id="d-close">×</button>
+      <div class="det-eyebrow"><span class="glyph" id="d-glyph">◆</span><span id="d-kind">—</span></div>
+      <div class="det-title" id="d-title">—</div>
+      <div class="det-when" id="d-when">—</div>
+    </div>
+    <div class="det-body" id="d-body"></div>
+  </div>
+
+  <button id="playbtn" title="percorrer o tempo">▶</button>
+  <div class="hint" id="hint">arraste para orbitar · role para aproximar · arraste a linha do tempo</div>
+
+  <div id="timebar">
+    <div id="timeline-head">
+      <div id="epoch-name">—</div>
+      <div id="epoch-time"><span id="epoch-disp">—</span><br><span class="scalar" id="epoch-scalar"></span></div>
+    </div>
+    <div class="track">
+      <div class="axis-base"></div>
+      <div class="ticks" id="ticks"></div>
+      <input type="range" id="scrub" min="0" max="1000" value="1000" step="1">
+    </div>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =====================================================================
+   ATLAS DO TEMPO 3D — frame de produção (A3 · incremento 1)
+   Consistente com a fundação reificada migrada nesta sessão. Invariantes
+   constitucionais como propriedade ESTRUTURAL também no cliente:
+     Art.1 o tempo é o esqueleto (o eixo pilota a câmera)
+     Art.6 gating (não-fato nunca aparece como fato)
+     Art.7 tipagem epistêmica obrigatória
+     Art.12 degradação não remove o piso (3D→2D→estático preserva rótulo)
+     §8 contrato visual (ClaimSet, incerteza-como-faixa, redundância
+        não-cromática, AnachronismNotice)
+   ===================================================================== */
+
+/* TIPO epistêmico → cor + ícone redundante (cor nunca sozinha; §8.2) */
+const CT = {
+  'fato-documentado':      {c:'#6fd3ff', g:'▣', n:'fato documentado'},
+  'interpretação':         {c:'#c79bff', g:'◆', n:'interpretação'},
+  'inferência-científica': {c:'#7ee6a8', g:'△', n:'inferência científica'},
+  'proxy':                 {c:'#ffd166', g:'⊚', n:'proxy'},
+  'reconstrução-modelada': {c:'#ff9e6d', g:'◈', n:'reconstrução modelada'},
+  'estimativa':            {c:'#f4a3c6', g:'~', n:'estimativa'},
+  'hipótese':              {c:'#9bb4d6', g:'?', n:'hipótese'},
+};
+const ctOf = t => CT[t] || CT['hipótese'];
+
+const DOMAINS = {
+  historia:{nm:'História', c:'#6fd3ff'}, geologia:{nm:'Geologia', c:'#ff9e6d'},
+  biologia:{nm:'Biologia', c:'#7ee6a8'}, cosmos:{nm:'Cosmos', c:'#c79bff'},
+  quimica:{nm:'Química', c:'#ffd166'},  fisica:{nm:'Física', c:'#f4a3c6'},
+};
+
+/* ESTÁGIOS no eixo do tempo (datum 3Z; T0=2000 CE; t01 normalizado) */
+const STAGES = [
+  {id:'bigbang', t01:0.00, name:'Big Bang & recombinação', disp:'~13,8 Ga', scalar:-13.8e9, regime:'1 · cósmico', cam:{r:46,ph:1.32,th:0.0}, kind:'cosmic'},
+  {id:'galaxies',t01:0.20, name:'Formação de galáxias',     disp:'~13 Ga',  scalar:-13.0e9, regime:'1 · cósmico', cam:{r:30,ph:1.15,th:0.7}, kind:'cosmic'},
+  {id:'sun',     t01:0.42, name:'Sol & disco protoplanetário', disp:'~4,6 Ga', scalar:-4.6e9, regime:'1 · cósmico', cam:{r:19,ph:1.05,th:1.6}, kind:'cosmic'},
+  {id:'earth',   t01:0.54, name:'Acreção da Terra',         disp:'~4,5 Ga',  scalar:-4.5e9, regime:'2 · geológico', cam:{r:6.2,ph:1.35,th:2.3}, kind:'earth'},
+  {id:'goe',     t01:0.70, name:'Grande Oxigenação (GOE)',  disp:'~2,4 Ga',  scalar:-2.4e9, regime:'2 · geológico', cam:{r:5.0,ph:1.30,th:3.5}, kind:'earth'},
+  {id:'kpg',     t01:0.90, name:'Extinção K-Pg',            disp:'~66 Ma',   scalar:-66e6,  regime:'2 · geológico', cam:{r:4.4,ph:1.42,th:4.6}, kind:'earth'},
+  {id:'s1789',   t01:1.00, name:'1789 — o presente histórico', disp:'1789 CE', scalar:-211, regime:'5 · histórico', cam:{r:4.0,ph:1.40,th:5.4}, kind:'earth'},
+];
+const stageById = id => STAGES.find(s=>s.id===id);
+
+/* DADOS — subconjunto curado consistente com o banco.
+   prov:'corpus'|'seeded-demo' · rev:'approved'|'pending' · u:[min,max] faixa */
+const ITEMS = [
+  {id:'rep:bigbang', stage:'bigbang', dom:'cosmos', title:'Recombinação & fundo cósmico',
+   claim:'Representação do desacoplamento da radiação ~380 mil anos após o início da expansão. Cena ilustrativa do regime cósmico — não um ponto-evento georreferenciado.',
+   ct:'reconstrução-modelada', conf:'média', u:[-13.81e9,-13.78e9], prov:'corpus', rev:'approved', global:true, src:'Cosmologia de consenso (representação)', tier:'B', repr:true},
+  {id:'rep:galaxies', stage:'galaxies', dom:'cosmos', title:'Primeiras galáxias',
+   claim:'Representação da montagem hierárquica de galáxias no universo jovem. Teaser do regime cósmico; o atlas ainda não reivindica objetos individuais aqui.',
+   ct:'reconstrução-modelada', conf:'média', u:[-13.4e9,-12.6e9], prov:'corpus', rev:'approved', global:true, src:'Astrofísica de consenso (representação)', tier:'B', repr:true},
+  {id:'rep:sun', stage:'sun', dom:'cosmos', title:'Sol e disco protoplanetário',
+   claim:'Representação da formação do Sol e do disco que origina os planetas. O disco é ilustrativo; a Terra ainda não é um corpo de dados próprio nesta cena.',
+   ct:'reconstrução-modelada', conf:'alta', u:[-4.62e9,-4.55e9], prov:'corpus', rev:'approved', global:true, src:'Ciência planetária de consenso (representação)', tier:'B', repr:true},
+
+  {id:'proc:goe', stage:'goe', dom:'geologia', title:'Grande Evento de Oxigenação',
+   claim:'Acúmulo de O₂ livre na atmosfera a partir de ~2,4 Ga, transformando a química de superfície da Terra.',
+   ct:'inferência-científica', conf:'alta', u:[-2.5e9,-2.2e9], prov:'corpus', rev:'approved', lat:-26, lng:28, place:'Cráton do Kaapvaal (registro)', recon:true, src:'PBDB, geociências', tier:'A', claimset:'goe-ritmo'},
+  {id:'proc:fotossintese-oxigenica', stage:'goe', dom:'biologia', title:'Fotossíntese oxigênica',
+   claim:'Cianobactérias passam a liberar O₂ como subproduto da fotossíntese — a fonte do oxigênio do GOE.',
+   ct:'inferência-científica', conf:'alta', u:[-2.7e9,-2.4e9], prov:'corpus', rev:'approved', global:true, src:'PBDB, geomicrobiologia', tier:'A'},
+  {id:'proc:deposicao-bif', stage:'goe', dom:'geologia', title:'Formações ferríferas bandadas (BIF)',
+   claim:'Bandas de óxido de ferro precipitam quando o O₂ encontra ferro dissolvido nos oceanos — um proxy do oxigênio crescente.',
+   ct:'proxy', conf:'alta', u:[-2.6e9,-2.3e9], prov:'corpus', rev:'approved', lat:-22, lng:119, place:'Hamersley (registro)', recon:true, src:'Registro litológico, geociências', tier:'A'},
+  {id:'state:atmosfera-primitiva', stage:'goe', dom:'quimica', title:'Atmosfera pré-GOE (anóxica)',
+   claim:'Antes do GOE a atmosfera era essencialmente sem O₂ livre; a transição é modelada a partir de proxies isotópicos.',
+   ct:'reconstrução-modelada', conf:'média', u:[-2.5e9,-2.3e9], prov:'corpus', rev:'pending', global:true, src:'Modelos geoquímicos', tier:'B'},
+
+  {id:'evt:impacto-chicxulub', stage:'kpg', dom:'geologia', title:'Impacto de Chicxulub',
+   claim:'Um asteroide de ~10 km atinge a região de Yucatán há ~66 Ma, marcando o limite K-Pg.',
+   ct:'inferência-científica', conf:'alta', u:[-66.05e6,-65.95e6], prov:'corpus', rev:'approved', lat:21.4, lng:-89.5, place:'Cratera de Chicxulub (janela de evidência atual)', recon:true, src:'USGS, PBDB, geociências', tier:'A', caveat:true, claimset:'kpg-causa'},
+  {id:'proc:extincao-kpg', stage:'kpg', dom:'biologia', title:'Extinção em massa K-Pg',
+   claim:'Cerca de 75% das espécies desaparecem, incluindo os dinossauros não-avianos.',
+   ct:'inferência-científica', conf:'alta', u:[-66.0e6,-65.8e6], prov:'corpus', rev:'approved', global:true, src:'PBDB, paleontologia', tier:'A'},
+  {id:'concept:anomalia-iridio', stage:'kpg', dom:'quimica', title:'Anomalia de irídio',
+   claim:'Camada global rica em irídio no limite K-Pg — assinatura geoquímica compatível com fonte extraterrestre.',
+   ct:'proxy', conf:'alta', u:[-66.0e6,-65.9e6], prov:'corpus', rev:'approved', global:true, src:'Alvarez et al. e replicações, geoquímica', tier:'A'},
+  {id:'proc:vulcanismo-deccan-traps', stage:'kpg', dom:'geologia', title:'Vulcanismo dos Deccan Traps',
+   claim:'Erupções maciças na Índia coincidem com o limite K-Pg; seu peso causal está em debate científico ativo.',
+   ct:'hipótese', conf:'média', u:[-66.4e6,-65.5e6], prov:'corpus', rev:'pending', lat:18.5, lng:73.8, place:'Planalto do Decão (registro)', recon:true, src:'USGS, geociências', tier:'A'},
+
+  {id:'evt:estados-gerais-1789', stage:'s1789', dom:'historia', title:'Convocação dos Estados Gerais',
+   claim:'Em maio de 1789 reúnem-se os Estados Gerais em Versalhes — abertura institucional da Revolução Francesa.',
+   ct:'fato-documentado', conf:'alta', u:[-211.1,-210.9], prov:'corpus', rev:'approved', lat:48.80, lng:2.12, place:'Versalhes', src:'Arquivos históricos (A)', tier:'A', claimset:'rev-francesa'},
+  {id:'evt:queda-bastilha-1789', stage:'s1789', dom:'historia', title:'Queda da Bastilha',
+   claim:'14 de julho de 1789: a tomada da Bastilha torna-se símbolo da Revolução.',
+   ct:'fato-documentado', conf:'alta', u:[-210.6,-210.4], prov:'corpus', rev:'approved', lat:48.853, lng:2.369, place:'Paris', src:'Arquivos históricos (A)', tier:'A'},
+  {id:'evt:declaracao-direitos-1789', stage:'s1789', dom:'historia', title:'Declaração dos Direitos do Homem',
+   claim:'Agosto de 1789: a Assembleia proclama direitos universais — cuja extensão real era limitada à época.',
+   ct:'fato-documentado', conf:'alta', u:[-210.5,-210.3], prov:'corpus', rev:'approved', lat:48.86, lng:2.34, place:'Paris', src:'Arquivos históricos (A)', tier:'A', claimset:'direitos-limites'},
+  {id:'proc:trafico-atlantico', stage:'s1789', dom:'historia', title:'Tráfico atlântico de escravizados',
+   claim:'Em 1789 o tráfico transatlântico está em alta intensidade — pano de fundo material do período, e não nota de rodapé.',
+   ct:'fato-documentado', conf:'alta', u:[-212,-209], prov:'corpus', rev:'pending', lat:6.0, lng:-1.5, place:'Costa da África Ocidental', src:'Bases historiográficas (A)', tier:'A', claimset:'escravidao-central'},
+  {id:'evt:inconfidencia-mineira', stage:'s1789', dom:'historia', title:'Inconfidência Mineira',
+   claim:'1789, Minas Gerais: movimento de elite colonial contra a Coroa portuguesa; suas leituras divergem.',
+   ct:'interpretação', conf:'média', u:[-211.2,-210.8], prov:'corpus', rev:'pending', lat:-21.13, lng:-43.42, place:'Vila Rica (Ouro Preto)', src:'Historiografia brasileira (A/B)', tier:'B', claimset:'inconfidencia'},
+
+  {id:'chem:lavoisier-traite-1789', stage:'s1789', dom:'quimica', title:'Tratado de Lavoisier (1789)',
+   claim:'Publicação do "Traité élémentaire de chimie" — marco da química moderna. Item de demonstração.',
+   ct:'fato-documentado', conf:'alta', u:[-211.1,-210.9], prov:'seeded-demo', rev:'approved', lat:48.85, lng:2.35, place:'Paris', src:'(demonstração — fonte não validada)', tier:null},
+  {id:'phys:terra-orbita-1789', stage:'s1789', dom:'fisica', title:'Mecânica celeste (estado em 1789)',
+   claim:'A Terra orbita o Sol conforme a mecânica newtoniana — estado do conhecimento físico no instante. Item de demonstração.',
+   ct:'interpretação', conf:'alta', u:[-212,-209], prov:'seeded-demo', rev:'approved', global:true, src:'(demonstração — fonte não validada)', tier:null},
+  {id:'geo:andes-1789', stage:'s1789', dom:'geologia', title:'Cordilheira dos Andes (em 1789)',
+   claim:'Os Andes já existem como orogênese ativa — escala geológica vista por um instante histórico. Item de demonstração.',
+   ct:'estimativa', conf:'média', u:[-213,-208], prov:'seeded-demo', rev:'approved', lat:-32, lng:-70, place:'Andes centrais', recon:false, src:'(demonstração — fonte não validada)', tier:null},
+  {id:'life:grande-auk-1789', stage:'s1789', dom:'biologia', title:'Arau-gigante ainda vivo (1789)',
+   claim:'Em 1789 o arau-gigante (Pinguinus impennis) ainda não estava extinto. Item de demonstração.',
+   ct:'estimativa', conf:'média', u:[-213,-208], prov:'seeded-demo', rev:'approved', lat:63, lng:-23, place:'Atlântico Norte', src:'(demonstração — fonte não validada)', tier:null},
+];
+
+/* CLAIMSETS — claim-sobre-claims, pesos assimétricos (§8.1) */
+const CLAIMSETS = {
+  'kpg-causa':{tema:'Causa dominante da extinção K-Pg', host:'evt:impacto-chicxulub',
+    sides:[['Impacto de Chicxulub como gatilho dominante',0.82],['Vulcanismo dos Deccan como agravante/co-fator',0.30]],
+    noeq:'O peso é exibível e assimétrico. Não há simetria visual entre lados de peso desigual; "houve impacto" não é um lado em disputa.'},
+  'goe-ritmo':{tema:'Ritmo da oxigenação (abrupto × gradual)', host:'proc:goe',
+    sides:[['Transição com pulsos/sobressaltos ("whiffs" e oscilações)',0.62],['Subida essencialmente monotônica',0.38]],
+    noeq:'Debate sobre o RITMO, não sobre a ocorrência. Que o O₂ subiu não está em disputa.'},
+  'rev-francesa':{tema:'Causas da Revolução Francesa', host:'evt:estados-gerais-1789',
+    sides:[['Crise fiscal e estrutura social do Antigo Regime',0.70],['Circulação de ideias iluministas',0.55],['Conjuntura econômica imediata (colheitas, preço do pão)',0.50]],
+    noeq:'Causas plurais com pesos próximos — pluralidade não é equivalência forçada nem "dois lados".'},
+  'direitos-limites':{tema:'Universalidade declarada × alcance real (1789)', host:'evt:declaracao-direitos-1789',
+    sides:[['Princípio universal como ruptura normativa',0.70],['Exclusões efetivas (mulheres, escravizados, não-proprietários)',0.70]],
+    noeq:'Ambos verdadeiros simultaneamente: o princípio e suas exclusões coexistem; um não "vence" o outro.'},
+  'inconfidencia':{tema:'Leituras da Inconfidência Mineira', host:'evt:inconfidencia-mineira',
+    sides:[['Movimento de elite por interesses locais',0.60],['Precursor de ideias de independência',0.45]],
+    noeq:'Interpretações historiográficas com pesos distintos, ambas sustentadas por evidência.'},
+  'escravidao-central':{tema:'Centralidade da escravidão no período', host:'proc:trafico-atlantico',
+    sides:[['Estrutura material central da economia atlântica',0.85]],
+    noeq:'Não é um "debate de dois lados": a centralidade é consenso; o que se evita é a marginalização do tema.'},
+};
+
+/* =====================================================================
+   THREE.JS — cena, shaders procedurais, gestão de estágios
+   ===================================================================== */
+let renderer, scene, camera, clock;
+let stageGroups = {}, earthMat, atmoMat, currentT=1.0, playing=false;
+let camR=4, camPh=1.4, camTh=5.4, camTgt=new THREE.Vector3(0,0,0);
+let userPh=0, userTh=0, userR=0, webglOK=true;
+
+const GLSL_NOISE = `
+  vec3 hash3(vec3 p){p=vec3(dot(p,vec3(127.1,311.7,74.7)),dot(p,vec3(269.5,183.3,246.1)),dot(p,vec3(113.5,271.9,124.6)));return fract(sin(p)*43758.5453123);}
+  float noise(vec3 p){vec3 i=floor(p);vec3 f=fract(p);vec3 u=f*f*(3.0-2.0*f);
+    float n=mix(mix(mix(dot(hash3(i+vec3(0,0,0))-0.5,f-vec3(0,0,0)),dot(hash3(i+vec3(1,0,0))-0.5,f-vec3(1,0,0)),u.x),
+                    mix(dot(hash3(i+vec3(0,1,0))-0.5,f-vec3(0,1,0)),dot(hash3(i+vec3(1,1,0))-0.5,f-vec3(1,1,0)),u.x),u.y),
+                mix(mix(dot(hash3(i+vec3(0,0,1))-0.5,f-vec3(0,0,1)),dot(hash3(i+vec3(1,0,1))-0.5,f-vec3(1,0,1)),u.x),
+                    mix(dot(hash3(i+vec3(0,1,1))-0.5,f-vec3(0,1,1)),dot(hash3(i+vec3(1,1,1))-0.5,f-vec3(1,1,1)),u.x),u.y),u.z);
+    return n;}
+  float fbm(vec3 p){float v=0.0,a=0.5;for(int i=0;i<5;i++){v+=a*noise(p);p*=2.03;a*=0.5;}return v;}
+`;
+
+function makeStarfield(count,radius,sizeBase){
+  const g=new THREE.BufferGeometry();
+  const pos=new Float32Array(count*3),col=new Float32Array(count*3),sz=new Float32Array(count);
+  const pal=[[0.6,0.74,1.0],[0.8,0.86,1.0],[1.0,0.96,0.86],[1.0,0.82,0.6],[1.0,0.7,0.55]];
+  for(let i=0;i<count;i++){
+    const r=radius*(0.35+0.65*Math.cbrt(Math.random()));
+    const th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+    pos[i*3]=r*Math.sin(ph)*Math.cos(th);pos[i*3+1]=r*Math.cos(ph)*0.7;pos[i*3+2]=r*Math.sin(ph)*Math.sin(th);
+    const k=pal[(Math.random()*pal.length)|0],b=0.6+0.4*Math.random();
+    col[i*3]=k[0]*b;col[i*3+1]=k[1]*b;col[i*3+2]=k[2]*b;sz[i]=sizeBase*(0.5+Math.random()*1.8);
+  }
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  g.setAttribute('aSize',new THREE.BufferAttribute(sz,1));
+  const m=new THREE.ShaderMaterial({uniforms:{uTime:{value:0},uOpacity:{value:1}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    vertexShader:`attribute float aSize;attribute vec3 color;varying vec3 vC;varying float vT;uniform float uTime;
+      void main(){vC=color;vec4 mv=modelViewMatrix*vec4(position,1.0);vT=0.6+0.4*sin(uTime*1.5+position.x*8.0+position.z*5.0);
+        gl_PointSize=aSize*(300.0/-mv.z);gl_Position=projectionMatrix*mv;}`,
+    fragmentShader:`varying vec3 vC;varying float vT;uniform float uOpacity;void main(){vec2 d=gl_PointCoord-0.5;float r=length(d);
+      float a=smoothstep(0.5,0.0,r);a*=a;gl_FragColor=vec4(vC*vT,a*uOpacity);}`});
+  const pts=new THREE.Points(g,m);pts.userData.mat=m;return pts;
+}
+
+function makeBigBang(){
+  const grp=new THREE.Group();
+  const mat=new THREE.ShaderMaterial({side:THREE.BackSide,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    uniforms:{uTime:{value:0},uOpacity:{value:1},uCool:{value:0}},
+    vertexShader:`varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:GLSL_NOISE+`varying vec3 vP;uniform float uTime,uOpacity,uCool;
+      void main(){vec3 p=normalize(vP);float n=fbm(p*3.0+vec3(uTime*0.05));float n2=fbm(p*7.0-vec3(uTime*0.08));
+        float dens=n*0.6+n2*0.4;vec3 hot=mix(vec3(1.0,0.95,0.8),vec3(1.0,0.55,0.25),smoothstep(0.2,0.7,dens));
+        vec3 cold=mix(vec3(0.25,0.12,0.35),vec3(0.5,0.3,0.7),dens);vec3 col=mix(hot,cold,uCool);
+        float glow=0.35+0.65*dens;float a=glow*(1.0-uCool*0.55);gl_FragColor=vec4(col*glow*1.4,a*uOpacity);}`});
+  grp.add(new THREE.Mesh(new THREE.SphereGeometry(20,96,96),mat));
+  grp.userData.mats=[mat];
+  const sf=makeStarfield(2600,16,0.04);grp.add(sf);grp.userData.sf=sf;return grp;
+}
+
+function makeGalaxies(){
+  const grp=new THREE.Group();
+  for(let i=0;i<3;i++){
+    const hue=[[0.55,0.3,0.8],[0.2,0.5,0.85],[0.85,0.4,0.55]][i];
+    const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
+      uniforms:{uTime:{value:0},uOpacity:{value:1},uHue:{value:new THREE.Vector3(...hue)},uSeed:{value:i*13.7}},
+      vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+      fragmentShader:GLSL_NOISE+`varying vec2 vUv;uniform float uTime,uOpacity,uSeed;uniform vec3 uHue;
+        void main(){vec2 c=vUv-0.5;float r=length(c);vec3 p=vec3(vUv*4.0,uSeed+uTime*0.03);
+          float d=fbm(p)*0.7+fbm(p*2.5)*0.3;float neb=smoothstep(0.55,0.05,r)*max(0.0,d);float fil=pow(neb,1.6);
+          vec3 col=uHue*(0.5+d)+vec3(0.1,0.05,0.15);gl_FragColor=vec4(col*fil*2.2,fil*uOpacity*0.9);}`});
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(40,40),mat);
+    m.position.set((i-1)*7,(i-1)*3,-(i*4));m.rotation.z=i*0.7;m.userData.mat=mat;grp.add(m);
+  }
+  const sf=makeStarfield(3500,22,0.05);grp.add(sf);grp.userData.sf=sf;
+  grp.userData.mats=grp.children.filter(c=>c.userData.mat).map(c=>c.userData.mat);return grp;
+}
+
+function makeSun(){
+  const grp=new THREE.Group();
+  const N=9000,g=new THREE.BufferGeometry();
+  const pos=new Float32Array(N*3),col=new Float32Array(N*3),sz=new Float32Array(N);
+  for(let i=0;i<N;i++){const arm=(i%2)*Math.PI;const t=Math.pow(Math.random(),0.5)*5.0;
+    const ang=t*2.4+arm+(Math.random()-0.5)*0.5;const rad=t*3.2;
+    const jx=(Math.random()-0.5)*1.2*(1.0+t*0.3),jz=(Math.random()-0.5)*1.2*(1.0+t*0.3);
+    pos[i*3]=Math.cos(ang)*rad+jx;pos[i*3+1]=(Math.random()-0.5)*0.6;pos[i*3+2]=Math.sin(ang)*rad+jz;
+    const core=1.0-Math.min(1.0,rad/16);col[i*3]=0.6+0.4*core;col[i*3+1]=0.55+0.25*core;col[i*3+2]=0.5+0.5*(1.0-core)*0.6+0.3*core;
+    sz[i]=0.04*(0.5+Math.random()*1.5);}
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  g.setAttribute('aSize',new THREE.BufferAttribute(sz,1));
+  const gm=new THREE.ShaderMaterial({uniforms:{uTime:{value:0},uOpacity:{value:1}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    vertexShader:`attribute float aSize;attribute vec3 color;varying vec3 vC;uniform float uTime;
+      void main(){vC=color;float a=uTime*0.04;mat3 R=mat3(cos(a),0.0,sin(a),0.0,1.0,0.0,-sin(a),0.0,cos(a));
+        vec4 mv=modelViewMatrix*vec4(R*position,1.0);gl_PointSize=aSize*(330.0/-mv.z);gl_Position=projectionMatrix*mv;}`,
+    fragmentShader:`varying vec3 vC;uniform float uOpacity;void main(){vec2 d=gl_PointCoord-0.5;float a=smoothstep(0.5,0.0,length(d));gl_FragColor=vec4(vC,a*a*uOpacity);}`});
+  grp.add(new THREE.Points(g,gm));
+  const sun=new THREE.Mesh(new THREE.SphereGeometry(1.5,64,64),new THREE.ShaderMaterial({transparent:true,uniforms:{uTime:{value:0},uOpacity:{value:1}},
+    vertexShader:`varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:GLSL_NOISE+`varying vec3 vP;uniform float uTime,uOpacity;void main(){vec3 p=normalize(vP);
+      float n=fbm(p*4.0+uTime*0.1)*0.6+fbm(p*9.0-uTime*0.15)*0.4;vec3 col=mix(vec3(1.0,0.45,0.1),vec3(1.0,0.95,0.7),n);
+      gl_FragColor=vec4(col*(1.1+n),uOpacity);}`}));
+  grp.add(sun);
+  const D=4000,dg=new THREE.BufferGeometry();
+  const dp=new Float32Array(D*3),dc=new Float32Array(D*3),ds=new Float32Array(D);
+  for(let i=0;i<D;i++){const ang=Math.random()*Math.PI*2;const rad=2.6+Math.random()*5.5;const y=(Math.random()-0.5)*0.25*(rad/6);
+    dp[i*3]=Math.cos(ang)*rad;dp[i*3+1]=y;dp[i*3+2]=Math.sin(ang)*rad;const w=0.5+0.5*Math.random();
+    dc[i*3]=1.0*w;dc[i*3+1]=0.7*w;dc[i*3+2]=0.45*w;ds[i]=0.05*(0.4+Math.random());}
+  dg.setAttribute('position',new THREE.BufferAttribute(dp,3));dg.setAttribute('color',new THREE.BufferAttribute(dc,3));
+  dg.setAttribute('aSize',new THREE.BufferAttribute(ds,1));
+  const disk=new THREE.Points(dg,new THREE.ShaderMaterial({uniforms:{uTime:{value:0},uOpacity:{value:1}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    vertexShader:`attribute float aSize;attribute vec3 color;varying vec3 vC;uniform float uTime;
+      void main(){vC=color;float a=uTime*0.25;mat3 R=mat3(cos(a),0.0,sin(a),0.0,1.0,0.0,-sin(a),0.0,cos(a));
+        vec4 mv=modelViewMatrix*vec4(R*position,1.0);gl_PointSize=aSize*(330.0/-mv.z);gl_Position=projectionMatrix*mv;}`,
+    fragmentShader:`varying vec3 vC;uniform float uOpacity;void main(){vec2 d=gl_PointCoord-0.5;float a=smoothstep(0.5,0.0,length(d));gl_FragColor=vec4(vC,a*a*uOpacity);}`}));
+  grp.add(disk);
+  grp.userData.mats=[gm,sun.material,disk.material];return grp;
+}
+
+function makeEarth(){
+  const grp=new THREE.Group();
+  earthMat=new THREE.ShaderMaterial({uniforms:{uTime:{value:0},uMolten:{value:1.0},uBif:{value:0.0},uImpact:{value:0.0},uLight:{value:new THREE.Vector3(0.7,0.5,0.6).normalize()}},
+    vertexShader:`varying vec3 vP;varying vec3 vN;void main(){vP=position;vN=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:GLSL_NOISE+`varying vec3 vP;varying vec3 vN;uniform float uTime,uMolten,uBif,uImpact;uniform vec3 uLight;
+      void main(){vec3 p=normalize(vP);float cont=fbm(p*2.2)*0.6+fbm(p*4.5)*0.4;float coast=smoothstep(0.05,0.12,cont);
+        vec3 ocean=mix(vec3(0.03,0.13,0.32),vec3(0.05,0.22,0.42),fbm(p*8.0+uTime*0.02));
+        vec3 land=mix(vec3(0.16,0.32,0.12),vec3(0.45,0.38,0.24),smoothstep(0.1,0.5,cont));
+        land=mix(land,vec3(0.9,0.92,0.96),smoothstep(0.62,0.78,cont));vec3 modern=mix(ocean,land,coast);
+        float lav=fbm(p*5.0+uTime*0.15);vec3 molten=mix(vec3(0.5,0.06,0.02),vec3(1.0,0.6,0.1),lav);
+        molten=mix(molten,vec3(1.0,0.95,0.7),smoothstep(0.6,0.85,lav));
+        float bands=0.5+0.5*sin(p.y*42.0+fbm(p*3.0)*4.0);vec3 bif=mix(vec3(0.35,0.12,0.08),vec3(0.7,0.45,0.2),bands);
+        vec3 base=mix(modern,molten,uMolten);base=mix(base,bif,uBif*0.45);
+        vec3 impactDir=normalize(vec3(0.25,0.45,0.85));float dd=max(0.0,dot(p,impactDir));float scar=smoothstep(0.93,1.0,dd);
+        base=mix(base,vec3(1.0,0.7,0.3),scar*uImpact);base=mix(base,base*vec3(0.7,0.6,0.55),uImpact*0.3);
+        float dif=clamp(dot(vN,uLight)*0.5+0.5,0.0,1.0);float emis=uMolten*0.6+scar*uImpact*0.8;
+        vec3 col=base*(0.35+0.75*dif)+base*emis;gl_FragColor=vec4(col,1.0);}`});
+  const earth=new THREE.Mesh(new THREE.SphereGeometry(2,128,128),earthMat);grp.add(earth);grp.userData.earth=earth;
+  atmoMat=new THREE.ShaderMaterial({side:THREE.BackSide,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+    uniforms:{uColor:{value:new THREE.Color(0.3,0.55,1.0)},uPower:{value:1.0}},
+    vertexShader:`varying vec3 vN;varying vec3 vV;void main(){vN=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.0);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}`,
+    fragmentShader:`varying vec3 vN;varying vec3 vV;uniform vec3 uColor;uniform float uPower;
+      void main(){float f=pow(1.0-max(0.0,dot(vN,vV)),2.5)*uPower;gl_FragColor=vec4(uColor,f);}`});
+  grp.add(new THREE.Mesh(new THREE.SphereGeometry(2.16,64,64),atmoMat));
+  const sf=makeStarfield(2200,60,0.06);grp.add(sf);grp.userData.sf=sf;grp.userData.mats=[];return grp;
+}
+
+function initThree(){
+  const host=document.getElementById('stage');
+  try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});}catch(e){webglOK=false;return false;}
+  if(!renderer||!renderer.getContext()){webglOK=false;return false;}
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);host.appendChild(renderer.domElement);
+  scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,0.05,5000);clock=new THREE.Clock();
+  stageGroups.bigbang=makeBigBang();stageGroups.galaxies=makeGalaxies();stageGroups.sun=makeSun();
+  const earth=makeEarth();stageGroups.earth=earth;stageGroups.goe=earth;stageGroups.kpg=earth;stageGroups.s1789=earth;
+  scene.add(stageGroups.bigbang,stageGroups.galaxies,stageGroups.sun,earth);
+  setupOrbit(renderer.domElement);addEventListener('resize',onResize);return true;
+}
+
+function setOpacity(grp,o){
+  if(!grp)return;grp.visible=o>0.001;
+  (grp.userData.mats||[]).forEach(m=>{if(m.uniforms&&m.uniforms.uOpacity)m.uniforms.uOpacity.value=o;});
+  if(grp.userData.sf)grp.userData.sf.userData.mat.uniforms.uOpacity.value=o;
+  grp.traverse(c=>{if(c.material&&c.material.uniforms&&c.material.uniforms.uOpacity&&!(grp.userData.mats||[]).includes(c.material))c.material.uniforms.uOpacity.value=o;});
+}
+
+function stageWeights(t){
+  const w={};
+  for(let i=0;i<STAGES.length;i++){const a=STAGES[i];
+    const left=i>0?STAGES[i-1].t01:a.t01-0.2;const right=i<STAGES.length-1?STAGES[i+1].t01:a.t01+0.2;
+    let wv=0;
+    if(t<=a.t01)wv=left===a.t01?1:Math.max(0,(t-left)/(a.t01-left));
+    else wv=right===a.t01?1:Math.max(0,(right-t)/(right-a.t01));
+    w[a.id]=Math.max(0,Math.min(1,wv));}
+  return w;
+}
+
+function applyTime(t){
+  currentT=t;const w=stageWeights(t);
+  setOpacity(stageGroups.bigbang,w.bigbang);setOpacity(stageGroups.galaxies,w.galaxies);setOpacity(stageGroups.sun,w.sun);
+  const earthW=Math.max(w.earth,w.goe,w.kpg,w.s1789);setOpacity(stageGroups.earth,earthW);
+  if(earthMat){
+    earthMat.uniforms.uMolten.value=Math.max(0,w.earth*1.0-(w.goe+w.kpg+w.s1789)*0.6);
+    earthMat.uniforms.uBif.value=w.goe;earthMat.uniforms.uImpact.value=w.kpg;
+    atmoMat.uniforms.uPower.value=0.4+(w.goe*0.5+w.s1789*1.0);
+    atmoMat.uniforms.uColor.value.setRGB(0.3+w.kpg*0.6,0.55-w.kpg*0.2,1.0-w.kpg*0.6);
+  }
+  const bb=stageGroups.bigbang;if(bb&&bb.userData.mats[0])bb.userData.mats[0].uniforms.uCool.value=1.0-w.bigbang;
+  let sum=0,R=0,PH=0,TH=0;
+  STAGES.forEach(s=>{const ww=w[s.id];if(ww>0){sum+=ww;R+=s.cam.r*ww;PH+=s.cam.ph*ww;TH+=s.cam.th*ww;}});
+  if(sum>0){camR=R/sum;camPh=PH/sum;camTh=TH/sum;}
+  const dom=STAGES.reduce((b,s)=>w[s.id]>w[b.id]?s:b,STAGES[0]);
+  document.getElementById('epoch-name').textContent=dom.name;
+  document.getElementById('epoch-disp').textContent=dom.disp+'  ·  regime '+dom.regime;
+  document.getElementById('epoch-scalar').textContent='canonicalTimeScalar ≈ '+fmtScalar(dom.scalar);
+  refreshScene();
+}
+
+function fmtScalar(s){
+  if(s<=-1e9)return (s/1e9).toFixed(2).replace('.',',')+'e9 anos';
+  if(s<=-1e6)return (s/1e6).toFixed(1).replace('.',',')+'e6 anos';
+  return Math.round(s)+' anos rel. T0';
+}
+
+function onResize(){
+  if(renderer){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+  if(mode==='2d')draw2D();
+}
+
+function setupOrbit(el){
+  let down=false,lx=0,ly=0;
+  const dn=e=>{down=true;const p=e.touches?e.touches[0]:e;lx=p.clientX;ly=p.clientY;hideHint();};
+  const mv=e=>{if(!down)return;const p=e.touches?e.touches[0]:e;
+    userTh+=(p.clientX-lx)*0.005;userPh+=(p.clientY-ly)*0.005;userPh=Math.max(-1.2,Math.min(1.2,userPh));lx=p.clientX;ly=p.clientY;if(e.preventDefault)e.preventDefault();};
+  const up=()=>down=false;
+  el.addEventListener('mousedown',dn);addEventListener('mousemove',mv);addEventListener('mouseup',up);
+  el.addEventListener('touchstart',dn,{passive:false});addEventListener('touchmove',mv,{passive:false});addEventListener('touchend',up);
+  el.addEventListener('wheel',e=>{userR+=e.deltaY*0.004;userR=Math.max(-0.6,Math.min(2.0,userR));e.preventDefault();},{passive:false});
+}
+
+function animate(){
+  requestAnimationFrame(animate);if(!renderer)return;
+  const t=clock.getElapsedTime();
+  Object.values(stageGroups).forEach(g=>{(g.userData.mats||[]).forEach(m=>{if(m.uniforms&&m.uniforms.uTime)m.uniforms.uTime.value=t;});
+    if(g.userData.sf)g.userData.sf.userData.mat.uniforms.uTime.value=t;});
+  if(earthMat)earthMat.uniforms.uTime.value=t;
+  if(stageGroups.earth&&stageGroups.earth.userData.earth)stageGroups.earth.userData.earth.rotation.y=t*0.05;
+  if(playing){let v=currentT-0.0009;if(v<=0){v=0;togglePlay(false);}setScrub(v);applyTime(v);}
+  const ph=camPh+userPh,th=camTh+userTh,r=camR*(1+userR);
+  camera.position.set(camTgt.x+r*Math.sin(ph)*Math.cos(th),camTgt.y+r*Math.cos(ph),camTgt.z+r*Math.sin(ph)*Math.sin(th));
+  camera.lookAt(camTgt);renderer.render(scene,camera);
+  if(mode==='3d')updateLabels3D();
+}
+/* =====================================================================
+   MODELO DE EXIBIÇÃO compartilhado — fonte única para os TRÊS
+   renderizadores (Art.12: a degradação não muda o piso epistêmico).
+   ===================================================================== */
+let mode='3d';
+let lensOn={historia:true,geologia:true,biologia:true,cosmos:true,quimica:true,fisica:true};
+let gate={pending:true,seeded:true};   // fato é sempre on
+let selected=null;
+
+function gatePass(it){
+  if(it.prov==='seeded-demo' && !gate.seeded) return false;
+  if(it.rev==='pending' && !gate.pending) return false;
+  return true;
+}
+const lensPass = it => lensOn[it.dom];
+
+function visibleItems(){
+  const w=stageWeights(currentT);
+  const live=new Set(STAGES.filter(s=>w[s.id]>0.12).map(s=>s.id));
+  return ITEMS.filter(it=>live.has(it.stage)&&lensPass(it)&&gatePass(it));
+}
+
+/* posição 3D: lat/lng→esfera (raio ~2.05); global/cosmos→órbita por hash */
+function item3DPos(it){
+  if(it.lat!=null&&it.lng!=null){
+    const la=it.lat*Math.PI/180,lo=it.lng*Math.PI/180,R=2.05;
+    const spin=(stageGroups.earth&&stageGroups.earth.userData.earth)?stageGroups.earth.userData.earth.rotation.y:0;
+    return new THREE.Vector3(R*Math.cos(la)*Math.cos(lo+spin),R*Math.sin(la),R*Math.cos(la)*Math.sin(lo+spin));
+  }
+  let h=0;for(const ch of it.id)h=(h*31+ch.charCodeAt(0))%997;
+  const ang=h/997*Math.PI*2,rad=(stageById(it.stage).kind==='cosmic')?8:3.0;
+  return new THREE.Vector3(Math.cos(ang)*rad,((h%7)-3)*0.4,Math.sin(ang)*rad);
+}
+
+/* ---------- formatadores de tempo ---------- */
+function formatYear(sc){
+  const a=Math.abs(sc);
+  if(a>=1e9)return (sc/1e9).toFixed(2).replace('.',',')+' Ga';
+  if(a>=1e6)return (sc/1e6).toFixed(1).replace('.',',')+' Ma';
+  const ce=Math.round(2000+sc);
+  return ce>0?ce+' CE':(1-ce)+' BCE';
+}
+const shortConf=c=>({alta:'conf. alta','média':'conf. média',baixa:'conf. baixa'}[c]||c);
+const confPips=c=>({alta:3,'média':2,baixa:1}[c]||2);
+const cssEsc=s=>s.replace(/[^a-zA-Z0-9_-]/g,'\\$&');
+
+/* =====================================================================
+   RENDER 3D — rótulos HTML projetados sobre o WebGL
+   ===================================================================== */
+function updateLabels3D(){
+  const layer=document.getElementById('labels');
+  const vis=visibleItems(),seen=new Set();
+  vis.forEach(it=>{
+    seen.add(it.id);
+    let el=layer.querySelector(`[data-id="${cssEsc(it.id)}"]`);
+    if(!el){el=buildLabel(it);layer.appendChild(el);}
+    const p=item3DPos(it).project(camera);
+    if(p.z>1){el.style.display='none';return;}
+    el.style.display='block';
+    el.style.left=((p.x*0.5+0.5)*innerWidth)+'px';
+    el.style.top=((-p.y*0.5+0.5)*innerHeight)+'px';
+    el.style.zIndex=String(1000-Math.round((p.z+1)*200));
+    el.classList.toggle('sel',selected===it.id);
+  });
+  layer.querySelectorAll('.lab3d').forEach(el=>{if(!seen.has(el.getAttribute('data-id')))el.remove();});
+}
+function buildLabel(it){
+  const k=ctOf(it.ct),el=document.createElement('div');
+  el.className='lab3d';el.setAttribute('data-id',it.id);el.style.color=DOMAINS[it.dom].c;
+  const seal=it.prov==='seeded-demo'?'<span class="seeddot"></span>':(it.rev==='pending'?'<span class="penddot"></span>':'');
+  el.innerHTML=`<div class="pin" data-g="${k.g}" style="color:${k.c}">${seal}</div>
+    <div class="flag"><span style="color:${k.c}">${k.g}</span> ${it.title} <span class="mini">· ${shortConf(it.conf)}</span></div>`;
+  el.addEventListener('click',e=>{e.stopPropagation();select(it.id);});
+  return el;
+}
+
+/* =====================================================================
+   PAINEL DE DETALHE — renderiza o contrato visual §8 por inteiro
+   ===================================================================== */
+function select(id){
+  selected=id;
+  const it=ITEMS.find(x=>x.id===id);
+  const panel=document.getElementById('detail');
+  if(!it){panel.classList.add('hidden');return;}
+  panel.classList.remove('hidden');
+  const k=ctOf(it.ct);
+  document.getElementById('d-glyph').textContent=k.g;
+  document.getElementById('d-glyph').style.color=k.c;
+  document.getElementById('d-kind').textContent=DOMAINS[it.dom].nm+' · '+k.n;
+  document.getElementById('d-title').textContent=it.title;
+  document.getElementById('d-when').textContent=stageById(it.stage).disp+'  ·  '+stageById(it.stage).name;
+  document.getElementById('d-body').innerHTML=renderDetailBody(it);
+  if(mode!=='3d')highlightInRenderer();
+}
+
+function renderDetailBody(it){
+  const k=ctOf(it.ct);
+  const pips=[0,1,2].map(i=>`<span class="pip ${i<confPips(it.conf)?'on':''}"></span>`).join('');
+  const place=it.global?'global (sem ponto único)':(it.place||'—');
+  // incerteza SEMPRE como faixa
+  const uband=`<div class="uband">
+    <div class="bar"><div class="span" style="left:8%;right:8%"></div></div>
+    <div class="lbl"><span>${formatYear(it.u[0])}</span><span>${formatYear(it.u[1])}</span></div></div>`;
+  const tierCls=it.tier==='A'?'':(it.tier==='B'?'b':'demo');
+  const tierTxt=it.tier?('fonte tier '+it.tier):'sem tier (demonstração)';
+  let notices='';
+  if(it.recon||it.caveat){notices+=`<div class="notice anachro"><span class="ic">⟳</span>
+    <span><b>Aviso de anacronismo.</b> A posição mostrada é uma <b>reconstrução</b> sobre a base atual; ${it.caveat?'representa a janela de evidência conhecida, não a paleoposição exata.':'a paleogeografia da época difere da geografia de hoje.'}</span></div>`;}
+  if(it.prov==='seeded-demo'){notices+=`<div class="notice seedn"><span class="ic">◑</span>
+    <span><b>Item de demonstração (seeded-demo).</b> Fonte ainda não validada contra o corpus; <b>excluído do cluster público</b> (§9). Não é promovido a fato sem revisão.</span></div>`;}
+  if(it.rev==='pending'){notices+=`<div class="notice pendn"><span class="ic">◔</span>
+    <span><b>Em revisão (pending).</b> Exibido com rótulo; não circula no portão público até aprovação. Nunca aparece <i>como</i> fato consolidado.</span></div>`;}
+  if(it.repr){notices+=`<div class="notice pendn"><span class="ic">◇</span>
+    <span><b>Representação de cena.</b> Ilustra um regime (cósmico) — não é um ponto-evento georreferenciado nem reivindica objetos individuais.</span></div>`;}
+  const cset=it.claimset?renderClaimset(it.claimset):'';
+  return `<div class="det-claim">${it.claim}</div>
+    <div class="meta-grid">
+      <div class="meta-k">tipo</div><div class="meta-v"><span class="typechip" style="background:${k.c}22;color:${k.c}"><span class="g">${k.g}</span>${k.n}</span></div>
+      <div class="meta-k">confiança</div><div class="meta-v"><span class="conf">${pips}</span> &nbsp;<b>${it.conf}</b></div>
+      <div class="meta-k">incerteza</div><div class="meta-v">${uband}</div>
+      <div class="meta-k">domínio</div><div class="meta-v"><b>${DOMAINS[it.dom].nm}</b></div>
+      <div class="meta-k">lugar</div><div class="meta-v">${place}</div>
+      <div class="meta-k">proveniência</div><div class="meta-v">${it.prov==='corpus'?'<b>corpus</b>':'<b style="color:var(--seed)">seeded-demo</b>'} · ${it.rev}</div>
+    </div>
+    <div class="src">fonte: ${it.src}<span class="tier ${tierCls}">${tierTxt}</span></div>
+    ${notices}${cset}`;
+}
+
+function renderClaimset(key){
+  const cs=CLAIMSETS[key];if(!cs)return '';
+  const max=Math.max(...cs.sides.map(s=>s[1]));
+  const sides=cs.sides.map(([stmt,w])=>`<div class="side"><div class="top">
+      <div class="wbar"><div class="wfill" style="width:${Math.round(w/max*100)}%"></div></div>
+      <div class="wnum">${w.toFixed(2)}</div></div><div class="stmt">${stmt}</div></div>`).join('');
+  return `<div class="cset"><div class="cset-h"><span class="lab">ClaimSet</span> ${cs.tema}</div>
+    ${sides}<div class="noeq"><span>⚖︎</span><span><b>Sem equivalência forçada.</b> ${cs.noeq}</span></div></div>`;
+}
+
+/* =====================================================================
+   RENDER 2D — projeção esquemática equirretangular (rótulos preservados)
+   ===================================================================== */
+let c2dPins=[];
+function draw2D(){
+  const cv=document.getElementById('c2d');
+  cv.width=innerWidth;cv.height=innerHeight;
+  const x=cv.getContext('2d');
+  x.fillStyle='#0a0f1c';x.fillRect(0,0,cv.width,cv.height);
+  // área do mapa
+  const top=96,bot=cv.height-150,left=60,right=cv.width-60,W=right-left,H=bot-top;
+  // moldura + graticula
+  x.strokeStyle='rgba(120,150,200,.18)';x.lineWidth=1;x.strokeRect(left,top,W,H);
+  x.fillStyle='rgba(120,150,200,.45)';x.font='10px ui-monospace,monospace';
+  for(let lo=-180;lo<=180;lo+=60){const px=left+(lo+180)/360*W;x.beginPath();x.moveTo(px,top);x.lineTo(px,bot);
+    x.strokeStyle='rgba(120,150,200,.08)';x.stroke();x.fillText(lo+'°',px-8,bot+14);}
+  for(let la=-90;la<=90;la+=30){const py=top+(90-la)/180*H;x.beginPath();x.moveTo(left,py);x.lineTo(right,py);
+    x.strokeStyle='rgba(120,150,200,.08)';x.stroke();x.fillText(la+'°',left-26,py+3);}
+  // legenda de regime/instante
+  const dom=STAGES.reduce((b,s)=>stageWeights(currentT)[s.id]>stageWeights(currentT)[b.id]?s:b,STAGES[0]);
+  x.fillStyle='#37e0d8';x.font='12px ui-monospace,monospace';
+  x.fillText('instante: '+dom.disp+'  ·  '+dom.name,left,top-10);
+
+  const vis=visibleItems();c2dPins=[];
+  // itens globais/cósmicos: banda superior
+  const globals=vis.filter(it=>it.lat==null||it.lng==null);
+  let gx=left+6;const gy=top+14;
+  if(globals.length){x.fillStyle='rgba(120,150,200,.5)';x.font='9px ui-monospace,monospace';x.fillText('globais / sem ponto:',left+6,gy-4);}
+  globals.forEach(it=>{const k=ctOf(it.ct);const w=x.measureText(it.title).width+30;
+    drawChip(x,gx,gy+4,it,k);c2dPins.push({x:gx+8,y:gy+12,r:13,id:it.id});gx+=w+10;if(gx>right-120){gx=left+6;}});
+  // itens georreferenciados
+  vis.filter(it=>it.lat!=null&&it.lng!=null).forEach(it=>{
+    const px=left+(it.lng+180)/360*W,py=top+(90-it.lat)/180*H,k=ctOf(it.ct);
+    // pin
+    x.beginPath();x.arc(px,py,6,0,Math.PI*2);x.fillStyle=k.c;x.fill();
+    x.lineWidth=2;x.strokeStyle='#070a12';x.stroke();
+    // glyph de tipo (redundância não-cromática)
+    x.fillStyle='#070a12';x.font='bold 8px ui-monospace,monospace';x.textAlign='center';x.fillText(k.g,px,py+3);x.textAlign='left';
+    // selo seeded/pending
+    if(it.prov==='seeded-demo'||it.rev==='pending'){x.beginPath();x.arc(px+5,py-5,3.5,0,Math.PI*2);
+      x.fillStyle=it.prov==='seeded-demo'?'#ffb347':'#9bb4d6';x.fill();x.strokeStyle='#070a12';x.lineWidth=1.5;x.stroke();}
+    // rótulo: tipo + título + confiança (contrato §8 preservado)
+    const lab=k.g+' '+it.title;x.font='11px Inter,system-ui,sans-serif';
+    const tw=x.measureText(lab).width;
+    x.fillStyle='rgba(8,12,22,.82)';x.fillRect(px+10,py-9,tw+12,17);
+    x.strokeStyle='rgba(120,150,200,.3)';x.lineWidth=1;x.strokeRect(px+10,py-9,tw+12,17);
+    x.fillStyle=DOMAINS[it.dom].c;x.fillText(lab,px+16,py+3);
+    c2dPins.push({x:px,y:py,r:10,id:it.id});
+  });
+  if(!vis.length){x.fillStyle='rgba(141,160,194,.6)';x.font='13px Inter,sans-serif';x.textAlign='center';
+    x.fillText('Nada conhecido neste instante por estas lentes — e isso é informação.',cv.width/2,top+H/2);x.textAlign='left';}
+}
+function drawChip(x,px,py,it,k){
+  const lab=k.g+' '+it.title;x.font='11px Inter,system-ui,sans-serif';const tw=x.measureText(lab).width;
+  x.fillStyle='rgba(8,12,22,.82)';x.fillRect(px,py-2,tw+14,18);x.strokeStyle=k.c+'88';x.lineWidth=1;x.strokeRect(px,py-2,tw+14,18);
+  x.fillStyle=DOMAINS[it.dom].c;x.fillText(lab,px+7,py+11);
+}
+function hit2D(mx,my){let best=null,bd=1e9;c2dPins.forEach(p=>{const d=Math.hypot(p.x-mx,p.y-my);if(d<p.r+6&&d<bd){bd=d;best=p.id;}});return best;}
+
+/* =====================================================================
+   RENDER ESTÁTICO — lista HTML/CSS (degradação final; contrato preservado)
+   ===================================================================== */
+function renderStatic(){
+  const host=document.getElementById('cStatic');
+  const dom=STAGES.reduce((b,s)=>stageWeights(currentT)[s.id]>stageWeights(currentT)[b.id]?s:b,STAGES[0]);
+  const vis=visibleItems();
+  let html=`<div class="static-head"><h1>${dom.name}</h1>
+    <p>Modo estático — sem WebGL e sem canvas. O <b>piso epistêmico</b> (tipo, confiança, incerteza, atribuição, selos) sobrevive à degradação total (Art. 12 / §8.3).<br>
+    Instante: <b>${dom.disp}</b> · regime ${dom.regime} · canonicalTimeScalar ≈ ${fmtScalar(dom.scalar)}.</p></div>`;
+  if(!vis.length){html+=`<div class="scard" style="text-align:center;color:var(--txt-dim)">Nada conhecido neste instante por estas lentes — e isso é informação.</div>`;}
+  // agrupa por estágio vivo
+  const w=stageWeights(currentT);const live=STAGES.filter(s=>w[s.id]>0.12);
+  live.forEach(stg=>{
+    const its=vis.filter(it=>it.stage===stg.id);if(!its.length)return;
+    html+=`<div class="sgroup-h">${stg.disp} · ${stg.name}</div>`;
+    its.forEach(it=>{const k=ctOf(it.ct);
+      const seal=it.prov==='seeded-demo'?`<span class="badge seed" style="font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(255,179,71,.16);color:#ffb347">seeded-demo</span>`
+        :(it.rev==='pending'?`<span class="badge pend" style="font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(155,180,214,.16);color:#9bb4d6">em revisão</span>`:'');
+      const pips=[0,1,2].map(i=>`<span style="display:inline-block;width:11px;height:4px;border-radius:2px;margin-right:2px;background:${i<confPips(it.conf)?'#37e0d8':'rgba(120,150,200,.2)'}"></span>`).join('');
+      html+=`<div class="scard" style="border-left-color:${DOMAINS[it.dom].c}">
+        <div class="sc-top">
+          <span class="typechip" style="background:${k.c}22;color:${k.c}"><span class="g">${k.g}</span>${k.n}</span>
+          ${seal}<span class="sc-when">${formatYear(it.u[0])} — ${formatYear(it.u[1])}</span>
+        </div>
+        <div class="sc-title">${it.title}</div>
+        <div class="sc-claim">${it.claim}</div>
+        <div class="sc-meta">
+          <div class="row"><span class="k">confiança</span><span>${pips} ${it.conf}</span></div>
+          <div class="row"><span class="k">incerteza</span><span>faixa ${formatYear(it.u[0])} a ${formatYear(it.u[1])} (nunca um ponto)</span></div>
+          <div class="row"><span class="k">domínio</span><span>${DOMAINS[it.dom].nm}</span></div>
+          <div class="row"><span class="k">lugar</span><span>${it.global?'global (sem ponto único)':(it.place||'—')}${it.recon?' · reconstrução (anacronismo)':''}</span></div>
+          <div class="row"><span class="k">proveniência</span><span>${it.prov} · ${it.rev}</span></div>
+          <div class="row"><span class="k">fonte</span><span>${it.src}${it.tier?' · tier '+it.tier:''}</span></div>
+          ${it.claimset?`<div class="row"><span class="k">claimset</span><span>${CLAIMSETS[it.claimset].tema} — pesos assimétricos; sem equivalência forçada</span></div>`:''}
+        </div></div>`;
+    });
+  });
+  host.innerHTML=html;
+}
+
+/* ---------- despacho de overlay conforme o modo ---------- */
+function refreshScene(){
+  if(mode==='2d')draw2D();
+  else if(mode==='static')renderStatic();
+}
+function highlightInRenderer(){if(mode==='2d')draw2D();else if(mode==='static')renderStatic();}
+
+/* =====================================================================
+   TROCA DE MODO (degradação explícita) + fallback automático
+   ===================================================================== */
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('#modegroup button').forEach(b=>b.classList.toggle('on',b.dataset.mode===m));
+  const stage=document.getElementById('stage'),c2d=document.getElementById('c2d'),
+    cs=document.getElementById('cStatic'),labels=document.getElementById('labels'),cap=document.getElementById('c2dcap');
+  stage.style.display=m==='3d'?'block':'none';
+  labels.style.display=m==='3d'?'block':'none';
+  c2d.style.display=m==='2d'?'block':'none';
+  cap.style.display=m==='2d'?'block':'none';
+  cs.style.display=m==='static'?'block':'none';
+  if(m==='2d')draw2D();
+  if(m==='static')renderStatic();
+}
+
+/* =====================================================================
+   UI — eixo do tempo, lente, gate, ticks, bootstrap
+   ===================================================================== */
+function setScrub(v){document.getElementById('scrub').value=Math.round(v*1000);}
+function buildTicks(){
+  const host=document.getElementById('ticks');host.innerHTML='';
+  STAGES.forEach(s=>{const d=document.createElement('div');d.className='tick major';d.style.left=(s.t01*100)+'%';
+    d.innerHTML=`<i></i><span>${s.disp}</span>`;host.appendChild(d);});
+}
+function buildLens(){
+  const host=document.getElementById('domlist');host.innerHTML='';
+  Object.entries(DOMAINS).forEach(([key,d])=>{
+    const n=ITEMS.filter(it=>it.dom===key).length;
+    const el=document.createElement('div');el.className='domchip';el.dataset.dom=key;
+    el.innerHTML=`<span class="dot" style="background:${d.c}"></span><span class="nm">${d.nm}</span><span class="ct">${n}</span>`;
+    el.addEventListener('click',()=>{lensOn[key]=!lensOn[key];el.classList.toggle('off',!lensOn[key]);updateLensFoot();
+      if(mode==='3d')updateLabels3D();else refreshScene();});
+    host.appendChild(el);
+  });
+  updateLensFoot();
+}
+function updateLensFoot(){
+  const on=Object.values(lensOn).filter(Boolean).length,tot=Object.keys(lensOn).length;
+  const vis=visibleItems().length;
+  document.getElementById('lensfoot').innerHTML=`${on}/${tot} lentes ativas · <b style="color:var(--txt-dim)">${vis}</b> itens visíveis neste instante`;
+}
+let hintTimer;function hideHint(){const h=document.getElementById('hint');h.style.opacity='0';}
+function togglePlay(force){
+  playing=(force!=null)?force:!playing;
+  document.getElementById('playbtn').textContent=playing?'❚❚':'▶';
+  if(playing&&currentT<=0.001){setScrub(0.001);applyTime(0.001);}
+}
+
+function boot(){
+  document.getElementById('loading').style.display='none';
+  buildTicks();buildLens();
+  applyTime(1.0);
+  // wiring
+  const scrub=document.getElementById('scrub');
+  scrub.addEventListener('input',()=>{togglePlay(false);applyTime(scrub.value/1000);updateLensFoot();});
+  document.querySelectorAll('#modegroup button').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+  document.getElementById('g-pend').addEventListener('change',e=>{gate.pending=e.target.checked;updateLensFoot();if(mode==='3d')updateLabels3D();else refreshScene();});
+  document.getElementById('g-seed').addEventListener('change',e=>{gate.seeded=e.target.checked;updateLensFoot();if(mode==='3d')updateLabels3D();else refreshScene();});
+  document.getElementById('d-close').addEventListener('click',()=>{selected=null;document.getElementById('detail').classList.add('hidden');if(mode!=='3d')refreshScene();});
+  document.getElementById('c2d').addEventListener('click',e=>{const id=hit2D(e.clientX,e.clientY);if(id)select(id);});
+  document.getElementById('playbtn').addEventListener('click',()=>togglePlay());
+  hintTimer=setTimeout(hideHint,6000);
+}
+
+/* ---------- inicialização com fallback ---------- */
+function start(){
+  const ok=(typeof THREE!=='undefined')&&initThree();
+  if(ok){boot();animate();}
+  else{
+    // sem WebGL → degrada direto para 2D, preservando tudo (Art.12/§8.3)
+    webglOK=false;document.getElementById('loading').style.display='none';
+    buildTicks();buildLens();currentT=1.0;
+    document.querySelectorAll('#modegroup button').forEach(b=>{b.disabled=(b.dataset.mode==='3d');});
+    setMode('2d');
+    const scrub=document.getElementById('scrub');
+    scrub.addEventListener('input',()=>{currentT=scrub.value/1000;
+      document.getElementById('epoch-name').textContent=STAGES.reduce((a,s)=>stageWeights(currentT)[s.id]>stageWeights(currentT)[a.id]?s:a,STAGES[0]).name;
+      updateLensFoot();refreshScene();});
+    document.querySelectorAll('#modegroup button').forEach(b=>b.addEventListener('click',()=>{if(!b.disabled)setMode(b.dataset.mode);}));
+    document.getElementById('g-pend').addEventListener('change',e=>{gate.pending=e.target.checked;updateLensFoot();refreshScene();});
+    document.getElementById('g-seed').addEventListener('change',e=>{gate.seeded=e.target.checked;updateLensFoot();refreshScene();});
+    document.getElementById('d-close').addEventListener('click',()=>{selected=null;document.getElementById('detail').classList.add('hidden');refreshScene();});
+    document.getElementById('c2d').addEventListener('click',e=>{const id=hit2D(e.clientX,e.clientY);if(id)select(id);});
+  }
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+</script>
+</body>
+</html>

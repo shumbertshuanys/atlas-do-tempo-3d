@@ -1,0 +1,2 @@
+# Migração e testes do banco (host-side).
+psycopg2-binary>=2.9,<3

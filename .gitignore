@@ -1,0 +1,24 @@
+# Estado local do banco (vive no volume Docker, não no git)
+*.pgdata/
+pgdata/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Editores / SO
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Saídas regeneráveis (os relatórios de referência em db/reports/ são versionados de propósito;
+# saídas ad-hoc fora de db/reports/ não precisam ir ao git)
+/tmp-out/
+
+# Claude Code — estado pessoal/máquina (não compartilhar)
+.claude/settings.local.json
+CLAUDE.local.md

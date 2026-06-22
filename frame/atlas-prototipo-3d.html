@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas do Tempo — protótipo 3D (cosmos navegável)</title>
+<style>
+  :root{
+    --abyss:#070b14; --panel:#0f1828ee; --panel-2:#16223699; --hair:#26354B; --hair-2:#1d2a3d;
+    --vellum:#ECE6D8; --dim:#A9B2C0; --faint:#73809a; --mid:#7E8BA3;
+    --fact:#5BBF9B; --interp:#E0A458; --estimate:#C77DA6; --review:#7E8BA3; --crit:#D9685F;
+    --lens-hist:#7FA8D9; --lens-geo:#C99A6A; --lens-quim:#9BD0C0; --lens-vida:#A6C97E; --lens-fis:#B69BD0;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--abyss);color:var(--vellum);font-family:var(--sans);font-size:15px;overflow:hidden;-webkit-font-smoothing:antialiased}
+  #app{position:fixed;inset:0;display:flex;flex-direction:column}
+
+  header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:10px clamp(12px,2.5vw,22px);z-index:6;background:linear-gradient(180deg,#070b14ee,#070b1400)}
+  .brand{margin-right:auto;min-width:0}
+  .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(16px,2.4vw,22px);line-height:1.05;margin:1px 0 0}
+  .lens{display:inline-flex;flex-wrap:wrap;background:#0f1828cc;border:1px solid var(--hair);border-radius:999px;padding:3px;gap:2px}
+  .lens .lab{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:0 7px;align-self:center}
+  .lens button{font:inherit;font-size:12px;color:var(--dim);background:transparent;border:0;padding:6px 11px;border-radius:999px;cursor:pointer;white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
+  .lens button .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .lens button[aria-pressed="true"]{background:var(--vellum);color:#10151c;font-weight:600}
+  button:focus-visible{outline:2px solid var(--vellum);outline-offset:2px}
+
+  /* time axis */
+  .axiswrap{padding:0 clamp(12px,2.5vw,22px) 6px;z-index:6}
+  .axisbox{background:#0b1322cc;border:1px solid var(--hair);border-radius:10px;padding:8px 12px 4px;backdrop-filter:blur(4px)}
+  .axislabel{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+  .axislabel .t{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .axislabel .read{font-family:var(--mono);font-size:12px;color:var(--vellum)}
+  svg.axis{display:block;width:100%;height:74px;touch-action:none;cursor:pointer}
+
+  /* stage */
+  .stage{position:relative;flex:1;min-height:0}
+  #gl{position:absolute;inset:0;display:block}
+  .hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);font-family:var(--mono);font-size:10.5px;color:#9fb0c6aa;background:#0b1322aa;border:1px solid var(--hair);border-radius:999px;padding:6px 13px;pointer-events:none;z-index:4;white-space:nowrap}
+  .tooltip{position:absolute;pointer-events:none;z-index:5;font-size:11.5px;background:#0b1322ee;border:1px solid var(--hair);border-radius:6px;padding:4px 8px;color:var(--vellum);transform:translate(-50%,-150%);white-space:nowrap;display:none}
+
+  /* period summary panel (corner) */
+  .summary{position:absolute;top:14px;left:14px;width:min(310px,72vw);max-height:calc(100% - 28px);overflow:auto;background:var(--panel);border:1px solid var(--hair);border-radius:12px;padding:14px;z-index:5;backdrop-filter:blur(6px)}
+  .summary h2{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin:0 0 2px}
+  .summary .scene{font-family:var(--serif);font-size:18px;line-height:1.1;margin:2px 0 2px}
+  .summary .era{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:10px}
+  .bread{font-family:var(--mono);font-size:11px;color:var(--dim);margin:2px 0 10px}
+  .bread .bt{color:var(--interp)} .bread .bl{color:var(--vellum)} .bread .bn{color:var(--faint)}
+  .sitem{display:flex;gap:9px;align-items:flex-start;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid var(--hair-2);padding:9px 2px;cursor:pointer;color:var(--dim);font:inherit;font-size:13px}
+  .sitem:hover{color:var(--vellum)}
+  .sitem .dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px}
+  .sitem.med .dot{opacity:.5}
+  .sitem .nm{line-height:1.3}
+  .sitem .sub{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .summary .tally{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:10px;border-top:1px solid var(--hair-2);padding-top:8px}
+  .summary .tally b{color:var(--interp)}
+  .summary .lensnote{font-size:11.5px;color:var(--faint);margin-top:8px}
+
+  /* dossier slide-in */
+  .dossier{position:absolute;top:0;right:0;height:100%;width:min(420px,92vw);background:var(--panel);border-left:1px solid var(--hair);padding:16px 18px 22px;z-index:7;overflow:auto;transform:translateX(102%);transition:transform .28s ease;backdrop-filter:blur(8px)}
+  .dossier.open{transform:none}
+  @media(prefers-reduced-motion:reduce){.dossier{transition:none}}
+  .dossier .x{position:absolute;top:12px;right:12px;background:#16223699;border:1px solid var(--hair);color:var(--dim);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:15px}
+  .doss-type{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .doss-title{font-family:var(--serif);font-size:21px;line-height:1.1;margin:3px 36px 4px 0}
+  .doss-id{font-family:var(--mono);font-size:10.5px;color:var(--faint);word-break:break-all}
+  .doss-claim{font-size:14.5px;margin:13px 0 8px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .chip{font-family:var(--mono);font-size:10.5px;border-radius:6px;padding:4px 8px;border:1px solid var(--hair);display:inline-flex;align-items:center;gap:6px;color:var(--dim)}
+  .swatch{width:9px;height:9px;border-radius:2px;flex:none}
+  .meta{font-size:12.5px;color:var(--dim);margin:8px 0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+  .meta dt{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding-top:1px}
+  .meta dd{margin:0}
+  .src{font-family:var(--mono);font-size:11.5px}.pend{color:var(--interp)}
+  .know{margin:12px 0;padding:10px 12px;border-left:3px solid var(--fact);background:#0e1a14;border-radius:0 8px 8px 0;font-size:12.5px}
+  .know b{color:var(--fact);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+  .warn{margin:10px 0;padding:10px 12px;border-left:3px solid var(--interp);background:#1c1609;border-radius:0 8px 8px 0;font-size:12.5px}
+  .warn b{color:var(--interp);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+  .gate{margin:10px 0;padding:10px 12px;border-left:3px solid var(--review);background:#141a24;border-radius:0 8px 8px 0;font-size:12.5px;color:var(--dim)}
+  .gate.crit{border-left-color:var(--crit);background:#1d1311}
+  .gate b{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px;color:var(--dim)}.gate.crit b{color:var(--crit)}
+  .teaser{font-size:13.5px;color:var(--dim);margin:12px 0}
+  .soon{margin-top:14px;border:1px dashed var(--hair);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--faint)}
+  .soon b{color:var(--interp);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px}
+  .cs{margin-top:14px;border:1px solid var(--hair);border-radius:8px;overflow:hidden}
+  .cs-h{padding:9px 12px;background:#0f1828;display:flex;align-items:center;gap:8px;font-size:12.5px}
+  .cs-status{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-left:auto}
+  .cs-side{padding:9px 12px;border-top:1px solid var(--hair);font-size:12.5px;display:flex;gap:10px}
+  .cs-w{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);border:1px solid var(--hair);border-radius:5px;padding:2px 5px;height:fit-content;white-space:nowrap;flex:none;margin-top:1px}
+  .cs-noeq{padding:9px 12px;border-top:1px solid var(--crit);background:#1d1311;font-size:12px;color:#e7b3ad}
+  .cs-noeq b{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:3px;color:var(--crit)}
+  .cs-note{padding:11px 12px;border-top:1px solid var(--hair);font-size:12.5px;color:var(--dim)}
+  .loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--faint);font-family:var(--mono);font-size:13px;z-index:8}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">
+      <span class="eyebrow">Atlas do Tempo · protótipo 3D · cosmos navegável (estilizado)</span>
+      <h1>Big Bang → hoje, num só lugar</h1>
+    </div>
+    <div class="lens" role="group" aria-label="Lente de domínio">
+      <span class="lab">Lente</span>
+      <button data-lens="todas" aria-pressed="true" onclick="setLens('todas')">Todas</button>
+      <button data-lens="fisica" aria-pressed="false" onclick="setLens('fisica')"><span class="d" style="color:var(--lens-fis)"></span>Física/cosmos</button>
+      <button data-lens="quimica" aria-pressed="false" onclick="setLens('quimica')"><span class="d" style="color:var(--lens-quim)"></span>Química</button>
+      <button data-lens="geologia" aria-pressed="false" onclick="setLens('geologia')"><span class="d" style="color:var(--lens-geo)"></span>Geologia</button>
+      <button data-lens="vida" aria-pressed="false" onclick="setLens('vida')"><span class="d" style="color:var(--lens-vida)"></span>Vida</button>
+      <button data-lens="historia" aria-pressed="false" onclick="setLens('historia')"><span class="d" style="color:var(--lens-hist)"></span>História</button>
+    </div>
+  </header>
+
+  <div class="axiswrap">
+    <div class="axisbox">
+      <div class="axislabel"><span class="t">Eixo do tempo — escala log · arraste o cursor</span><span class="read" id="read">—</span></div>
+      <svg class="axis" id="axis" viewBox="0 0 1000 74" preserveAspectRatio="none" role="img" aria-label="Eixo logarítmico do tempo, do Big Bang até hoje. Arraste o cursor para navegar."></svg>
+    </div>
+  </div>
+
+  <div class="stage">
+    <canvas id="gl"></canvas>
+    <div class="loading" id="loading">carregando o cosmos…</div>
+    <div class="tooltip" id="tip"></div>
+    <div class="hint" id="hint">arraste para girar · role para zoom · arraste o tempo acima para viajar</div>
+    <aside class="summary" id="summary" aria-live="polite"></aside>
+    <aside class="dossier" id="dossier" aria-live="polite"></aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============ DADOS ============ */
+const SCENES = {
+  bigbang:{id:"bigbang",title:"Big Bang",era:"~13,8 Ga",tBP:13.8e9,stage:"cosmic",domains:["fisica"],status:"context",
+    teaser:"O início do espaço, do tempo e da matéria, há ~13,8 bilhões de anos. Tudo o que existe começa a se expandir e esfriar.",doc:"futuro"},
+  galaxies:{id:"galaxies",title:"Primeiras galáxias e estrelas",era:"~13 Ga",tBP:13e9,stage:"cosmic",domains:["fisica","quimica"],status:"context",
+    teaser:"A gravidade reúne gás; nascem as primeiras estrelas e galáxias. Nas estrelas, a fusão forja os elementos químicos — a química do universo começa aqui.",doc:"futuro"},
+  sun:{id:"sun",title:"Formação do Sol e do Sistema Solar",era:"~4,6 Ga",tBP:4.6e9,stage:"cosmic",domains:["fisica"],status:"context",
+    teaser:"Uma nuvem de gás e poeira colapsa e forma o Sol e os planetas — incluindo a Terra, prestes a surgir.",doc:"futuro"},
+  goe:{id:"goe",title:"Grande Evento de Oxidação",era:"~2,4 Ga",tBP:2.4e9,stage:"earth",domains:["quimica","vida","clima","geologia"],status:"full",
+    teaser:"O oxigênio começa a se acumular na atmosfera da Terra — transformando a química do planeta e o rumo da vida.",doc:"Etapa 4E"},
+  kpg:{id:"kpg",title:"Extinção K-Pg",era:"~66 Ma",tBP:6.6e7,stage:"earth",domains:["geologia","vida","quimica","clima"],status:"full",
+    teaser:"Impacto de Chicxulub somado ao vulcanismo do Deccan: a extinção em massa do fim do Cretáceo, incluindo os dinossauros não-avianos.",doc:"Etapa 4G"},
+  s1789:{id:"s1789",title:"O mundo em 1789",era:"1789",tBP:237,stage:"earth",domains:["historia","quimica","fisica","geologia","vida"],status:"full",
+    teaser:"Revolução Francesa em simultaneidade global — ciência, impérios, Brasil colonial, escravidão e povos indígenas no mesmo instante.",doc:"Etapa 4D"}
+};
+const ANCHORS=[{tBP:13.8e9,sub:"13,8 Ga"},{tBP:4.54e9,sub:"4,5 Ga (Terra)"},{tBP:1e6,sub:"1 Ma"},{tBP:2026,sub:"ano 0"},{tBP:1,sub:"hoje"}];
+const BANDS=[{a:13.8e9,b:4.0e9,name:"cósmico"},{a:4.0e9,b:1.2e4,name:"tempo profundo"},{a:1.2e4,b:126,name:"história"},{a:126,b:1,name:"contemporâneo"}];
+const EARTH_FORM=4.54e9;
+
+const CT={"fato documentado":{c:"#5BBF9B"},"interpretação":{c:"#E0A458"},"estimativa":{c:"#C77DA6"},"inferência indireta":{c:"#C77DA6"},"inferência científica":{c:"#5BA8BF"},"proxy":{c:"#C77DA6"},"reconstrução modelada":{c:"#C77DA6"},"hipótese":{c:"#C77DA6"}};
+const CLAIMSETS={
+  "causas-revolucao-francesa":{tema:"Causas da Revolução Francesa",status:"controvérsia historiográfica",
+    sides:[["Crise fiscal-financeira do Estado.","peso alto"],["Tensões sociais e a sociedade de ordens.","peso médio-alto"],["Ideias iluministas.","peso médio"],["Crise de subsistência (preço do pão).","peso médio"]],noeq:null,nota:"Separar fatos datados das causas; exibir pesos, nunca eleger 'a' causa."},
+  "inconfidencia-interpretacoes":{tema:"Inconfidência Mineira — interpretações",status:"controvérsia historiográfica",
+    sides:[["Movimento separatista/independentista.","interpretação"],["Reação de elites à derrama.","interpretação"],["Projeto limitado, que não rompia com a escravidão.","interpretação"]],noeq:"Mitos que apagam o caráter elitista e escravista, ou usos heroicizantes acríticos, não são leitura legítima.",nota:"Nem mito heroico, nem irrelevância — interpretações lado a lado."},
+  "direitos-universais-limites":{tema:"Direitos universais de 1789 e seus limites",status:"interpretação consolidada",
+    sides:[["Proclamou direitos em linguagem universal.","fato"],["Na prática excluiu mulheres, escravizados e colônias.","fato documentado"]],noeq:"Negar as exclusões, ou tratá-las como detalhe, não é um 'lado'.",nota:"Universalidade proclamada × praticada — sem anular a importância do documento."},
+  "escravidao-centralidade-atlantica":{tema:"Centralidade econômica da escravidão",status:"debate sobre peso, não sobre moralidade",
+    sides:[["Estrutural para a economia atlântica.","peso alto"],["Ênfases que matizam o peso relativo.","peso a debater"]],noeq:"Naturalizar, minimizar ou relativizar moralmente a violência escravista está fora do debate.",nota:"O debate é sobre peso econômico; a agência das pessoas escravizadas é parte da cena."},
+  "iluminismo-limites":{tema:"Iluminismo — influência e limites",status:"interpretação historiográfica",
+    sides:[["Influência intelectual ampla.","interpretação"],["Limites e contradições.","interpretação"]],noeq:"Apresentar o Iluminismo como causa única/automática da Revolução não é leitura legítima.",nota:"Influência é claim com fonte, não nexo automático."},
+  "goe-ritmo-oxigenacao":{tema:"Ritmo da oxigenação no GOE",status:"debate científico (sobre ritmo, não sobre o fato)",
+    sides:[["Subida relativamente abrupta — um 'evento'.","interpretação"],["Subida gradual e oscilante ao longo de dezenas de milhões de anos.","interpretação"]],noeq:"Negar que o O₂ subiu — o fato do GOE — não é um lado do debate.",nota:"O debate é sobre ritmo e fases, não sobre se ocorreu."},
+  "goe-glaciacoes":{tema:"GOE e as glaciações huronianas",status:"hipótese em debate",
+    sides:[["A queda do metano (gás de efeito estufa) com a subida do O₂ teria disparado glaciações severas.","hipótese"],["A relação causal e o sincronismo permanecem incertos.","cautela"]],noeq:null,nota:"Relação plausível, mas não estabelecida — exibida como hipótese, não como fato."},
+  "k-pg-causa":{tema:"Causa da extinção K-Pg",status:"causa central consolidada + fator em debate",
+    sides:[["Impacto de Chicxulub — causa central, fortemente sustentada.","peso central"],["Vulcanismo do Deccan — fator contribuinte/agravante.","peso menor (debate)"]],noeq:"Tratar impacto e Deccan como explicações de peso igual é falsa equivalência: as fontes sustentam o impacto como gatilho central.",nota:"Não é 'meteoro × vulcão' em pé de igualdade — o impacto é central; o Deccan, contribuinte."},
+  "kpg-ritmo-extincao":{tema:"Ritmo da extinção K-Pg",status:"debate científico",
+    sides:[["Extinção abrupta, disparada pelo impacto.","interpretação"],["Declínio de alguns grupos já em curso antes, acelerado pelo impacto.","interpretação"]],noeq:null,nota:"Abrupto × declínio prévio — debate sobre ritmo, não sobre o gatilho."},
+  "kpg-acidificacao-oceanica":{tema:"Acidificação oceânica pós-impacto",status:"mecanismo em debate",
+    sides:[["A acidificação atingiu organismos calcificadores (parte do plâncton).","hipótese"],["Magnitude e mecanismo exatos seguem em estudo.","cautela"]],noeq:null,nota:"Direção plausível; magnitude e mecanismo ainda em pesquisa."}
+};
+const ITEMS_1789=[
+  // ——— história ———
+  {id:"evt:estados-gerais-1789",type:"Event",domain:"historia",layer:"Política",title:"Abertura dos Estados Gerais",lat:48.80,lng:2.12,place:"Versalhes",date:"5 de maio de 1789",claim:"Os Estados Gerais foram convocados e abertos em maio de 1789, em Versalhes.",claimType:"fato documentado",confidence:"alta",evidence:"documental",source:"Historiografia e arquivos (A/B)",srcPend:true,pub:"publicável",know:"A documentação institucional da monarquia e a historiografia datam a abertura em 5/5/1789."},
+  {id:"evt:queda-bastilha-1789",type:"Event",domain:"historia",layer:"Política",title:"Queda da Bastilha",lat:48.86,lng:2.35,place:"Paris",date:"14 de julho de 1789",claim:"Em 14 de julho de 1789 a fortaleza-prisão da Bastilha foi tomada em Paris.",claimType:"fato documentado",confidence:"alta",evidence:"documental",source:"Historiografia e arquivos (A/B)",srcPend:true,pub:"publicável",know:"Relatos contemporâneos e historiografia documentam o evento; a data é consenso."},
+  {id:"evt:posse-washington-1789",type:"Event",domain:"historia",layer:"Política",title:"Posse de Washington",lat:40.71,lng:-74.01,place:"Nova York",date:"30 de abril de 1789",claim:"George Washington foi empossado em 30/04/1789, na então capital, Nova York.",claimType:"fato documentado",confidence:"alta",evidence:"documental",source:"Arquivos e historiografia dos EUA (A/B)",srcPend:false,pub:"publicável",anachronism:"A capital em 1789 era Nova York; Washington, D.C. ainda não era a capital.",know:"Atas do governo e historiografia datam a posse; a localização corrige o anacronismo comum."},
+  {id:"concept:iluminismo",type:"Concept",domain:"historia",layer:"Cultura",title:"Iluminismo",lat:50.0,lng:8.0,place:"Europa (difuso)",date:"séc. XVII–XVIII",claim:"Movimento intelectual que influenciou as revoluções atlânticas.",claimType:"interpretação",confidence:"média",evidence:"documental",source:"Historiografia (A/B)",srcPend:false,pub:"publicável",claimset:"iluminismo-limites",know:"A influência é claim com fonte; por isso o núcleo é público e os limites vão ao ClaimSet."},
+  {id:"evt:declaracao-direitos-1789",type:"Event",domain:"historia",layer:"Política",title:"Declaração dos Direitos do Homem",lat:48.864,lng:2.349,place:"Paris",date:"26 de agosto de 1789",claim:"Em agosto de 1789 a Assembleia proclamou a Declaração dos Direitos do Homem.",claimType:"fato documentado",confidence:"alta",evidence:"documental",source:"Texto histórico; historiografia (A/B)",srcPend:false,pub:"mediado",gating:"a proclamação é fato; o item está em revisão pelo alcance 'universal' e seus limites",claimset:"direitos-universais-limites"},
+  {id:"evt:inconfidencia-mineira",type:"Event",domain:"historia",layer:"Brasil",title:"Inconfidência Mineira",lat:-20.38,lng:-43.50,place:"Capitania de Minas Gerais",date:"1789",claim:"Movimento de elites coloniais em Minas, em 1789, contra a pressão fiscal da Coroa.",claimType:"fato documentado",confidence:"alta",evidence:"documental",source:"Arquivo Nacional, BN, IBGE (A/B)",srcPend:false,pub:"mediado",gating:"tema sensível brasileiro — revisão editorial obrigatória (Leis 10.639/11.645)",claimset:"inconfidencia-interpretacoes"},
+  {id:"proc:trafico-atlantico",type:"Process",domain:"historia",layer:"África",title:"Tráfico atlântico",lat:8,lng:-25,place:"mundo atlântico",date:"ativo em 1789",claim:"O tráfico atlântico deslocava à força milhões de pessoas africanas; ativo em 1789.",claimType:"fato documentado",confidence:"alta",evidence:"documental",source:"Bases do tráfico e historiografia (A/B)",srcPend:false,pub:"mediado",gating:"tema crítico — Lei 10.639; revisão editorial obrigatória",claimset:"escravidao-centralidade-atlantica"},
+  {id:"state:china-qing-1789",type:"State",domain:"historia",layer:"Civilizações",title:"China Qing em 1789",lat:39.90,lng:116.40,place:"China Qing (pendente)",date:"1789",claim:"Em 1789 a China Qing era um dos maiores Estados e economias do mundo.",claimType:"interpretação",confidence:"alta",evidence:"documental",source:"Historiografia (A/B)",srcPend:false,pub:"mediado",gating:"revisão histórica (peso econômico em interpretação)"},
+  {id:"entity:povos-indigenas-brasil",type:"Entity",domain:"historia",layer:"Povos indígenas",title:"Povos indígenas nas Américas",lat:-10,lng:-52,place:"Américas",date:"1789",claim:"Povos indígenas eram presença viva e agente nas Américas em 1789.",claimType:"interpretação",confidence:"alta",evidence:"documental + tradição/registro oral",source:"Etno-historiografia, IPHAN, fontes indígenas (A/B)",srcPend:false,pub:"mediado",gating:"tema crítico — Lei 11.645; revisão obrigatória",anachronism:"Não apagar territórios indígenas sob fronteiras coloniais."},
+  // ——— química (semeado p/ demonstração) ———
+  {id:"chem:lavoisier-traite-1789",type:"Event",domain:"quimica",layer:"Ciência",title:"Tratado de química de Lavoisier",lat:48.85,lng:2.34,place:"Paris",date:"1789",claim:"Lavoisier publicou em 1789 obra que sistematizou a química moderna.",claimType:"fato documentado",confidence:"alta",evidence:"documental",source:"História da ciência (A/B)",srcPend:false,pub:"publicável",seeded:true,know:"A obra é datada de 1789 e amplamente documentada — a química também acontece em 1789."},
+  {id:"chem:atmosfera-1789",type:"State",domain:"quimica",layer:"Química",title:"Composição da atmosfera",global:true,seeded:true,place:"planetário (toda a Terra)",date:"1789",claim:"Em 1789 o ar já era cerca de 78% nitrogênio e 21% oxigênio — proporções essencialmente iguais às de hoje.",claimType:"fato documentado",confidence:"alta",evidence:"medição / consenso",source:"Química atmosférica (consenso)",srcPend:false,pub:"publicável",know:"As proporções de N₂ e O₂ são estáveis em escala de séculos; medições e consenso as confirmam."},
+  {id:"chem:co2-1789",type:"State",domain:"quimica",layer:"Química",title:"CO₂ atmosférico pré-industrial",global:true,seeded:true,place:"planetário",date:"1789",claim:"O CO₂ atmosférico era de cerca de 280 partes por milhão — nível pré-industrial, antes da queima em larga escala de combustíveis fósseis.",claimType:"estimativa",confidence:"alta",evidence:"inferência indireta (testemunhos de gelo)",source:"Paleoclima / registros de gelo",srcPend:true,pub:"publicável",know:"O valor não é medido diretamente em 1789: vem de bolhas de ar presas no gelo (proxy). Por isso é estimativa, não medição direta — exemplo de claim de outro tipo."},
+  // ——— física (semeado) ———
+  {id:"phys:terra-orbita-1789",type:"State",domain:"fisica",layer:"Física",title:"A Terra em sua órbita",global:true,seeded:true,place:"planetário / Sistema Solar",date:"1789",claim:"Em 1789 a Terra orbitava o Sol com inclinação axial de ~23,4°, o que produz as estações — a mesma mecânica de hoje.",claimType:"fato documentado",confidence:"alta",evidence:"mecânica orbital",source:"Astronomia (consenso)",srcPend:false,pub:"publicável",know:"Inclinação axial e órbita mudam em escalas de milênios; a configuração de 1789 é bem estabelecida."},
+  // ——— geologia (semeado) ———
+  {id:"geo:andes-1789",type:"State",domain:"geologia",layer:"Geologia",title:"Cordilheira dos Andes",lat:-20,lng:-67,seeded:true,place:"América do Sul",date:"1789 (soerguida ao longo de dezenas de Ma)",claim:"Em 1789 os Andes já eram uma cadeia madura, soerguida ao longo das dezenas de milhões de anos anteriores e ainda em soerguimento.",claimType:"fato documentado",confidence:"alta",evidence:"registro geológico",source:"Geologia (consenso)",srcPend:false,pub:"publicável",know:"O soerguimento andino é documentado pelo registro geológico; em 1789 a cordilheira já estava formada."},
+  {id:"geo:alpes-1789",type:"State",domain:"geologia",layer:"Geologia",title:"Os Alpes",lat:46.5,lng:8.5,seeded:true,place:"Europa",date:"1789",claim:"Os Alpes já existiam em 1789 — cadeia formada pela colisão entre as placas africana e euro-asiática.",claimType:"fato documentado",confidence:"alta",evidence:"registro geológico",source:"Geologia (consenso)",srcPend:false,pub:"publicável",know:"A orogênese alpina é bem documentada; a cordilheira está presente muito antes de 1789."},
+  // ——— vida (semeado) ———
+  {id:"life:grande-auk-1789",type:"Species",domain:"vida",layer:"Vida",title:"Arau-gigante (grande auk)",lat:58,lng:-20,seeded:true,place:"Atlântico Norte",date:"1789 (extinto em 1844)",claim:"Em 1789 o arau-gigante ainda vivia no Atlântico Norte; a espécie só seria extinta em 1844.",claimType:"fato documentado",confidence:"alta",evidence:"registro zoológico/histórico",source:"História natural (consenso)",srcPend:false,pub:"publicável",know:"A extinção do arau-gigante (1844) é documentada; logo, em 1789 a ave estava viva — biosfera hoje perdida."},
+  {id:"life:biosfera-1789",type:"State",domain:"vida",layer:"Vida",title:"A biosfera de 1789",global:true,seeded:true,place:"planetário",date:"1789",claim:"A biosfera de 1789 ainda não fora transformada pela industrialização; incluía espécies e ecossistemas hoje perdidos.",claimType:"interpretação",confidence:"média",evidence:"ecologia histórica",source:"Ecologia histórica",srcPend:false,pub:"publicável",know:"A composição exata é objeto de reconstrução; a afirmação geral (pré-industrial, com espécies hoje extintas) é apoiada pelo registro."}
+];
+
+// ——— GOE (~2,4 Ga) — fiel à Etapa 4E · tempo profundo: sem documentos, só proxies e reconstruções ———
+const ITEMS_GOE=[
+  {id:"proc:goe",type:"Process",domain:"quimica",layer:"Atmosfera",title:"Grande Evento de Oxidação",global:true,place:"planetário",date:"~2,4 Ga (faixa ~2,5–2,0 Ga)",claim:"Há ~2,4 bilhões de anos o oxigênio livre subiu significativamente na atmosfera, reorganizando atmosfera, oceanos e biosfera.",claimType:"inferência científica",confidence:"alta (consenso amplo)",evidence:"proxies geoquímicos",source:"NOAA Paleo, USGS, geociências (A/B)",srcPend:true,pub:"publicável",claimset:"goe-ritmo-oxigenacao",know:"Não há documentos: sabemos por proxies. A perda do fracionamento independente de massa do enxofre (S-MIF) e as formações ferríferas bandadas marcam a subida do O₂."},
+  {id:"proc:fotossintese-oxigenica",type:"Process",domain:"vida",layer:"Vida",title:"Fotossíntese oxigênica",global:true,place:"planetário",date:"~2,4 Ga (e antes)",claim:"A fotossíntese oxigênica, realizada por cianobactérias, foi a fonte do oxigênio que oxidou a Terra.",claimType:"inferência científica",confidence:"alta",evidence:"biomarcadores, estromatólitos",source:"PBDB, geociências (A/B)",srcPend:false,pub:"publicável",know:"Estromatólitos e biomarcadores sustentam a fotossíntese oxigênica como fonte do O₂ — a vida mudou o planeta."},
+  {id:"entity:cianobacterias",type:"Entity",domain:"vida",layer:"Vida",title:"Cianobactérias",global:true,place:"oceanos rasos",date:"~2,4 Ga",claim:"Microrganismos que produziram oxigênio por fotossíntese — agentes do GOE.",claimType:"inferência científica",confidence:"alta",evidence:"registro microfóssil/estromatólitos",source:"PBDB (A)",srcPend:false,pub:"publicável",know:"O registro de estromatólitos e microfósseis sustenta a presença e a atividade das cianobactérias."},
+  {id:"proc:deposicao-bif",type:"Process",domain:"geologia",layer:"Geologia",title:"Formações ferríferas bandadas (BIFs)",global:true,place:"bacias oceânicas (registro: Hamersley, Transvaal)",date:"~2,5–2,4 Ga",claim:"Camadas de ferro depositadas quando o oxigênio reagiu com o ferro dissolvido nos oceanos — o registro rochoso da oxigenação.",claimType:"proxy",confidence:"alta",evidence:"estratigrafia (BIFs)",source:"USGS, Macrostrat (A/B)",srcPend:true,pub:"publicável",know:"As BIFs são o registro rochoso direto da reação do O₂ com o ferro oceânico. As localidades atuais são janelas de evidência — não 'onde o planeta inteiro estava'."},
+  {id:"state:atmosfera-primitiva",type:"State",domain:"quimica",layer:"Atmosfera",title:"Atmosfera anóxica (pré-GOE)",global:true,place:"planetário",date:"antes de ~2,4 Ga",claim:"Antes do GOE, a atmosfera era praticamente sem oxigênio livre (anóxica).",claimType:"inferência científica",confidence:"alta",evidence:"S-MIF, minerais detríticos",source:"geociências (A/B)",srcPend:false,pub:"publicável",know:"A presença de minerais que não sobrevivem ao oxigênio (pirita, uraninita detríticas) e o S-MIF indicam ar sem O₂ livre."},
+  {id:"state:oceanos-ferruginosos",type:"State",domain:"quimica",layer:"Oceanos",title:"Oceanos ferruginosos",global:true,place:"planetário (reconstrução)",date:"~2,4 Ga",claim:"Os oceanos seriam ricos em ferro dissolvido antes/durante o GOE.",claimType:"reconstrução modelada",confidence:"média",evidence:"especiação de ferro (proxy)",source:"geoquímica (A/B)",srcPend:true,pub:"mediado",gating:"estado oceânico em reconstrução — em revisão científica; exibido como modelo, não fato cru"},
+  {id:"state:clima-goe",type:"State",domain:"clima",layer:"Clima",title:"Glaciações huronianas",global:true,place:"planetário",date:"~2,4–2,2 Ga",claim:"Houve glaciações severas na época; uma hipótese as liga à queda do metano com a subida do O₂.",claimType:"hipótese",confidence:"média",evidence:"diamictitos",source:"geociências (A/B)",srcPend:true,pub:"mediado",gating:"a relação causal (O₂ → queda do metano → glaciação) é hipótese em debate, não consenso",claimset:"goe-glaciacoes"},
+  {id:"state:paleogeografia-2-4ga",type:"State",domain:"geologia",layer:"Paleogeografia",title:"Paleogeografia de ~2,4 Ga",global:true,place:"planetário (muito incerto)",date:"~2,4 Ga",claim:"A configuração dos continentes há 2,4 Ga é muito incerta; o supercontinente Kenorland é hipótese.",claimType:"reconstrução modelada",confidence:"baixa",evidence:"paleomagnetismo (escasso)",source:"GPlates/EarthByte (A, CC BY)",srcPend:true,pub:"mediado",gating:"reconstrução modelada de baixa confiança — não há paleomapa confiável; Kenorland é hipótese",anachronism:"Não projetar continentes modernos nem supercontinentes de outras épocas (Rodínia, Pangeia) sobre 2,4 Ga. A rocha de hoje ≠ o lugar de então."}
+];
+
+// ——— K-Pg (~66 Ma) — fiel à Etapa 4G · cena híbrida: evento pontual + processos ———
+const ITEMS_KPG=[
+  {id:"evt:impacto-chicxulub",type:"Event",domain:"geologia",layer:"Astronomia/Geologia",title:"Impacto de Chicxulub",lat:21.3,lng:-89.5,caveat:true,place:"região de Chicxulub (posição em reconstrução)",date:"~66 Ma",claim:"Há ~66 milhões de anos um asteroide atingiu a região de Chicxulub, desencadeando a extinção K-Pg.",claimType:"inferência científica",confidence:"alta (consenso amplo)",evidence:"cratera, anomalia de irídio, esférulas, camada-limite",source:"USGS, PBDB, geociências (A/B)",srcPend:false,pub:"publicável",claimset:"k-pg-causa",anachronism:"'México' não existe em 66 Ma; a configuração continental era diferente. O marcador está em posição reconstruída/aproximada, não na geografia atual.",know:"A cratera enterrada de Chicxulub, a anomalia global de irídio (raro na crosta, comum em asteroides) e as esférulas na camada-limite K-Pg sustentam o impacto."},
+  {id:"proc:extincao-kpg",type:"Process",domain:"vida",layer:"Vida/extinções",title:"Extinção em massa K-Pg",global:true,place:"planetário",date:"~66 Ma",claim:"Uma extinção em massa eliminou os dinossauros não-avianos e cerca de três quartos das espécies, reorganizando a biosfera.",claimType:"inferência científica",confidence:"alta",evidence:"registro fóssil (camada-limite)",source:"PBDB (A)",srcPend:false,pub:"publicável",claimset:"kpg-ritmo-extincao",know:"O registro fóssil mostra a queda abrupta de muitos grupos no limite K-Pg."},
+  {id:"entity:dinossauros-nao-avianos",type:"Entity",domain:"vida",layer:"Vida",title:"Dinossauros não-avianos",global:true,place:"continentes",date:"até ~66 Ma",claim:"Os dinossauros não-avianos foram extintos no limite K-Pg.",claimType:"inferência científica",confidence:"alta",evidence:"registro fóssil",source:"PBDB (A)",srcPend:false,pub:"publicável",know:"Não há fósseis de dinossauros não-avianos acima da camada-limite K-Pg."},
+  {id:"entity:aves",type:"Entity",domain:"vida",layer:"Vida",title:"Aves — dinossauros que sobreviveram",global:true,place:"continentes",date:"~66 Ma em diante",claim:"As aves são dinossauros (terópodes) que sobreviveram ao limite K-Pg — a linhagem não desapareceu por completo.",claimType:"inferência científica",confidence:"alta",evidence:"filogenia, registro fóssil",source:"PBDB, geociências (A/B)",srcPend:false,pub:"publicável",know:"É incorreto dizer que 'todos os dinossauros morreram': as aves são dinossauros vivos. Esta é uma correção central da cena."},
+  {id:"concept:anomalia-iridio",type:"Concept",domain:"quimica",layer:"Geoquímica",title:"Anomalia de irídio",global:true,place:"camada-limite global",date:"~66 Ma",claim:"Uma concentração anômala de irídio marca a camada-limite K-Pg em todo o mundo — evidência do impacto.",claimType:"proxy",confidence:"alta",evidence:"geoquímica (irídio)",source:"USGS, geociências (A/B)",srcPend:false,pub:"publicável",know:"O irídio é raro na crosta terrestre e abundante em asteroides; o pico global na camada-limite aponta para uma fonte extraterrestre."},
+  {id:"proc:vulcanismo-deccan-traps",type:"Process",domain:"geologia",layer:"Tectônica/vulcanismo",title:"Vulcanismo do Deccan",global:true,place:"placa indiana (em outra latitude na época)",date:"~66 Ma (em curso)",claim:"O vulcanismo do Deccan estava ativo na época e é considerado fator contribuinte da crise — não a causa central.",claimType:"inferência científica",confidence:"média (peso em debate)",evidence:"registro vulcânico/datação",source:"USGS, geociências (A/B)",srcPend:false,pub:"mediado",gating:"o peso causal do Deccan frente ao impacto está em debate (ClaimSet) — o impacto é central; o Deccan, contribuinte; sem falsa equivalência",claimset:"k-pg-causa"},
+  {id:"state:clima-pos-impacto-kpg",type:"State",domain:"clima",layer:"Clima",title:"Inverno de impacto",global:true,place:"planetário",date:"após ~66 Ma",claim:"Poeira e aerossóis lançados pelo impacto bloquearam a luz solar, colapsando a fotossíntese por um período.",claimType:"inferência científica",confidence:"média",evidence:"modelagem + proxies",source:"geociências (A/B)",srcPend:true,pub:"mediado",gating:"a intensidade e a duração do inverno de impacto estão em faixa de incerteza (UncertaintyProfile)"},
+  {id:"state:oceanos-pos-impacto-kpg",type:"State",domain:"quimica",layer:"Oceanos",title:"Acidificação oceânica pós-impacto",global:true,place:"oceanos",date:"após ~66 Ma",claim:"A acidificação dos oceanos após o impacto teria atingido organismos calcificadores, como parte do plâncton.",claimType:"hipótese",confidence:"média",evidence:"geoquímica marinha (proxy)",source:"geociências (A/B)",srcPend:true,pub:"mediado",gating:"mecanismo e magnitude da acidificação em revisão (ClaimSet)",claimset:"kpg-acidificacao-oceanica"},
+  {id:"state:paleogeografia-66ma",type:"State",domain:"geologia",layer:"Paleogeografia",title:"Paleogeografia de ~66 Ma",global:true,place:"planetário (reconstrução)",date:"~66 Ma",claim:"A configuração dos continentes há 66 Ma diferia da atual; a placa indiana estava em outra latitude.",claimType:"reconstrução modelada",confidence:"média",evidence:"paleomagnetismo, GPlates",source:"GPlates/EarthByte (A, CC BY)",srcPend:true,pub:"mediado",gating:"reconstrução modelada — configuração continental diferente da atual",anachronism:"Sem países; continentes em configuração diferente; a placa indiana estava longe da posição atual. Marcadores de evidência atual ≠ posição paleogeográfica."},
+  {id:"proc:recuperacao-ecologica-pos-kpg",type:"Process",domain:"vida",layer:"Vida",title:"Recuperação e ascensão dos mamíferos",global:true,place:"planetário",date:"após ~66 Ma",claim:"Após a extinção, a vida se recuperou e os mamíferos se diversificaram, abrindo caminho para a fauna posterior — inclusive, muito depois, os humanos.",claimType:"inferência científica",confidence:"alta",evidence:"registro fóssil",source:"PBDB (A)",srcPend:false,pub:"publicável",know:"O registro fóssil mostra a diversificação dos mamíferos após o limite K-Pg; o tempo exato de recuperação tem incerteza."}
+];
+
+// sistema de itens por cena
+const SCENE_ITEMS={s1789:ITEMS_1789, goe:ITEMS_GOE, kpg:ITEMS_KPG};
+const ALL_ITEMS=[...ITEMS_1789,...ITEMS_GOE,...ITEMS_KPG];
+const itemsForScene=id=>SCENE_ITEMS[id]||[];
+
+/* ============ ESTADO ============ */
+let LENS="todas", activeTBP=237, activeScene="s1789", stageMode="earth", SEL=null;
+
+/* ============ EIXO (HTML/SVG) ============ */
+const LMAX=Math.log10(13.8e9), AX={x0:24,x1:976,W:952,y:46};
+const lp=t=>Math.log10(Math.max(t,1));
+const macroX=t=>AX.x0+(1-lp(t)/LMAX)*AX.W;
+const xToTBP=x=>Math.pow(10, LMAX*(1-(Math.min(AX.x1,Math.max(AX.x0,x))-AX.x0)/AX.W));
+function fmtTime(t){ if(t>=1e9)return (t/1e9).toFixed(t>=1e10?1:2).replace('.',',')+" Ga"; if(t>=1e6)return Math.round(t/1e6)+" Ma"; if(t>=1e4)return Math.round(t/1e3)+" ka"; const y=2026-Math.round(t); return y>0?("ano "+y):("hoje"); }
+function sceneMatchesLens(id){return LENS==="todas"||SCENES[id].domains.includes(LENS);}
+
+function renderAxis(){
+  const s=document.getElementById('axis'); let h="";
+  const bf=["#11182a","#0e1626","#121a2c","#0e1828"];
+  BANDS.forEach((b,i)=>{const xa=macroX(b.a),xb=macroX(b.b);h+=`<rect x="${xa}" y="30" width="${Math.max(0,xb-xa)}" height="30" fill="${bf[i]}"/>`;h+=`<text x="${(xa+xb)/2}" y="26" font-size="8.5" text-anchor="middle" fill="#6E7A8C" font-family="monospace">${b.name}</text>`;});
+  h+=`<line x1="${AX.x0}" y1="${AX.y}" x2="${AX.x1}" y2="${AX.y}" stroke="#26354B" stroke-width="1.3"/>`;
+  ANCHORS.forEach(a=>{const x=macroX(a.tBP);h+=`<line x1="${x}" y1="${AX.y-4}" x2="${x}" y2="${AX.y+4}" stroke="#3a4d6b"/>`;h+=`<text x="${x}" y="${AX.y+16}" font-size="8.5" text-anchor="middle" fill="#6E7A8C" font-family="monospace">${a.sub}</text>`;});
+  // scene markers
+  Object.values(SCENES).forEach(sc=>{const x=macroX(sc.tBP);const on=sceneMatchesLens(sc.id);const act=activeScene===sc.id;
+    h+=`<g class="scmk" style="cursor:pointer;opacity:${on?1:.4}" data-id="${sc.id}">`;
+    h+=`<circle cx="${x}" cy="${AX.y}" r="${act?6:4.5}" fill="${act?'#ECE6D8':(on?'#9fb0c6':'#3a4d6b')}" stroke="#070b14" stroke-width="1.6"/>`;
+    h+=`<text x="${x}" y="14" font-size="8" text-anchor="middle" fill="#8b97aa" font-family="monospace">${sc.era}</text>`;
+    h+=`</g>`;});
+  // playhead
+  const px=macroX(activeTBP);
+  h+=`<line x1="${px}" y1="6" x2="${px}" y2="64" stroke="#E0A458" stroke-width="1.4"/>`;
+  h+=`<path d="M${px-5},6 L${px+5},6 L${px},13 Z" fill="#E0A458"/>`;
+  s.innerHTML=h;
+  document.getElementById('read').textContent=fmtTime(activeTBP);
+  s.querySelectorAll('.scmk').forEach(g=>g.addEventListener('pointerdown',e=>{e.stopPropagation();goToScene(g.dataset.id);}));
+}
+// drag playhead
+(function(){const s=document.getElementById('axis');let drag=false;
+  const toVB=cx=>{const r=s.getBoundingClientRect();return (cx-r.left)/r.width*1000;};
+  const set=cx=>{activeTBP=xToTBP(toVB(cx));updateFromTBP();};
+  s.addEventListener('pointerdown',e=>{drag=true;s.setPointerCapture(e.pointerId);set(e.clientX);});
+  s.addEventListener('pointermove',e=>{if(drag)set(e.clientX);});
+  s.addEventListener('pointerup',()=>drag=false);
+  s.addEventListener('pointercancel',()=>drag=false);
+})();
+
+function nearestSceneInStage(){
+  const cosmic=activeTBP>EARTH_FORM; let best=null,bd=1e9;
+  Object.values(SCENES).forEach(sc=>{const isC=sc.tBP>EARTH_FORM; if(isC!==cosmic)return; const d=Math.abs(lp(sc.tBP)-lp(activeTBP)); if(d<bd){bd=d;best=sc.id;}});
+  return best||(cosmic?"galaxies":"s1789");
+}
+function updateFromTBP(){
+  const cosmic=activeTBP>EARTH_FORM; const newMode=cosmic?"cosmic":"earth";
+  const ns=nearestSceneInStage();
+  const sceneChanged=ns!==activeScene; activeScene=ns;
+  if(newMode!==stageMode){stageMode=newMode; setStage(newMode);}
+  if(stageMode==="earth" && sceneChanged) buildEarthMarkers();
+  renderAxis(); renderSummary();
+}
+function goToScene(id){activeTBP=SCENES[id].tBP; updateFromTBP();}
+
+/* ============ THREE.JS ============ */
+let renderer,scene,camera,cosmicGroup,earthGroup,globe,markersGroup,raycaster,mouse,W,H;
+let cam={r:340,theta:0.7,phi:1.25,target:new THREE.Vector3(0,0,0)};
+const EARTH_CAM={r:330,min:200,max:620}, COSMIC_CAM={r:520,min:260,max:1400};
+const markerMeshes=[]; let hovered=null;
+
+function initGL(){
+  const canvas=document.getElementById('gl');
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  scene=new THREE.Scene(); scene.background=new THREE.Color(0x05080f);
+  camera=new THREE.PerspectiveCamera(55,1,0.1,8000);
+  const amb=new THREE.AmbientLight(0x8899bb,0.55); scene.add(amb);
+  const dir=new THREE.DirectionalLight(0xfff2dd,1.05); dir.position.set(-1,0.7,1.2); scene.add(dir);
+  buildCosmic(); buildEarth();
+  raycaster=new THREE.Raycaster(); mouse=new THREE.Vector2();
+  resize(); window.addEventListener('resize',resize);
+  bindControls();
+  setStage("earth"); buildEarthMarkers();
+  document.getElementById('loading').style.display="none";
+  animate();
+}
+
+function buildCosmic(){
+  cosmicGroup=new THREE.Group(); scene.add(cosmicGroup);
+  // background starfield
+  const N=2200,p=new Float32Array(N*3),c=new Float32Array(N*3);
+  for(let i=0;i<N;i++){const r=900+Math.random()*900,th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1);
+    p[i*3]=r*Math.sin(ph)*Math.cos(th);p[i*3+1]=r*Math.cos(ph);p[i*3+2]=r*Math.sin(ph)*Math.sin(th);
+    const t=0.6+Math.random()*0.4;c[i*3]=t;c[i*3+1]=t;c[i*3+2]=t*1.05;}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setAttribute('color',new THREE.BufferAttribute(c,3));
+  cosmicGroup.add(new THREE.Points(g,new THREE.PointsMaterial({size:2.2,vertexColors:true,transparent:true,opacity:0.9,depthWrite:false,blending:THREE.AdditiveBlending})));
+  // spiral galaxy
+  const M=7000,gp=new Float32Array(M*3),gc=new Float32Array(M*3);
+  const core=new THREE.Color(0xffd9a0),arm=new THREE.Color(0x8fb6ff);
+  for(let i=0;i<M;i++){const rr=Math.pow(Math.random(),1.7)*330;const armN=i%3;const base=armN*(Math.PI*2/3);
+    const ang=base+rr*0.018+ (Math.random()-0.5)*0.5; const scat=(Math.random()-0.5)*(28*(1-rr/360)+6);
+    gp[i*3]=Math.cos(ang)*rr+scat; gp[i*3+1]=(Math.random()-0.5)*(20*(1-rr/360)+2); gp[i*3+2]=Math.sin(ang)*rr+scat;
+    const m=core.clone().lerp(arm,Math.min(1,rr/300));gc[i*3]=m.r;gc[i*3+1]=m.g;gc[i*3+2]=m.b;}
+  const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.BufferAttribute(gp,3));gg.setAttribute('color',new THREE.BufferAttribute(gc,3));
+  const galaxy=new THREE.Points(gg,new THREE.PointsMaterial({size:2.6,vertexColors:true,transparent:true,opacity:0.92,depthWrite:false,blending:THREE.AdditiveBlending}));
+  galaxy.rotation.x=0.5; cosmicGroup.add(galaxy); cosmicGroup.userData.galaxy=galaxy;
+  // core glow sprite
+  const cv=document.createElement('canvas');cv.width=cv.height=128;const cx=cv.getContext('2d');
+  const grd=cx.createRadialGradient(64,64,0,64,64,64);grd.addColorStop(0,'rgba(255,235,200,0.95)');grd.addColorStop(0.3,'rgba(255,205,150,0.5)');grd.addColorStop(1,'rgba(255,200,150,0)');
+  cx.fillStyle=grd;cx.fillRect(0,0,128,128);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+  sp.scale.set(150,150,1);sp.rotation.x=0.5;cosmicGroup.add(sp);
+}
+
+function makeEarthTexture(){
+  const cv=document.createElement('canvas');cv.width=1024;cv.height=512;const x=cv.getContext('2d');
+  const oc=x.createLinearGradient(0,0,0,512);oc.addColorStop(0,'#0b2238');oc.addColorStop(0.5,'#103a55');oc.addColorStop(1,'#0b2238');
+  x.fillStyle=oc;x.fillRect(0,0,1024,512);
+  // soft, abstract landmasses (esquemático, não cartográfico)
+  x.save();x.globalAlpha=0.5;x.fillStyle='#2c4a3a';x.filter='blur(7px)';
+  const blobs=[[230,170,70,46],[300,210,46,40],[300,330,40,80],[540,150,46,30],[560,250,60,80],[760,180,90,55],[820,330,40,30],[470,150,30,20]];
+  blobs.forEach(b=>{x.beginPath();x.ellipse(b[0],b[1],b[2],b[3],0,0,Math.PI*2);x.fill();});
+  x.restore();
+  // graticule
+  x.strokeStyle='rgba(150,180,200,0.10)';x.lineWidth=1;
+  for(let lo=0;lo<=1024;lo+=1024/12){x.beginPath();x.moveTo(lo,0);x.lineTo(lo,512);x.stroke();}
+  for(let la=0;la<=512;la+=512/6){x.beginPath();x.moveTo(0,la);x.lineTo(1024,la);x.stroke();}
+  return new THREE.CanvasTexture(cv);
+}
+function buildEarth(){
+  earthGroup=new THREE.Group(); scene.add(earthGroup);
+  const R=120;
+  globe=new THREE.Mesh(new THREE.SphereGeometry(R,64,48),new THREE.MeshStandardMaterial({map:makeEarthTexture(),roughness:0.95,metalness:0.0}));
+  earthGroup.add(globe);
+  // atmosphere
+  const atm=new THREE.Mesh(new THREE.SphereGeometry(R*1.06,48,32),new THREE.MeshBasicMaterial({color:0x5aa6d8,transparent:true,opacity:0.10,side:THREE.BackSide,blending:THREE.AdditiveBlending}));
+  earthGroup.add(atm);
+  markersGroup=new THREE.Group(); earthGroup.add(markersGroup);
+  earthGroup.userData.R=R;
+}
+function latLng(lat,lng,r){const phi=(90-lat)*Math.PI/180,th=(lng+180)*Math.PI/180;
+  return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(th), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(th));}
+function buildEarthMarkers(){
+  if(!markersGroup)return;
+  for(let i=markersGroup.children.length-1;i>=0;i--)markersGroup.remove(markersGroup.children[i]);
+  markerMeshes.length=0;
+  const sc=SCENES[activeScene];
+  if(sc.status!=="full"){ // posicionada: sem marcadores reais (paleogeografia pendente)
+    return;
+  }
+  const R=earthGroup.userData.R;
+  const items=itemsForScene(activeScene).filter(it=> (LENS==="todas"||it.domain===LENS) && !it.global && it.lat!==undefined); // lente filtra por domínio; estados planetários não são pino (tempo profundo: só o impacto de Chicxulub é localizado)
+  items.forEach(it=>{const med=it.pub!=="publicável";const col=new THREE.Color(med?0x7E8BA3:(CT[it.claimType]?.c||0xffffff));
+    const m=new THREE.Mesh(new THREE.SphereGeometry(med?2.6:3.2,16,16),new THREE.MeshBasicMaterial({color:col,transparent:med,opacity:med?0.6:1}));
+    m.position.copy(latLng(it.lat,it.lng,R*1.02)); m.userData={id:it.id,base:med?2.6:3.2}; markersGroup.add(m); markerMeshes.push(m);
+    // little stem
+    const stem=new THREE.Mesh(new THREE.SphereGeometry(0.8,8,8),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:0.5}));
+    stem.position.copy(latLng(it.lat,it.lng,R*0.99)); markersGroup.add(stem);
+  });
+}
+
+function setStage(mode){
+  cosmicGroup.visible=(mode==="cosmic"); earthGroup.visible=(mode==="earth");
+  const lim=mode==="cosmic"?COSMIC_CAM:EARTH_CAM; cam.r=Math.min(lim.max,Math.max(lim.min,lim.r));
+  document.getElementById('hint').textContent = mode==="cosmic"
+    ? "cosmos — arraste para girar · role para zoom · arraste o tempo p/ chegar à Terra"
+    : "Terra — arraste para girar · role para zoom · clique num marcador";
+}
+
+/* controls (orbit manual, sem OrbitControls) */
+function bindControls(){
+  const el=renderer.domElement; let dragging=false,moved=0,lx=0,ly=0;
+  el.addEventListener('pointerdown',e=>{dragging=true;moved=0;lx=e.clientX;ly=e.clientY;el.setPointerCapture(e.pointerId);});
+  el.addEventListener('pointermove',e=>{
+    if(dragging){const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;moved+=Math.abs(dx)+Math.abs(dy);
+      cam.theta-=dx*0.005; cam.phi=Math.max(0.12,Math.min(Math.PI-0.12,cam.phi-dy*0.005));}
+    else hover(e);
+  });
+  el.addEventListener('pointerup',e=>{dragging=false; if(moved<6) click(e);});
+  el.addEventListener('pointercancel',()=>dragging=false);
+  el.addEventListener('wheel',e=>{e.preventDefault(); const lim=stageMode==="cosmic"?COSMIC_CAM:EARTH_CAM;
+    cam.r=Math.max(lim.min,Math.min(lim.max,cam.r*(1+e.deltaY*0.0012)));},{passive:false});
+}
+function pickPos(e){const r=renderer.domElement.getBoundingClientRect();mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(mouse,camera);}
+function click(e){ if(stageMode!=="earth")return; pickPos(e); const hit=raycaster.intersectObjects(markerMeshes,false)[0]; if(hit)select(hit.object.userData.id); }
+function hover(e){ const tip=document.getElementById('tip');
+  if(stageMode!=="earth"||!markerMeshes.length){tip.style.display="none";if(hovered){hovered.scale.set(1,1,1);hovered=null;}return;}
+  pickPos(e); const hit=raycaster.intersectObjects(markerMeshes,false)[0];
+  if(hovered&&(!hit||hit.object!==hovered)){hovered.scale.set(1,1,1);hovered=null;}
+  if(hit){hovered=hit.object;hovered.scale.set(1.6,1.6,1.6);const it=ALL_ITEMS.find(i=>i.id===hovered.userData.id);
+    const r=renderer.domElement.getBoundingClientRect();tip.style.left=(e.clientX-r.left)+"px";tip.style.top=(e.clientY-r.top)+"px";
+    tip.textContent=it.title+(it.pub!=="publicável"?" · em revisão":"");tip.style.display="block";renderer.domElement.style.cursor="pointer";}
+  else {tip.style.display="none";renderer.domElement.style.cursor="grab";}
+}
+
+function resize(){const st=document.querySelector('.stage');W=st.clientWidth;H=st.clientHeight;renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();}
+function animate(){requestAnimationFrame(animate);
+  if(earthGroup.visible)earthGroup.rotation.y+=0.0009;
+  if(cosmicGroup.visible){cosmicGroup.rotation.y+=0.0004; if(cosmicGroup.userData.galaxy)cosmicGroup.userData.galaxy.rotation.z+=0.0006;}
+  const sp=Math.sin(cam.phi); camera.position.set(cam.target.x+cam.r*sp*Math.cos(cam.theta),cam.target.y+cam.r*Math.cos(cam.phi),cam.target.z+cam.r*sp*Math.sin(cam.theta));
+  camera.lookAt(cam.target); renderer.render(scene,camera);
+}
+
+/* ============ PAINEL DE RESUMO ============ */
+function renderSummary(){
+  const el=document.getElementById('summary'); const sc=SCENES[activeScene];
+  const lensLabel = LENS==="todas" ? "todos os domínios" : LENS;
+  let items=[];
+  if(stageMode==="cosmic"){
+    items=Object.values(SCENES).filter(s=>s.stage==="cosmic" && (LENS==="todas"||s.domains.includes(LENS))).map(s=>({scene:s}));
+  } else if(sc.status==="full"){
+    items=itemsForScene(activeScene).filter(it=>LENS==="todas"||it.domain===LENS).map(it=>({item:it}));
+  }
+  // esqueleto: TEMPO › LENTE › EVENTOS
+  let h=`<h2>tempo › lente › eventos</h2><div class="scene">${sc.title}</div>
+    <div class="bread"><span class="bt">${fmtTime(activeTBP)}</span> › <span class="bl">${lensLabel}</span> › <span class="bn">${items.length} ${items.length===1?'evento':'eventos'}</span></div>`;
+  if(items.length){
+    let seeded=false;
+    items.forEach(o=>{
+      if(o.item){const it=o.item;const med=it.pub!=="publicável";const col=med?'#7E8BA3':(CT[it.claimType]?.c||'#fff'); if(it.seeded)seeded=true;
+        h+=`<button class="sitem ${med?'med':''}" onclick="select('${it.id}')"><span class="dot" style="background:${col}"></span><span class="nm">${it.title}${it.claimset?' ⚖':''}${med?' ▦':''}${it.global?' 🌐':''}<br><span class="sub">${it.domain} · ${med?'em revisão':it.claimType}${it.seeded?' · semeado':''}</span></span></button>`;
+      } else {const s=o.scene;
+        h+=`<button class="sitem" onclick="select('${s.id}')"><span class="dot" style="background:var(--lens-fis)"></span><span class="nm">${s.title}<br><span class="sub">${s.era} · ${s.domains.join('/')}</span></span></button>`;}
+    });
+    if(seeded)h+=`<div class="lensnote">🌐 = estado planetário (não é ponto no mapa) · "semeado" = item de outro domínio, adicionado para a demonstração — passaria pela mesma revisão do corpus.</div>`;
+  } else if(sc.status==="positioned"){
+    h+=`<div class="lensnote">Cena posicionada no eixo (${sc.doc}). Itens e dossiê completos no Incremento 2.</div>`;
+  } else {
+    h+=`<div class="lensnote"><b style="color:var(--vellum)">Nenhum evento de ${lensLabel} aqui.</b><br>Lente vazia é informação: ${LENS==="historia"?"neste instante não havia humanidade — a história não tem o que registrar":"este domínio não tem evento neste recorte do tempo"}.</div>`;
+  }
+  if(stageMode==="earth" && sc.status==="full" && activeScene!=="s1789"){
+    h+=`<div class="lensnote">Tempo profundo: <b>sem documentos</b> — tudo vem de proxies e reconstruções. O globo mostra a geografia da época em <b>reconstrução modelada</b>; a revisão científica completa segue pendente.</div>`;}
+  if(sc.status==="full"){const arr=itemsForScene(activeScene);const pub=arr.filter(i=>i.pub==="publicável").length,med=arr.filter(i=>i.pub!=="publicável").length;
+    h+=`<div class="tally">vista pública: <b style="color:var(--fact)">${pub}</b> como fato · <b>${med}</b> em revisão (mediados)</div>`;}
+  el.innerHTML=h;
+}
+
+/* ============ DOSSIÊ ============ */
+function chip(l,c){return `<span class="chip">${c?`<span class="swatch" style="background:${c}"></span>`:''}${l}</span>`;}
+function closeDoss(){SEL=null;document.getElementById('dossier').classList.remove('open');}
+function select(id){
+  SEL=id; const d=document.getElementById('dossier'); let h=`<button class="x" onclick="closeDoss()" aria-label="Fechar">✕</button>`;
+  if(SCENES[id]){const sc=SCENES[id];
+    h+=`<div class="doss-type">cena · ${sc.domains.join(' / ')}</div><div class="doss-title">${sc.title}</div><div class="doss-id">${sc.era} · ${sc.stage==='cosmic'?'cosmos':'Terra'}</div>
+      <div class="teaser">${sc.teaser}</div>
+      <div class="soon"><b>${sc.status==='context'?'Contexto cósmico':'Posicionado no eixo'}</b>${sc.stage==='cosmic'?'Estado cósmico — domínio de física/química, em grande parte reconstrução modelada e inferência científica. ':''}O dossiê completo (claims, fontes, ClaimSets${sc.stage==='earth'?', reconstrução paleogeográfica':''}) entra no <b>Incremento 2</b>${sc.doc!=='futuro'?', fiel à '+sc.doc:''}.</div>`;
+    d.innerHTML=h; d.classList.add('open'); return;
+  }
+  const it=ALL_ITEMS.find(i=>i.id===id); if(!it)return;
+  const med=it.pub!=="publicável";
+  if(med){const crit=/crítico/.test(it.gating||'');
+    h+=`<div class="doss-type">${it.type} · ${it.layer}</div><div class="doss-title">${it.title}</div><div class="doss-id">${it.id}</div>
+      <div class="gate ${crit?'crit':''}"><b>Em revisão — não exibido como fato</b>Este item existe na cena, mas não aparece como fato na vista pública.<br><br><span style="color:var(--dim)">Motivo:</span> ${it.gating}.</div>
+      <div class="cs-note" style="border:0;padding:10px 0 0">O sistema mostra que o item existe e por que está retido — em vez de apagá-lo. A liberação é trabalho de curadoria (revisão humana).</div>`;
+    d.innerHTML=h; d.classList.add('open'); return;
+  }
+  const ct=CT[it.claimType]||{c:'#fff'};
+  h+=`<div class="doss-type">${it.type} · ${it.layer}</div><div class="doss-title">${it.title}</div><div class="doss-id">${it.id}</div>
+    <div class="doss-claim">${it.claim}</div>
+    <div class="row">${chip('domínio: '+it.domain)}${chip(it.claimType,ct.c)}${chip('confiança: '+it.confidence)}${chip('evidência: '+it.evidence)}</div>
+    <dl class="meta"><dt>Quando</dt><dd>${it.date}</dd><dt>Onde</dt><dd>${it.place}</dd><dt>Fonte</dt><dd class="src">${it.source}${it.srcPend?' <span class="pend">◇ a confirmar</span>':''}</dd></dl>`;
+  if(it.seeded)h+=`<div class="gate"><b>Item semeado para a demonstração</b>Conteúdo de ${it.domain} adicionado para mostrar que cada instante é atravessado por todas as lentes. Passaria pela mesma revisão do corpus antes de publicação.${it.global?' &nbsp;🌐 estado planetário — não é um ponto no mapa.':''}</div>`;
+  if(it.know)h+=`<div class="know"><b>Como sabemos disso</b>${it.know}</div>`;
+  if(it.anachronism)h+=`<div class="warn"><b>Aviso de anacronismo</b>${it.anachronism}</div>`;
+  if(it.claimset){const cs=CLAIMSETS[it.claimset];h+=`<div class="cs"><div class="cs-h"><span style="font-size:14px">⚖</span><b style="font-weight:600">${cs.tema}</b><span class="cs-status">${cs.status}</span></div>`;
+    cs.sides.forEach(sd=>h+=`<div class="cs-side"><span class="cs-w">${sd[1]}</span><span>${sd[0]}</span></div>`);
+    if(cs.noeq)h+=`<div class="cs-noeq"><b>Sem equivalência</b>${cs.noeq}</div>`; h+=`<div class="cs-note">${cs.nota}</div></div>`;}
+  d.innerHTML=h; d.classList.add('open');
+}
+
+/* ============ LENTE ============ */
+function setLens(l){LENS=l;document.querySelectorAll('.lens button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lens===l));
+  if(stageMode==="earth")buildEarthMarkers(); renderAxis(); renderSummary();}
+
+/* ============ BOOT ============ */
+function boot(){ if(typeof THREE==="undefined"){document.getElementById('loading').textContent="falha ao carregar three.js (precisa de internet)";return;}
+  renderAxis(); renderSummary(); initGL(); }
+window.addEventListener('load',boot);
+</script>
+</body>
+</html>

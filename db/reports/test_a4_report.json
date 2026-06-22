@@ -1,0 +1,85 @@
+{
+  "total": 10,
+  "passaram": 10,
+  "falharam": 0,
+  "instantes_canonicos": {
+    "1789 (intervalo do ano)": [
+      -212.0,
+      -210.0
+    ],
+    "GOE ~2,4 Ga": [
+      -2400000000.0,
+      -2400000000.0
+    ],
+    "K-Pg ~66 Ma": [
+      -66000000.0,
+      -66000000.0
+    ],
+    "todo o eixo": [
+      -1000000000000.0,
+      1000000000000.0
+    ]
+  },
+  "testes": [
+    {
+      "id": "A4-T1",
+      "descricao": "público em [1789 (intervalo do ano)]: toda linha é corpus+approved+selo público+is_fact",
+      "passou": true,
+      "detalhe": "2 linhas; violações (não-fato vazado): 0."
+    },
+    {
+      "id": "A4-T2",
+      "descricao": "público em [GOE ~2,4 Ga]: toda linha é corpus+approved+selo público+is_fact",
+      "passou": true,
+      "detalhe": "3 linhas; violações (não-fato vazado): 0."
+    },
+    {
+      "id": "A4-T3",
+      "descricao": "público em [K-Pg ~66 Ma]: toda linha é corpus+approved+selo público+is_fact",
+      "passou": true,
+      "detalhe": "6 linhas; violações (não-fato vazado): 0."
+    },
+    {
+      "id": "A4-T4",
+      "descricao": "público em [todo o eixo]: toda linha é corpus+approved+selo público+is_fact",
+      "passou": true,
+      "detalhe": "11 linhas; violações (não-fato vazado): 0."
+    },
+    {
+      "id": "A4-T5",
+      "descricao": "total público no eixo inteiro é 11",
+      "passou": true,
+      "detalhe": "obtido: 11."
+    },
+    {
+      "id": "A4-T6",
+      "descricao": "público ⊂ curatorial-fato; diferença = corpus-approved com fonte-por-asset pendente",
+      "passou": true,
+      "detalhe": "público=11 ⊂ fato=15: True; |fato\\público|=4 == src-pendente=4: True."
+    },
+    {
+      "id": "A4-T7",
+      "descricao": "legal-review simultâneo existe na base mas não vaza (público e curatorial vazios)",
+      "passou": true,
+      "detalhe": "existe na base: 1; no público: 0; na curatorial: 0."
+    },
+    {
+      "id": "A4-T8",
+      "descricao": "seeded-demo simultâneo não vaza ao público; curadoria vê 'demonstração' (is_fact=false)",
+      "passou": true,
+      "detalhe": "no público: 0; na curatorial: 1 (selo=demonstração, is_fact=False)."
+    },
+    {
+      "id": "A4-T9",
+      "descricao": "interseção temporal 3Z não mistura regimes (1789 ⟂ tempo profundo)",
+      "passou": true,
+      "detalhe": "histórico no profundo: False; profundo no histórico: False."
+    },
+    {
+      "id": "A4-T10",
+      "descricao": "lente sem correspondência devolve conjunto vazio (D-A3.5)",
+      "passou": true,
+      "detalhe": "linhas: 0 (esperado 0)."
+    }
+  ]
+}

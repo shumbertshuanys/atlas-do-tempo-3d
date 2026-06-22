@@ -1,0 +1,29 @@
+# Atlas do Tempo 3D — banco local persistente
+# Postgres 16 + PostGIS 3.4 (mesma versão validada no sandbox: PG 16.x / PostGIS 3.4.x).
+# O volume nomeado 'atlas-pgdata' faz o estado SOBREVIVER entre sessões — é o que faltava no sandbox.
+#
+#   docker compose up -d        # sobe o banco
+#   docker compose down         # para (dados PERMANECEM no volume)
+#   docker compose down -v      # para e APAGA o volume (recomeça do zero)
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: atlas-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: atlas
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlas-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlas -d atlas"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  atlas-pgdata:
