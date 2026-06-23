@@ -19,6 +19,8 @@ venv/
 # saídas ad-hoc fora de db/reports/ não precisam ir ao git)
 /tmp-out/
 /out/
+# staging local para upload ao Claude.ai — cópias regeneráveis, fora do git
+/sync-claude-ai/
 
 # Claude Code — estado pessoal/máquina (não compartilhar)
 .claude/settings.local.json
