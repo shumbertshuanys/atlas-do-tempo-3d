@@ -48,48 +48,63 @@ Estas não são opiniões de estilo — são garantias estruturais já provadas 
 
 ---
 
-## 4. Estado atual (jun/2026) — Passo A4 concluído e verde
+## 4. Estado atual (jun/2026) — A4 verde + fatia de pendências A3 (D-A3.1/D-A3.2) concluída
 
 | Componente | Estado |
 |---|---|
-| Banco reificado (PostgreSQL 16 + PostGIS 3.4), 35 itens | ✅ reconstruível do DDL+migração |
+| Banco reificado (PostgreSQL 16 + PostGIS 3.4) — carga **42**: 35 itens · 3 ClaimSets · 7 membros | ✅ reconstruível do DDL+migração |
 | Camada de leitura gateada (função "O que acontecia no mundo?") | ✅ pública + curatorial |
-| `verify.py` — invariantes T1–T10 | ✅ 10/10 |
+| `verify.py` — invariantes T1–T10 (fixture T10 atualizado: 2→3, 4→7, 39→42; `soma_ok` intacto) | ✅ 10/10 |
 | `test_a4.py` — simultaneidade gateada A4-T1..T10 | ✅ 10/10 |
-| Frame 3D de produção (`frame/atlas-3d-frame-v1.html`) | ⚠️ **ainda usa espelho curado estático** (arrays `ITEMS`/`CLAIMSETS` hardcoded). **Não consome o banco ao vivo.** |
+| Frame 3D de produção (`frame/atlas-3d-frame-v1.html`) | ⚠️ **pendências reconciliadas, mas ainda NÃO ao vivo.** D-A3.1: ClaimSets frame == corpus (**3 == 3**); D-A3.2: lente `clima` + lookup tolerante de domínio. Ainda consome arrays `ITEMS`/`CLAIMSETS` **estáticos** — a API (D-A3.3..5) ainda não existe. |
 
 Sobre os artefatos em `db/`:
 
 - **`db/ddl/` e `db/read-layer/`** (esquema reificado + camada de leitura gateada) permanecem
   **byte-idênticos** ao sandbox e **não foram tocados** — é o miolo provado. **Não reescrever.**
-- **`db/migration/{migrate,verify,test_a4}.py`** receberam mudanças **só de portabilidade
-  (Windows/Linux)** — caminho de saída relativo ao script, criação automática de `out/`, e stdout
-  em UTF-8. **Sem alteração de lógica, semântica de teste ou esquema.**
+- **`db/migration/*.py`** receberam **(a)** portabilidade Windows/Linux (caminho de saída relativo
+  ao script, criação automática de `out/`, stdout UTF-8) e **(b)** a fatia D-A3.1: `migrate.py`
+  ganhou o ClaimSet `rev-francesa` (adição) e `verify.py` teve o **inventário** do fixture T10
+  atualizado (2→3 ClaimSets, 4→7 membros, 39→42 total). **A invariante `soma_ok` e as demais
+  asserções continuam intactas** — o guardrail protege a invariante, não o inventário.
 - **"Reconstruível do bootstrap" está PROVADO em Windows e Linux:**
-  `docker compose down -v && bash scripts/bootstrap.sh` fecha **10/10 + 10/10** em volume novo,
-  sem contornos manuais.
+  `docker compose down -v && bash scripts/bootstrap.sh` fecha **10/10 + 10/10** em volume novo
+  (carga `claimsets 3 · membros 7 · total 42 · itens 35`), sem contornos manuais.
+- **3 ClaimSets de host `pending` foram removidos do frame** (`direitos-limites`, `inconfidencia`,
+  `escravidao-central`) e enfileirados em `docs/roteiro/fila-revisao-claimsets-sensiveis.md`
+  (Trilha C / Playbook §5) — aguardam host aprovado para reintegração; conteúdo preservado no git.
 
 A regra do miolo continua valendo: não reescreva `db/ddl/`/`db/read-layer/` "para melhorar" sem
 antes rodar os testes e mantê-los verdes.
 
 ---
 
-## 5. Próxima missão: A3 (produção 3D) + ligação ao vivo do frame
+## 5. Próxima missão: API só-leitura → virada ao vivo (+ 3D em paralelo)
 
-Detalhe completo em `docs/passos/passo-a4-leitura-simultaneidade-v1_0.md` (seção "Próximos passos").
-Em resumo, **nesta ordem**:
+Plano completo em `docs/passos/passo-a3-plano-producao-3d-ligacao-ao-vivo-v1_0.md` (9 pontos);
+registro do que já foi executado em `docs/passos/registro-execucao-a3-pendencias.md`.
 
-1. **Bootstrap e confirme o verde** (`bash scripts/bootstrap.sh` → 10/10 + 10/10).
-2. **A3 — produção 3D real:** assets/shaders/cosmos bem representados sobre o frame (é o que tem
-   teto técnico no sandbox e por isso vive aqui no Claude Code).
-3. **Ligação ao vivo:** expor as funções de leitura (`core.f_simultaneidade_publica` /
-   `_curatorial`) por uma API mínima; o frame passa a **consumir a API** em vez dos arrays estáticos.
-4. **Antes de ligar:** o frame tem 6 ClaimSets autorados, mas o corpus só modela **2**
-   (`goe-ritmo`, `kpg-causa`). Modele os outros no corpus **ou** remova-os honestamente — não ligue
-   ao vivo com divergência silenciosa.
-5. **Adicione o domínio `clima`** ao frame: o banco tem 2 itens de clima, mas `DOMAINS` no frame
-   não inclui `clima` — `DOMAINS[it.dom]` quebraria. Adicionar a `DOMAINS`, `lensOn` e à UI de lentes.
-6. **Preserve o §8** (contrato visual) nos três renderizadores e o gating por construção.
+**Já feito (fatia de pendências A3):** D-A3.1 (reconciliação assimétrica dos ClaimSets — frame ==
+corpus, `rev-francesa` modelado, 3 sensíveis na fila) e D-A3.2 (lente `clima` + lookup tolerante).
+A divergência frame↔corpus que gateava a ligação **caiu**.
+
+**Próxima missão, nesta ordem:**
+
+1. **Bootstrap e confirme o verde** (`bash scripts/bootstrap.sh` → 10/10 + 10/10) antes de avançar (PG1).
+2. **API só-leitura (D-A3.3..5) — é a próxima frente:** criar `core.f_momento_publico`/`_curatorial`
+   **ao lado** das funções A4 (devolvendo o envelope `MomentResult` completo, cada campo derivado do
+   autoritativo) + testes A3-T*; depois um serviço fino só-leitura com 2 endpoints e 2 papéis de
+   banco (portão por *grant*, não `if` de runtime). É **adição**, não reescrita do miolo.
+3. **Virada ao vivo:** o frame passa a **consumir a API** em vez dos arrays estáticos. A classe de
+   divergência frame↔corpus se **extingue por construção** quando `review_status`/selo/`is_fact`
+   vêm sempre do autoritativo.
+4. **3D real (D-A3.6..8), em paralelo desde já contra o array via `SceneModel`:** modelo único +
+   overlay §8 renderer-agnóstico + 3 renderizadores (3D/2D/estático) + assets procedurais dos 3
+   regimes-âncora. A virada ao vivo troca **uma fonte só**.
+5. **Preserve o §8** (contrato visual) nos três renderizadores e o gating por construção em todo degrau.
+
+> As 3 sensíveis (`direitos-limites`, `inconfidencia`, `escravidao-central`) **não** se religam ao
+> vivo enquanto host for `pending`; seguem na fila de revisão (Trilha C). Não publicar sem host aprovado.
 
 ---
 
@@ -102,8 +117,8 @@ bash scripts/bootstrap.sh
 ```
 
 Isso: sobe Postgres+PostGIS num **volume persistente** (`atlas-pgdata` — resolve a perda de estado
-entre sessões), aplica o DDL e a camada de leitura, migra os 35 itens, e roda `verify.py` +
-`test_a4.py` (devem fechar **10/10 + 10/10**).
+entre sessões), aplica o DDL e a camada de leitura, migra a carga (`claimsets 3 · membros 7 ·
+total 42 · itens 35`), e roda `verify.py` + `test_a4.py` (devem fechar **10/10 + 10/10**).
 
 DSN fixo (casa com `docker-compose.yml`): `host=localhost port=5432 dbname=atlas user=atlas password=atlas`.
 
@@ -122,11 +137,11 @@ docker compose exec db psql -U atlas -d atlas \
 ```
 db/ddl/            esquema reificado (DDL) — 001-esquema-reificado.sql
 db/read-layer/     camada de leitura gateada — 010-leitura-simultaneidade.sql
-db/migration/      migrate.py (carga 35 itens) · verify.py (T1–T10) · test_a4.py (A4-T1..T10)
+db/migration/      migrate.py (carga 42: 35 itens · 3 ClaimSets · 7 membros) · verify.py (T1–T10) · test_a4.py (A4-T1..T10)
 db/reports/        relatórios verdes de referência (migration/verification/test_a4)
 frame/             frame 3D de produção (alvo da ligação) + protótipo original
 docs/governanca/   Constituição (v1_1) + Playbook (v1_3) + Prompt-mestre  ← LER antes de decidir
-docs/passos/       handoffs por passo (mais recente: passo-a4)
+docs/passos/       handoffs por passo (mais recente: passo-a3 + registro-execucao-a3-pendencias)
 docs/etapas/       corpus conceitual (Etapas 0–15 e sub-etapas)
 docs/roteiro/      estado-atual, pendências, divergências, decisões
 scripts/           bootstrap.sh
