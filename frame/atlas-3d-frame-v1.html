@@ -280,7 +280,13 @@ const DOMAINS = {
   historia:{nm:'História', c:'#6fd3ff'}, geologia:{nm:'Geologia', c:'#ff9e6d'},
   biologia:{nm:'Biologia', c:'#7ee6a8'}, cosmos:{nm:'Cosmos', c:'#c79bff'},
   quimica:{nm:'Química', c:'#ffd166'},  fisica:{nm:'Física', c:'#f4a3c6'},
+  clima:{nm:'Clima', c:'#79c8d4'},   // D-A3.2: banco tem 2 itens de clima (tempo profundo,
+                                     // hipótese/inferência-científica, em-revisão, gated).
 };
+/* Lookup tolerante de domínio (D-A3.2): domínio fora de DOMAINS NÃO quebra o frame —
+   recebe rótulo neutro com aviso. Necessário porque o banco ao vivo traz um conjunto
+   ABERTO de domínios (clima foi o 1º sintoma; agora mapeado). Substitui domOf(it.dom). */
+const domOf = d => DOMAINS[d] || {nm:(d||'—')+' · domínio não mapeado', c:'#9aa3ad', unmapped:true};
 
 /* ESTÁGIOS no eixo do tempo (datum 3Z; T0=2000 CE; t01 normalizado) */
 const STAGES = [
@@ -614,7 +620,7 @@ function animate(){
    renderizadores (Art.12: a degradação não muda o piso epistêmico).
    ===================================================================== */
 let mode='3d';
-let lensOn={historia:true,geologia:true,biologia:true,cosmos:true,quimica:true,fisica:true};
+let lensOn={historia:true,geologia:true,biologia:true,cosmos:true,quimica:true,fisica:true,clima:true};
 let gate={pending:true,seeded:true};   // fato é sempre on
 let selected=null;
 
@@ -623,7 +629,9 @@ function gatePass(it){
   if(it.rev==='pending' && !gate.pending) return false;
   return true;
 }
-const lensPass = it => lensOn[it.dom];
+// D-A3.2: domínio não mapeado em lensOn não some silenciosamente — fica visível
+// (com rótulo neutro via domOf). Conjunto aberto do banco ao vivo, sem quebrar.
+const lensPass = it => (it.dom in lensOn) ? lensOn[it.dom] : true;
 
 function visibleItems(){
   const w=stageWeights(currentT);
@@ -677,7 +685,7 @@ function updateLabels3D(){
 }
 function buildLabel(it){
   const k=ctOf(it.ct),el=document.createElement('div');
-  el.className='lab3d';el.setAttribute('data-id',it.id);el.style.color=DOMAINS[it.dom].c;
+  el.className='lab3d';el.setAttribute('data-id',it.id);el.style.color=domOf(it.dom).c;
   const seal=it.prov==='seeded-demo'?'<span class="seeddot"></span>':(it.rev==='pending'?'<span class="penddot"></span>':'');
   el.innerHTML=`<div class="pin" data-g="${k.g}" style="color:${k.c}">${seal}</div>
     <div class="flag"><span style="color:${k.c}">${k.g}</span> ${it.title} <span class="mini">· ${shortConf(it.conf)}</span></div>`;
@@ -697,7 +705,7 @@ function select(id){
   const k=ctOf(it.ct);
   document.getElementById('d-glyph').textContent=k.g;
   document.getElementById('d-glyph').style.color=k.c;
-  document.getElementById('d-kind').textContent=DOMAINS[it.dom].nm+' · '+k.n;
+  document.getElementById('d-kind').textContent=domOf(it.dom).nm+' · '+k.n;
   document.getElementById('d-title').textContent=it.title;
   document.getElementById('d-when').textContent=stageById(it.stage).disp+'  ·  '+stageById(it.stage).name;
   document.getElementById('d-body').innerHTML=renderDetailBody(it);
@@ -729,7 +737,7 @@ function renderDetailBody(it){
       <div class="meta-k">tipo</div><div class="meta-v"><span class="typechip" style="background:${k.c}22;color:${k.c}"><span class="g">${k.g}</span>${k.n}</span></div>
       <div class="meta-k">confiança</div><div class="meta-v"><span class="conf">${pips}</span> &nbsp;<b>${it.conf}</b></div>
       <div class="meta-k">incerteza</div><div class="meta-v">${uband}</div>
-      <div class="meta-k">domínio</div><div class="meta-v"><b>${DOMAINS[it.dom].nm}</b></div>
+      <div class="meta-k">domínio</div><div class="meta-v"><b>${domOf(it.dom).nm}</b></div>
       <div class="meta-k">lugar</div><div class="meta-v">${place}</div>
       <div class="meta-k">proveniência</div><div class="meta-v">${it.prov==='corpus'?'<b>corpus</b>':'<b style="color:var(--seed)">seeded-demo</b>'} · ${it.rev}</div>
     </div>
@@ -793,7 +801,7 @@ function draw2D(){
     const tw=x.measureText(lab).width;
     x.fillStyle='rgba(8,12,22,.82)';x.fillRect(px+10,py-9,tw+12,17);
     x.strokeStyle='rgba(120,150,200,.3)';x.lineWidth=1;x.strokeRect(px+10,py-9,tw+12,17);
-    x.fillStyle=DOMAINS[it.dom].c;x.fillText(lab,px+16,py+3);
+    x.fillStyle=domOf(it.dom).c;x.fillText(lab,px+16,py+3);
     c2dPins.push({x:px,y:py,r:10,id:it.id});
   });
   if(!vis.length){x.fillStyle='rgba(141,160,194,.6)';x.font='13px Inter,sans-serif';x.textAlign='center';
@@ -802,7 +810,7 @@ function draw2D(){
 function drawChip(x,px,py,it,k){
   const lab=k.g+' '+it.title;x.font='11px Inter,system-ui,sans-serif';const tw=x.measureText(lab).width;
   x.fillStyle='rgba(8,12,22,.82)';x.fillRect(px,py-2,tw+14,18);x.strokeStyle=k.c+'88';x.lineWidth=1;x.strokeRect(px,py-2,tw+14,18);
-  x.fillStyle=DOMAINS[it.dom].c;x.fillText(lab,px+7,py+11);
+  x.fillStyle=domOf(it.dom).c;x.fillText(lab,px+7,py+11);
 }
 function hit2D(mx,my){let best=null,bd=1e9;c2dPins.forEach(p=>{const d=Math.hypot(p.x-mx,p.y-my);if(d<p.r+6&&d<bd){bd=d;best=p.id;}});return best;}
 
@@ -826,7 +834,7 @@ function renderStatic(){
       const seal=it.prov==='seeded-demo'?`<span class="badge seed" style="font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(255,179,71,.16);color:#ffb347">seeded-demo</span>`
         :(it.rev==='pending'?`<span class="badge pend" style="font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(155,180,214,.16);color:#9bb4d6">em revisão</span>`:'');
       const pips=[0,1,2].map(i=>`<span style="display:inline-block;width:11px;height:4px;border-radius:2px;margin-right:2px;background:${i<confPips(it.conf)?'#37e0d8':'rgba(120,150,200,.2)'}"></span>`).join('');
-      html+=`<div class="scard" style="border-left-color:${DOMAINS[it.dom].c}">
+      html+=`<div class="scard" style="border-left-color:${domOf(it.dom).c}">
         <div class="sc-top">
           <span class="typechip" style="background:${k.c}22;color:${k.c}"><span class="g">${k.g}</span>${k.n}</span>
           ${seal}<span class="sc-when">${formatYear(it.u[0])} — ${formatYear(it.u[1])}</span>
@@ -836,7 +844,7 @@ function renderStatic(){
         <div class="sc-meta">
           <div class="row"><span class="k">confiança</span><span>${pips} ${it.conf}</span></div>
           <div class="row"><span class="k">incerteza</span><span>faixa ${formatYear(it.u[0])} a ${formatYear(it.u[1])} (nunca um ponto)</span></div>
-          <div class="row"><span class="k">domínio</span><span>${DOMAINS[it.dom].nm}</span></div>
+          <div class="row"><span class="k">domínio</span><span>${domOf(it.dom).nm}</span></div>
           <div class="row"><span class="k">lugar</span><span>${it.global?'global (sem ponto único)':(it.place||'—')}${it.recon?' · reconstrução (anacronismo)':''}</span></div>
           <div class="row"><span class="k">proveniência</span><span>${it.prov} · ${it.rev}</span></div>
           <div class="row"><span class="k">fonte</span><span>${it.src}${it.tier?' · tier '+it.tier:''}</span></div>
