@@ -280,8 +280,8 @@ obtido = {
 }
 esper = {
     "itens": 35, "approved": 23, "pending": 12, "legal_review": 0,
-    "seeded": 8, "corpus": 27, "claims_total": 39,
-    "claims_de_item": 35, "claims_membros": 4, "claimsets": 2,
+    "seeded": 8, "corpus": 27, "claims_total": 42,
+    "claims_de_item": 35, "claims_membros": 7, "claimsets": 3,
 }
 soma_ok = obtido["claims_total"] == obtido["claims_de_item"] + obtido["claims_membros"]
 reg("T10", "carga/3Z", "positivo",

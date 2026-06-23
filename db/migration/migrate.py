@@ -197,7 +197,9 @@ ITENS = [
    cs=-66.0*MA,ce=-60.0*MA,sc=-63.0*MA,stb="Ma",disp="após ~66 Ma",prec="Ma",unc="tempo de recuperação incerto"),
 ]
 
-# ClaimSets carregados como worked examples (claim-sobre-claims) — 2 conjuntos, 4 membros.
+# ClaimSets carregados como worked examples (claim-sobre-claims) — 3 conjuntos, 7 membros.
+# rev-francesa adicionado em D-A3.1 (host approved); direitos-limites/inconfidencia/
+# escravidao-central NÃO entram: hosts pending → fila de revisão (Trilha C, Playbook §5).
 CLAIMSETS = {
  "kpg-causa": dict(host="evt:impacto-chicxulub", tema="Causa dominante da extinção K-Pg",
    resolution="Peso assimétrico exibível; não há simetria visual entre lados de peso desigual; 'houve impacto' não é um lado em disputa.",
@@ -207,6 +209,11 @@ CLAIMSETS = {
    resolution="Debate sobre o RITMO, não sobre a ocorrência. Que o O₂ subiu não está em disputa.",
    members=[("Transição com pulsos/sobressaltos (whiffs e oscilações)",0.62,"a"),
             ("Subida essencialmente monotônica",0.38,"b")]),
+ "rev-francesa": dict(host="evt:estados-gerais-1789", tema="Causas da Revolução Francesa",
+   resolution="Causas plurais com pesos próximos — pluralidade não é equivalência forçada nem 'dois lados'.",
+   members=[("Crise fiscal e estrutura social do Antigo Regime",0.70,"estrutural"),
+            ("Circulação de ideias iluministas",0.55,"ideias"),
+            ("Conjuntura econômica imediata (colheitas, preço do pão)",0.50,"conjuntural")]),
 }
 
 # Arestas afirmativas (todas com proveniência — [N1] vale na carga; n1_rejected=0).
@@ -283,7 +290,7 @@ def main():
                        ("geom:"+it["id"],it["id"],it["lng"],it["lat"],is_paleo,is_recon,"3Z"))
             n_geom += 1
 
-    # claim_sets (claim-sobre-claims) + membros (4 claims-membro novos)
+    # claim_sets (claim-sobre-claims) + membros (7 claims-membro novos)
     for csid, cs in CLAIMSETS.items():
         node("cset:"+csid,"claim_set")
         cu.execute("INSERT INTO core.claim_set(id,subject_ref,tema,resolution) VALUES(%s,%s,%s,%s);",
