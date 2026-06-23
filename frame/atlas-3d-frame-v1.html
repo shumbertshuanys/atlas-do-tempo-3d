@@ -341,13 +341,13 @@ const ITEMS = [
    ct:'fato-documentado', conf:'alta', u:[-210.6,-210.4], prov:'corpus', rev:'approved', lat:48.853, lng:2.369, place:'Paris', src:'Arquivos históricos (A)', tier:'A'},
   {id:'evt:declaracao-direitos-1789', stage:'s1789', dom:'historia', title:'Declaração dos Direitos do Homem',
    claim:'Agosto de 1789: a Assembleia proclama direitos universais — cuja extensão real era limitada à época.',
-   ct:'fato-documentado', conf:'alta', u:[-210.5,-210.3], prov:'corpus', rev:'approved', lat:48.86, lng:2.34, place:'Paris', src:'Arquivos históricos (A)', tier:'A', claimset:'direitos-limites'},
+   ct:'fato-documentado', conf:'alta', u:[-210.5,-210.3], prov:'corpus', rev:'pending', lat:48.86, lng:2.34, place:'Paris', src:'Arquivos históricos (A)', tier:'A'},
   {id:'proc:trafico-atlantico', stage:'s1789', dom:'historia', title:'Tráfico atlântico de escravizados',
    claim:'Em 1789 o tráfico transatlântico está em alta intensidade — pano de fundo material do período, e não nota de rodapé.',
-   ct:'fato-documentado', conf:'alta', u:[-212,-209], prov:'corpus', rev:'pending', lat:6.0, lng:-1.5, place:'Costa da África Ocidental', src:'Bases historiográficas (A)', tier:'A', claimset:'escravidao-central'},
+   ct:'fato-documentado', conf:'alta', u:[-212,-209], prov:'corpus', rev:'pending', lat:6.0, lng:-1.5, place:'Costa da África Ocidental', src:'Bases historiográficas (A)', tier:'A'},
   {id:'evt:inconfidencia-mineira', stage:'s1789', dom:'historia', title:'Inconfidência Mineira',
    claim:'1789, Minas Gerais: movimento de elite colonial contra a Coroa portuguesa; suas leituras divergem.',
-   ct:'interpretação', conf:'média', u:[-211.2,-210.8], prov:'corpus', rev:'pending', lat:-21.13, lng:-43.42, place:'Vila Rica (Ouro Preto)', src:'Historiografia brasileira (A/B)', tier:'B', claimset:'inconfidencia'},
+   ct:'interpretação', conf:'média', u:[-211.2,-210.8], prov:'corpus', rev:'pending', lat:-21.13, lng:-43.42, place:'Vila Rica (Ouro Preto)', src:'Historiografia brasileira (A/B)', tier:'B'},
 
   {id:'chem:lavoisier-traite-1789', stage:'s1789', dom:'quimica', title:'Tratado de Lavoisier (1789)',
    claim:'Publicação do "Traité élémentaire de chimie" — marco da química moderna. Item de demonstração.',
@@ -374,15 +374,11 @@ const CLAIMSETS = {
   'rev-francesa':{tema:'Causas da Revolução Francesa', host:'evt:estados-gerais-1789',
     sides:[['Crise fiscal e estrutura social do Antigo Regime',0.70],['Circulação de ideias iluministas',0.55],['Conjuntura econômica imediata (colheitas, preço do pão)',0.50]],
     noeq:'Causas plurais com pesos próximos — pluralidade não é equivalência forçada nem "dois lados".'},
-  'direitos-limites':{tema:'Universalidade declarada × alcance real (1789)', host:'evt:declaracao-direitos-1789',
-    sides:[['Princípio universal como ruptura normativa',0.70],['Exclusões efetivas (mulheres, escravizados, não-proprietários)',0.70]],
-    noeq:'Ambos verdadeiros simultaneamente: o princípio e suas exclusões coexistem; um não "vence" o outro.'},
-  'inconfidencia':{tema:'Leituras da Inconfidência Mineira', host:'evt:inconfidencia-mineira',
-    sides:[['Movimento de elite por interesses locais',0.60],['Precursor de ideias de independência',0.45]],
-    noeq:'Interpretações historiográficas com pesos distintos, ambas sustentadas por evidência.'},
-  'escravidao-central':{tema:'Centralidade da escravidão no período', host:'proc:trafico-atlantico',
-    sides:[['Estrutura material central da economia atlântica',0.85]],
-    noeq:'Não é um "debate de dois lados": a centralidade é consenso; o que se evita é a marginalização do tema.'},
+  /* D-A3.1: direitos-limites, inconfidencia e escravidao-central removidos — seus hosts
+     (declaracao-direitos-1789, inconfidencia-mineira, trafico-atlantico) são PENDING no
+     corpus autoritativo, logo não podem ser worked-examples publicáveis. Foram para a
+     fila de revisão (Trilha C, Playbook §5): docs/roteiro/fila-revisao-claimsets-sensiveis.md.
+     Reintegrar ao frame quando o host for aprovado via pipeline. */
 };
 
 /* =====================================================================
