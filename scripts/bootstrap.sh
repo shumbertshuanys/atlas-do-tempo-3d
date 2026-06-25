@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Atlas do Tempo 3D — bootstrap reproduzível.
-# Sobe o banco persistente, aplica esquema + camada de leitura + envelope A3,
-# migra os 35 itens, e roda as suítes de teste.
-# Sucesso = verify.py 10/10 E test_a4.py 10/10 E test_a3.py 10/10.
+# Sobe o banco persistente, aplica esquema + camada de leitura + envelope A3 +
+# papéis de leitura, migra os 35 itens, e roda as suítes de teste.
+# Sucesso = verify 10/10 E test_a4 10/10 E test_a3 10/10 E test_a3_http 5/5.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."   # raiz do repo
@@ -20,10 +20,10 @@ if [ -z "$PY" ]; then
   else echo "ERRO: Python executável não encontrado (instale python3 ou python)"; exit 1; fi
 fi
 
-echo "==> (1/6) subindo Postgres + PostGIS (volume persistente atlas-pgdata)…"
+echo "==> (1/8) subindo Postgres + PostGIS (volume persistente atlas-pgdata)…"
 docker compose up -d
 
-echo "==> (2/6) aguardando o banco ficar pronto…"
+echo "==> (2/8) aguardando o banco ficar pronto…"
 # Checa prontidão via TCP (-h 127.0.0.1), não pelo socket: durante a 1ª init o
 # entrypoint sobe um servidor TEMPORÁRIO com listen_addresses='' (só socket) e
 # depois reinicia. O socket responderia cedo demais e o passo seguinte morreria
@@ -34,23 +34,27 @@ for i in $(seq 1 60); do
   if [ "$i" -eq 60 ]; then echo "ERRO: banco não respondeu em 60s"; exit 1; fi
 done
 
-echo "==> (3/6) aplicando DDL (esquema reificado)…"
+echo "==> (3/8) aplicando DDL (esquema reificado)…"
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/ddl/001-esquema-reificado.sql
 
-echo "==> (4/7) aplicando camada de leitura gateada…"
+echo "==> (4/8) aplicando camada de leitura gateada…"
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/read-layer/010-leitura-simultaneidade.sql
 
-echo "==> (5/7) aplicando envelope MomentResult (D-A3.3 — adição ao lado do A4)…"
+echo "==> (5/8) aplicando envelope MomentResult (D-A3.3 — adição ao lado do A4)…"
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/read-layer/011-momento-envelope.sql
 
-echo "==> (6/7) instalando deps Python e migrando 35 itens…"
+echo "==> (6/8) aplicando papéis de leitura (D-A3.5 — portão por grant)…"
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/roles/020-papeis-leitura.sql
+
+echo "==> (7/8) instalando deps Python e migrando 35 itens…"
 "$PY" -m pip install -q -r db/requirements.txt
 "$PY" db/migration/migrate.py
 
-echo "==> (7/7) verificando invariantes (T1–T10), simultaneidade A4 (A4-T1..T10) e envelope A3 (A3-T1..T10)…"
+echo "==> (8/8) verificando invariantes (T1–T10), simultaneidade A4 (A4-T1..T10), envelope A3 (A3-T1..T10) e portão/HTTP (A3-HTTP-1..5)…"
 "$PY" db/migration/verify.py
 "$PY" db/migration/test_a4.py
 "$PY" db/migration/test_a3.py
+"$PY" db/migration/test_a3_http.py
 
 echo ""
 echo "==> OK. Banco persistente pronto."

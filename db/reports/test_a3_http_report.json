@@ -1,0 +1,38 @@
+{
+  "total": 5,
+  "passaram": 5,
+  "falharam": 0,
+  "porta_teste": 8799,
+  "testes": [
+    {
+      "id": "A3-HTTP-1",
+      "descricao": "atlas_public NÃO pode executar f_momento_curatorial (portão por grant)",
+      "passou": true,
+      "detalhe": "permission denied (esperado): permission denied for function f_momento_curatorial"
+    },
+    {
+      "id": "A3-HTTP-2",
+      "descricao": "atlas_public executa f_momento_publico com sucesso (envelope)",
+      "passou": true,
+      "detalhe": "porta=publica, n_items=6"
+    },
+    {
+      "id": "A3-HTTP-3",
+      "descricao": "GET público → JSON com items[] §8; nenhum isFact=false",
+      "passou": true,
+      "detalhe": "status=200, n_items=6, faltas§8=nenhuma, isFact=false=nenhum."
+    },
+    {
+      "id": "A3-HTTP-4",
+      "descricao": "escrita HTTP → 405; serviço sem credencial de escrita no banco",
+      "passou": true,
+      "detalhe": "POST/PUT/DELETE=405/405/405 (esperado 405); INSERT negado (esperado): permission denied for table entity_node"
+    },
+    {
+      "id": "A3-HTTP-5",
+      "descricao": "curatorial sem token → 401; com token → envelope curatorial",
+      "passou": true,
+      "detalhe": "sem token=401 (esperado 401/403); com token=200, porta=curatorial."
+    }
+  ]
+}
