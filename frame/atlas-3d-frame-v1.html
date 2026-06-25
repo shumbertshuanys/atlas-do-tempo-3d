@@ -251,6 +251,7 @@
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="atlas-model.js"></script>
 <script>
 /* =====================================================================
    ATLAS DO TEMPO 3D — frame de produção (A3 · incremento 1)
@@ -264,128 +265,18 @@
         não-cromática, AnachronismNotice)
    ===================================================================== */
 
-/* TIPO epistêmico → cor + ícone redundante (cor nunca sozinha; §8.2) */
-const CT = {
-  'fato-documentado':      {c:'#6fd3ff', g:'▣', n:'fato documentado'},
-  'interpretação':         {c:'#c79bff', g:'◆', n:'interpretação'},
-  'inferência-científica': {c:'#7ee6a8', g:'△', n:'inferência científica'},
-  'proxy':                 {c:'#ffd166', g:'⊚', n:'proxy'},
-  'reconstrução-modelada': {c:'#ff9e6d', g:'◈', n:'reconstrução modelada'},
-  'estimativa':            {c:'#f4a3c6', g:'~', n:'estimativa'},
-  'hipótese':              {c:'#9bb4d6', g:'?', n:'hipótese'},
-};
-const ctOf = t => CT[t] || CT['hipótese'];
+/* MODELO PURO compartilhado (frame/atlas-model.js) — fonte ÚNICA do §8 (D-A3.7).
+   Vocabulário, STAGES, dados estáticos e PRODUTORES do overlay vêm do módulo;
+   o HTML apenas POSICIONA/DESENHA o resultado, nunca reconstrói o §8. */
+const M = window.AtlasModel;
+const { CT, ctOf, DOMAINS, domOf, STAGES, stageById,
+  ITEMS, CLAIMSETS, shortConf, confPips, formatYear, fmtScalar,
+  fromStaticArray, overlayFields,
+  overlayDetailHTML, overlayStaticCardHTML, overlay3DFlagHTML, overlay2DLabelText } = M;
 
-const DOMAINS = {
-  historia:{nm:'História', c:'#6fd3ff'}, geologia:{nm:'Geologia', c:'#ff9e6d'},
-  biologia:{nm:'Biologia', c:'#7ee6a8'}, cosmos:{nm:'Cosmos', c:'#c79bff'},
-  quimica:{nm:'Química', c:'#ffd166'},  fisica:{nm:'Física', c:'#f4a3c6'},
-  clima:{nm:'Clima', c:'#79c8d4'},   // D-A3.2: banco tem 2 itens de clima (tempo profundo,
-                                     // hipótese/inferência-científica, em-revisão, gated).
-};
-/* Lookup tolerante de domínio (D-A3.2): domínio fora de DOMAINS NÃO quebra o frame —
-   recebe rótulo neutro com aviso. Necessário porque o banco ao vivo traz um conjunto
-   ABERTO de domínios (clima foi o 1º sintoma; agora mapeado). Substitui domOf(it.dom). */
-const domOf = d => DOMAINS[d] || {nm:(d||'—')+' · domínio não mapeado', c:'#9aa3ad', unmapped:true};
-
-/* ESTÁGIOS no eixo do tempo (datum 3Z; T0=2000 CE; t01 normalizado) */
-const STAGES = [
-  {id:'bigbang', t01:0.00, name:'Big Bang & recombinação', disp:'~13,8 Ga', scalar:-13.8e9, regime:'1 · cósmico', cam:{r:46,ph:1.32,th:0.0}, kind:'cosmic'},
-  {id:'galaxies',t01:0.20, name:'Formação de galáxias',     disp:'~13 Ga',  scalar:-13.0e9, regime:'1 · cósmico', cam:{r:30,ph:1.15,th:0.7}, kind:'cosmic'},
-  {id:'sun',     t01:0.42, name:'Sol & disco protoplanetário', disp:'~4,6 Ga', scalar:-4.6e9, regime:'1 · cósmico', cam:{r:19,ph:1.05,th:1.6}, kind:'cosmic'},
-  {id:'earth',   t01:0.54, name:'Acreção da Terra',         disp:'~4,5 Ga',  scalar:-4.5e9, regime:'2 · geológico', cam:{r:6.2,ph:1.35,th:2.3}, kind:'earth'},
-  {id:'goe',     t01:0.70, name:'Grande Oxigenação (GOE)',  disp:'~2,4 Ga',  scalar:-2.4e9, regime:'2 · geológico', cam:{r:5.0,ph:1.30,th:3.5}, kind:'earth'},
-  {id:'kpg',     t01:0.90, name:'Extinção K-Pg',            disp:'~66 Ma',   scalar:-66e6,  regime:'2 · geológico', cam:{r:4.4,ph:1.42,th:4.6}, kind:'earth'},
-  {id:'s1789',   t01:1.00, name:'1789 — o presente histórico', disp:'1789 CE', scalar:-211, regime:'5 · histórico', cam:{r:4.0,ph:1.40,th:5.4}, kind:'earth'},
-];
-const stageById = id => STAGES.find(s=>s.id===id);
-
-/* DADOS — subconjunto curado consistente com o banco.
-   prov:'corpus'|'seeded-demo' · rev:'approved'|'pending' · u:[min,max] faixa */
-const ITEMS = [
-  {id:'rep:bigbang', stage:'bigbang', dom:'cosmos', title:'Recombinação & fundo cósmico',
-   claim:'Representação do desacoplamento da radiação ~380 mil anos após o início da expansão. Cena ilustrativa do regime cósmico — não um ponto-evento georreferenciado.',
-   ct:'reconstrução-modelada', conf:'média', u:[-13.81e9,-13.78e9], prov:'corpus', rev:'approved', global:true, src:'Cosmologia de consenso (representação)', tier:'B', repr:true},
-  {id:'rep:galaxies', stage:'galaxies', dom:'cosmos', title:'Primeiras galáxias',
-   claim:'Representação da montagem hierárquica de galáxias no universo jovem. Teaser do regime cósmico; o atlas ainda não reivindica objetos individuais aqui.',
-   ct:'reconstrução-modelada', conf:'média', u:[-13.4e9,-12.6e9], prov:'corpus', rev:'approved', global:true, src:'Astrofísica de consenso (representação)', tier:'B', repr:true},
-  {id:'rep:sun', stage:'sun', dom:'cosmos', title:'Sol e disco protoplanetário',
-   claim:'Representação da formação do Sol e do disco que origina os planetas. O disco é ilustrativo; a Terra ainda não é um corpo de dados próprio nesta cena.',
-   ct:'reconstrução-modelada', conf:'alta', u:[-4.62e9,-4.55e9], prov:'corpus', rev:'approved', global:true, src:'Ciência planetária de consenso (representação)', tier:'B', repr:true},
-
-  {id:'proc:goe', stage:'goe', dom:'geologia', title:'Grande Evento de Oxigenação',
-   claim:'Acúmulo de O₂ livre na atmosfera a partir de ~2,4 Ga, transformando a química de superfície da Terra.',
-   ct:'inferência-científica', conf:'alta', u:[-2.5e9,-2.2e9], prov:'corpus', rev:'approved', lat:-26, lng:28, place:'Cráton do Kaapvaal (registro)', recon:true, src:'PBDB, geociências', tier:'A', claimset:'goe-ritmo'},
-  {id:'proc:fotossintese-oxigenica', stage:'goe', dom:'biologia', title:'Fotossíntese oxigênica',
-   claim:'Cianobactérias passam a liberar O₂ como subproduto da fotossíntese — a fonte do oxigênio do GOE.',
-   ct:'inferência-científica', conf:'alta', u:[-2.7e9,-2.4e9], prov:'corpus', rev:'approved', global:true, src:'PBDB, geomicrobiologia', tier:'A'},
-  {id:'proc:deposicao-bif', stage:'goe', dom:'geologia', title:'Formações ferríferas bandadas (BIF)',
-   claim:'Bandas de óxido de ferro precipitam quando o O₂ encontra ferro dissolvido nos oceanos — um proxy do oxigênio crescente.',
-   ct:'proxy', conf:'alta', u:[-2.6e9,-2.3e9], prov:'corpus', rev:'approved', lat:-22, lng:119, place:'Hamersley (registro)', recon:true, src:'Registro litológico, geociências', tier:'A'},
-  {id:'state:atmosfera-primitiva', stage:'goe', dom:'quimica', title:'Atmosfera pré-GOE (anóxica)',
-   claim:'Antes do GOE a atmosfera era essencialmente sem O₂ livre; a transição é modelada a partir de proxies isotópicos.',
-   ct:'reconstrução-modelada', conf:'média', u:[-2.5e9,-2.3e9], prov:'corpus', rev:'pending', global:true, src:'Modelos geoquímicos', tier:'B'},
-
-  {id:'evt:impacto-chicxulub', stage:'kpg', dom:'geologia', title:'Impacto de Chicxulub',
-   claim:'Um asteroide de ~10 km atinge a região de Yucatán há ~66 Ma, marcando o limite K-Pg.',
-   ct:'inferência-científica', conf:'alta', u:[-66.05e6,-65.95e6], prov:'corpus', rev:'approved', lat:21.4, lng:-89.5, place:'Cratera de Chicxulub (janela de evidência atual)', recon:true, src:'USGS, PBDB, geociências', tier:'A', caveat:true, claimset:'kpg-causa'},
-  {id:'proc:extincao-kpg', stage:'kpg', dom:'biologia', title:'Extinção em massa K-Pg',
-   claim:'Cerca de 75% das espécies desaparecem, incluindo os dinossauros não-avianos.',
-   ct:'inferência-científica', conf:'alta', u:[-66.0e6,-65.8e6], prov:'corpus', rev:'approved', global:true, src:'PBDB, paleontologia', tier:'A'},
-  {id:'concept:anomalia-iridio', stage:'kpg', dom:'quimica', title:'Anomalia de irídio',
-   claim:'Camada global rica em irídio no limite K-Pg — assinatura geoquímica compatível com fonte extraterrestre.',
-   ct:'proxy', conf:'alta', u:[-66.0e6,-65.9e6], prov:'corpus', rev:'approved', global:true, src:'Alvarez et al. e replicações, geoquímica', tier:'A'},
-  {id:'proc:vulcanismo-deccan-traps', stage:'kpg', dom:'geologia', title:'Vulcanismo dos Deccan Traps',
-   claim:'Erupções maciças na Índia coincidem com o limite K-Pg; seu peso causal está em debate científico ativo.',
-   ct:'hipótese', conf:'média', u:[-66.4e6,-65.5e6], prov:'corpus', rev:'pending', lat:18.5, lng:73.8, place:'Planalto do Decão (registro)', recon:true, src:'USGS, geociências', tier:'A'},
-
-  {id:'evt:estados-gerais-1789', stage:'s1789', dom:'historia', title:'Convocação dos Estados Gerais',
-   claim:'Em maio de 1789 reúnem-se os Estados Gerais em Versalhes — abertura institucional da Revolução Francesa.',
-   ct:'fato-documentado', conf:'alta', u:[-211.1,-210.9], prov:'corpus', rev:'approved', lat:48.80, lng:2.12, place:'Versalhes', src:'Arquivos históricos (A)', tier:'A', claimset:'rev-francesa'},
-  {id:'evt:queda-bastilha-1789', stage:'s1789', dom:'historia', title:'Queda da Bastilha',
-   claim:'14 de julho de 1789: a tomada da Bastilha torna-se símbolo da Revolução.',
-   ct:'fato-documentado', conf:'alta', u:[-210.6,-210.4], prov:'corpus', rev:'approved', lat:48.853, lng:2.369, place:'Paris', src:'Arquivos históricos (A)', tier:'A'},
-  {id:'evt:declaracao-direitos-1789', stage:'s1789', dom:'historia', title:'Declaração dos Direitos do Homem',
-   claim:'Agosto de 1789: a Assembleia proclama direitos universais — cuja extensão real era limitada à época.',
-   ct:'fato-documentado', conf:'alta', u:[-210.5,-210.3], prov:'corpus', rev:'pending', lat:48.86, lng:2.34, place:'Paris', src:'Arquivos históricos (A)', tier:'A'},
-  {id:'proc:trafico-atlantico', stage:'s1789', dom:'historia', title:'Tráfico atlântico de escravizados',
-   claim:'Em 1789 o tráfico transatlântico está em alta intensidade — pano de fundo material do período, e não nota de rodapé.',
-   ct:'fato-documentado', conf:'alta', u:[-212,-209], prov:'corpus', rev:'pending', lat:6.0, lng:-1.5, place:'Costa da África Ocidental', src:'Bases historiográficas (A)', tier:'A'},
-  {id:'evt:inconfidencia-mineira', stage:'s1789', dom:'historia', title:'Inconfidência Mineira',
-   claim:'1789, Minas Gerais: movimento de elite colonial contra a Coroa portuguesa; suas leituras divergem.',
-   ct:'interpretação', conf:'média', u:[-211.2,-210.8], prov:'corpus', rev:'pending', lat:-21.13, lng:-43.42, place:'Vila Rica (Ouro Preto)', src:'Historiografia brasileira (A/B)', tier:'B'},
-
-  {id:'chem:lavoisier-traite-1789', stage:'s1789', dom:'quimica', title:'Tratado de Lavoisier (1789)',
-   claim:'Publicação do "Traité élémentaire de chimie" — marco da química moderna. Item de demonstração.',
-   ct:'fato-documentado', conf:'alta', u:[-211.1,-210.9], prov:'seeded-demo', rev:'approved', lat:48.85, lng:2.35, place:'Paris', src:'(demonstração — fonte não validada)', tier:null},
-  {id:'phys:terra-orbita-1789', stage:'s1789', dom:'fisica', title:'Mecânica celeste (estado em 1789)',
-   claim:'A Terra orbita o Sol conforme a mecânica newtoniana — estado do conhecimento físico no instante. Item de demonstração.',
-   ct:'interpretação', conf:'alta', u:[-212,-209], prov:'seeded-demo', rev:'approved', global:true, src:'(demonstração — fonte não validada)', tier:null},
-  {id:'geo:andes-1789', stage:'s1789', dom:'geologia', title:'Cordilheira dos Andes (em 1789)',
-   claim:'Os Andes já existem como orogênese ativa — escala geológica vista por um instante histórico. Item de demonstração.',
-   ct:'estimativa', conf:'média', u:[-213,-208], prov:'seeded-demo', rev:'approved', lat:-32, lng:-70, place:'Andes centrais', recon:false, src:'(demonstração — fonte não validada)', tier:null},
-  {id:'life:grande-auk-1789', stage:'s1789', dom:'biologia', title:'Arau-gigante ainda vivo (1789)',
-   claim:'Em 1789 o arau-gigante (Pinguinus impennis) ainda não estava extinto. Item de demonstração.',
-   ct:'estimativa', conf:'média', u:[-213,-208], prov:'seeded-demo', rev:'approved', lat:63, lng:-23, place:'Atlântico Norte', src:'(demonstração — fonte não validada)', tier:null},
-];
-
-/* CLAIMSETS — claim-sobre-claims, pesos assimétricos (§8.1) */
-const CLAIMSETS = {
-  'kpg-causa':{tema:'Causa dominante da extinção K-Pg', host:'evt:impacto-chicxulub',
-    sides:[['Impacto de Chicxulub como gatilho dominante',0.82],['Vulcanismo dos Deccan como agravante/co-fator',0.30]],
-    noeq:'O peso é exibível e assimétrico. Não há simetria visual entre lados de peso desigual; "houve impacto" não é um lado em disputa.'},
-  'goe-ritmo':{tema:'Ritmo da oxigenação (abrupto × gradual)', host:'proc:goe',
-    sides:[['Transição com pulsos/sobressaltos ("whiffs" e oscilações)',0.62],['Subida essencialmente monotônica',0.38]],
-    noeq:'Debate sobre o RITMO, não sobre a ocorrência. Que o O₂ subiu não está em disputa.'},
-  'rev-francesa':{tema:'Causas da Revolução Francesa', host:'evt:estados-gerais-1789',
-    sides:[['Crise fiscal e estrutura social do Antigo Regime',0.70],['Circulação de ideias iluministas',0.55],['Conjuntura econômica imediata (colheitas, preço do pão)',0.50]],
-    noeq:'Causas plurais com pesos próximos — pluralidade não é equivalência forçada nem "dois lados".'},
-  /* D-A3.1: direitos-limites, inconfidencia e escravidao-central removidos — seus hosts
-     (declaracao-direitos-1789, inconfidencia-mineira, trafico-atlantico) são PENDING no
-     corpus autoritativo, logo não podem ser worked-examples publicáveis. Foram para a
-     fila de revisão (Trilha C, Playbook §5): docs/roteiro/fila-revisao-claimsets-sensiveis.md.
-     Reintegrar ao frame quando o host for aprovado via pipeline. */
-};
+/* DADOS estáticos (ITEMS/CLAIMSETS) e os ClaimSets sensíveis enfileirados (D-A3.1)
+   migraram para frame/atlas-model.js — fonte única, reaproveitada pelo adaptador
+   fromStaticArray E (na virada) por fromEnvelope. Aqui nada de dados nem de §8. */
 
 /* =====================================================================
    THREE.JS — cena, shaders procedurais, gestão de estágios
@@ -580,12 +471,6 @@ function applyTime(t){
   refreshScene();
 }
 
-function fmtScalar(s){
-  if(s<=-1e9)return (s/1e9).toFixed(2).replace('.',',')+'e9 anos';
-  if(s<=-1e6)return (s/1e6).toFixed(1).replace('.',',')+'e6 anos';
-  return Math.round(s)+' anos rel. T0';
-}
-
 function onResize(){
   if(renderer){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   if(mode==='2d')draw2D();
@@ -624,43 +509,40 @@ let lensOn={historia:true,geologia:true,biologia:true,cosmos:true,quimica:true,f
 let gate={pending:true,seeded:true};   // fato é sempre on
 let selected=null;
 
-function gatePass(it){
-  if(it.prov==='seeded-demo' && !gate.seeded) return false;
-  if(it.rev==='pending' && !gate.pending) return false;
+/* SceneModel a partir do array estático (D-A3.7). porta='curatorial' enquanto a
+   FONTE é o array (mostra seeded/pending com selo). A virada (D-A3.virada) troca
+   ESTA linha por fromEnvelope + comutador de papel/endpoint — uma fonte só. */
+let SCENE = fromStaticArray(ITEMS, CLAIMSETS, {porta:'curatorial'});
+let sceneById = {}; SCENE.items.forEach(si=>{sceneById[si.itemId]=si;});
+
+function gatePass(si){
+  if(si.selo==='seeded-demo' && !gate.seeded) return false;
+  if(si.reviewStatus==='pending' && !gate.pending) return false;
   return true;
 }
 // D-A3.2: domínio não mapeado em lensOn não some silenciosamente — fica visível
 // (com rótulo neutro via domOf). Conjunto aberto do banco ao vivo, sem quebrar.
-const lensPass = it => (it.dom in lensOn) ? lensOn[it.dom] : true;
+const lensPass = si => (si.domain in lensOn) ? lensOn[si.domain] : true;
 
 function visibleItems(){
   const w=stageWeights(currentT);
   const live=new Set(STAGES.filter(s=>w[s.id]>0.12).map(s=>s.id));
-  return ITEMS.filter(it=>live.has(it.stage)&&lensPass(it)&&gatePass(it));
+  return SCENE.items.filter(si=>live.has(si.presentationStage)&&lensPass(si)&&gatePass(si));
 }
 
-/* posição 3D: lat/lng→esfera (raio ~2.05); global/cosmos→órbita por hash */
-function item3DPos(it){
-  if(it.lat!=null&&it.lng!=null){
-    const la=it.lat*Math.PI/180,lo=it.lng*Math.PI/180,R=2.05;
+/* posição 3D: displayPoint→esfera (raio ~2.05); global/cosmos→órbita por hash */
+function item3DPos(si){
+  if(si.displayPoint){
+    const la=si.displayPoint.lat*Math.PI/180,lo=si.displayPoint.lng*Math.PI/180,R=2.05;
     const spin=(stageGroups.earth&&stageGroups.earth.userData.earth)?stageGroups.earth.userData.earth.rotation.y:0;
     return new THREE.Vector3(R*Math.cos(la)*Math.cos(lo+spin),R*Math.sin(la),R*Math.cos(la)*Math.sin(lo+spin));
   }
-  let h=0;for(const ch of it.id)h=(h*31+ch.charCodeAt(0))%997;
-  const ang=h/997*Math.PI*2,rad=(stageById(it.stage).kind==='cosmic')?8:3.0;
+  let h=0;for(const ch of si.itemId)h=(h*31+ch.charCodeAt(0))%997;
+  const ang=h/997*Math.PI*2,rad=(stageById(si.presentationStage).kind==='cosmic')?8:3.0;
   return new THREE.Vector3(Math.cos(ang)*rad,((h%7)-3)*0.4,Math.sin(ang)*rad);
 }
 
-/* ---------- formatadores de tempo ---------- */
-function formatYear(sc){
-  const a=Math.abs(sc);
-  if(a>=1e9)return (sc/1e9).toFixed(2).replace('.',',')+' Ga';
-  if(a>=1e6)return (sc/1e6).toFixed(1).replace('.',',')+' Ma';
-  const ce=Math.round(2000+sc);
-  return ce>0?ce+' CE':(1-ce)+' BCE';
-}
-const shortConf=c=>({alta:'conf. alta','média':'conf. média',baixa:'conf. baixa'}[c]||c);
-const confPips=c=>({alta:3,'média':2,baixa:1}[c]||2);
+/* formatYear/shortConf/confPips/fmtScalar vêm do módulo (fonte única). */
 const cssEsc=s=>s.replace(/[^a-zA-Z0-9_-]/g,'\\$&');
 
 /* =====================================================================
@@ -669,27 +551,28 @@ const cssEsc=s=>s.replace(/[^a-zA-Z0-9_-]/g,'\\$&');
 function updateLabels3D(){
   const layer=document.getElementById('labels');
   const vis=visibleItems(),seen=new Set();
-  vis.forEach(it=>{
-    seen.add(it.id);
-    let el=layer.querySelector(`[data-id="${cssEsc(it.id)}"]`);
-    if(!el){el=buildLabel(it);layer.appendChild(el);}
-    const p=item3DPos(it).project(camera);
+  vis.forEach(si=>{
+    seen.add(si.itemId);
+    let el=layer.querySelector(`[data-id="${cssEsc(si.itemId)}"]`);
+    if(!el){el=buildLabel(si);layer.appendChild(el);}
+    const p=item3DPos(si).project(camera);
     if(p.z>1){el.style.display='none';return;}
     el.style.display='block';
     el.style.left=((p.x*0.5+0.5)*innerWidth)+'px';
     el.style.top=((-p.y*0.5+0.5)*innerHeight)+'px';
     el.style.zIndex=String(1000-Math.round((p.z+1)*200));
-    el.classList.toggle('sel',selected===it.id);
+    el.classList.toggle('sel',selected===si.itemId);
   });
   layer.querySelectorAll('.lab3d').forEach(el=>{if(!seen.has(el.getAttribute('data-id')))el.remove();});
 }
-function buildLabel(it){
-  const k=ctOf(it.ct),el=document.createElement('div');
-  el.className='lab3d';el.setAttribute('data-id',it.id);el.style.color=domOf(it.dom).c;
-  const seal=it.prov==='seeded-demo'?'<span class="seeddot"></span>':(it.rev==='pending'?'<span class="penddot"></span>':'');
-  el.innerHTML=`<div class="pin" data-g="${k.g}" style="color:${k.c}">${seal}</div>
-    <div class="flag"><span style="color:${k.c}">${k.g}</span> ${it.title} <span class="mini">· ${shortConf(it.conf)}</span></div>`;
-  el.addEventListener('click',e=>{e.stopPropagation();select(it.id);});
+function buildLabel(si){
+  const ov=overlayFields(si,SCENE.porta),el=document.createElement('div');
+  el.className='lab3d';el.setAttribute('data-id',si.itemId);el.style.color=domOf(si.domain).c;
+  const seal=ov.seals.includes('seeded-demo')?'<span class="seeddot"></span>':(ov.seals.includes('em-revisão')?'<span class="penddot"></span>':'');
+  // o §8 (glifo+título+conf+equivalente acessível) vem do PRODUTOR — não reconstruído aqui
+  el.innerHTML=`<div class="pin" data-g="${ov.typeLabel.glyph}" style="color:${ov.typeLabel.color}">${seal}</div>
+    <div class="flag">${overlay3DFlagHTML(ov,si)}</div>`;
+  el.addEventListener('click',e=>{e.stopPropagation();select(si.itemId);});
   return el;
 }
 
@@ -698,61 +581,20 @@ function buildLabel(it){
    ===================================================================== */
 function select(id){
   selected=id;
-  const it=ITEMS.find(x=>x.id===id);
+  const si=sceneById[id];
   const panel=document.getElementById('detail');
-  if(!it){panel.classList.add('hidden');return;}
+  if(!si){panel.classList.add('hidden');return;}
   panel.classList.remove('hidden');
-  const k=ctOf(it.ct);
-  document.getElementById('d-glyph').textContent=k.g;
-  document.getElementById('d-glyph').style.color=k.c;
-  document.getElementById('d-kind').textContent=domOf(it.dom).nm+' · '+k.n;
-  document.getElementById('d-title').textContent=it.title;
-  document.getElementById('d-when').textContent=stageById(it.stage).disp+'  ·  '+stageById(it.stage).name;
-  document.getElementById('d-body').innerHTML=renderDetailBody(it);
+  const ov=overlayFields(si,SCENE.porta),k=ov.typeLabel;
+  const stg=stageById(si.presentationStage)||{disp:si.displayTime||'',name:''};
+  document.getElementById('d-glyph').textContent=k.glyph;
+  document.getElementById('d-glyph').style.color=k.color;
+  document.getElementById('d-kind').textContent=domOf(si.domain).nm+' · '+k.name;
+  document.getElementById('d-title').textContent=si.title;
+  document.getElementById('d-when').textContent=(si.displayTime||stg.disp)+'  ·  '+stg.name;
+  // corpo §8 inteiro vem do PRODUTOR — o painel só o injeta (não reconstrói o §8)
+  document.getElementById('d-body').innerHTML=overlayDetailHTML(ov,si);
   if(mode!=='3d')highlightInRenderer();
-}
-
-function renderDetailBody(it){
-  const k=ctOf(it.ct);
-  const pips=[0,1,2].map(i=>`<span class="pip ${i<confPips(it.conf)?'on':''}"></span>`).join('');
-  const place=it.global?'global (sem ponto único)':(it.place||'—');
-  // incerteza SEMPRE como faixa
-  const uband=`<div class="uband">
-    <div class="bar"><div class="span" style="left:8%;right:8%"></div></div>
-    <div class="lbl"><span>${formatYear(it.u[0])}</span><span>${formatYear(it.u[1])}</span></div></div>`;
-  const tierCls=it.tier==='A'?'':(it.tier==='B'?'b':'demo');
-  const tierTxt=it.tier?('fonte tier '+it.tier):'sem tier (demonstração)';
-  let notices='';
-  if(it.recon||it.caveat){notices+=`<div class="notice anachro"><span class="ic">⟳</span>
-    <span><b>Aviso de anacronismo.</b> A posição mostrada é uma <b>reconstrução</b> sobre a base atual; ${it.caveat?'representa a janela de evidência conhecida, não a paleoposição exata.':'a paleogeografia da época difere da geografia de hoje.'}</span></div>`;}
-  if(it.prov==='seeded-demo'){notices+=`<div class="notice seedn"><span class="ic">◑</span>
-    <span><b>Item de demonstração (seeded-demo).</b> Fonte ainda não validada contra o corpus; <b>excluído do cluster público</b> (§9). Não é promovido a fato sem revisão.</span></div>`;}
-  if(it.rev==='pending'){notices+=`<div class="notice pendn"><span class="ic">◔</span>
-    <span><b>Em revisão (pending).</b> Exibido com rótulo; não circula no portão público até aprovação. Nunca aparece <i>como</i> fato consolidado.</span></div>`;}
-  if(it.repr){notices+=`<div class="notice pendn"><span class="ic">◇</span>
-    <span><b>Representação de cena.</b> Ilustra um regime (cósmico) — não é um ponto-evento georreferenciado nem reivindica objetos individuais.</span></div>`;}
-  const cset=it.claimset?renderClaimset(it.claimset):'';
-  return `<div class="det-claim">${it.claim}</div>
-    <div class="meta-grid">
-      <div class="meta-k">tipo</div><div class="meta-v"><span class="typechip" style="background:${k.c}22;color:${k.c}"><span class="g">${k.g}</span>${k.n}</span></div>
-      <div class="meta-k">confiança</div><div class="meta-v"><span class="conf">${pips}</span> &nbsp;<b>${it.conf}</b></div>
-      <div class="meta-k">incerteza</div><div class="meta-v">${uband}</div>
-      <div class="meta-k">domínio</div><div class="meta-v"><b>${domOf(it.dom).nm}</b></div>
-      <div class="meta-k">lugar</div><div class="meta-v">${place}</div>
-      <div class="meta-k">proveniência</div><div class="meta-v">${it.prov==='corpus'?'<b>corpus</b>':'<b style="color:var(--seed)">seeded-demo</b>'} · ${it.rev}</div>
-    </div>
-    <div class="src">fonte: ${it.src}<span class="tier ${tierCls}">${tierTxt}</span></div>
-    ${notices}${cset}`;
-}
-
-function renderClaimset(key){
-  const cs=CLAIMSETS[key];if(!cs)return '';
-  const max=Math.max(...cs.sides.map(s=>s[1]));
-  const sides=cs.sides.map(([stmt,w])=>`<div class="side"><div class="top">
-      <div class="wbar"><div class="wfill" style="width:${Math.round(w/max*100)}%"></div></div>
-      <div class="wnum">${w.toFixed(2)}</div></div><div class="stmt">${stmt}</div></div>`).join('');
-  return `<div class="cset"><div class="cset-h"><span class="lab">ClaimSet</span> ${cs.tema}</div>
-    ${sides}<div class="noeq"><span>⚖︎</span><span><b>Sem equivalência forçada.</b> ${cs.noeq}</span></div></div>`;
 }
 
 /* =====================================================================
@@ -780,37 +622,38 @@ function draw2D(){
 
   const vis=visibleItems();c2dPins=[];
   // itens globais/cósmicos: banda superior
-  const globals=vis.filter(it=>it.lat==null||it.lng==null);
+  const globals=vis.filter(si=>!si.displayPoint);
   let gx=left+6;const gy=top+14;
   if(globals.length){x.fillStyle='rgba(120,150,200,.5)';x.font='9px ui-monospace,monospace';x.fillText('globais / sem ponto:',left+6,gy-4);}
-  globals.forEach(it=>{const k=ctOf(it.ct);const w=x.measureText(it.title).width+30;
-    drawChip(x,gx,gy+4,it,k);c2dPins.push({x:gx+8,y:gy+12,r:13,id:it.id});gx+=w+10;if(gx>right-120){gx=left+6;}});
+  globals.forEach(si=>{const ov=overlayFields(si,SCENE.porta);const w=x.measureText(si.title).width+30;
+    drawChip(x,gx,gy+4,si,ov);c2dPins.push({x:gx+8,y:gy+12,r:13,id:si.itemId});gx+=w+10;if(gx>right-120){gx=left+6;}});
   // itens georreferenciados
-  vis.filter(it=>it.lat!=null&&it.lng!=null).forEach(it=>{
-    const px=left+(it.lng+180)/360*W,py=top+(90-it.lat)/180*H,k=ctOf(it.ct);
+  vis.filter(si=>si.displayPoint).forEach(si=>{
+    const ov=overlayFields(si,SCENE.porta),k=ov.typeLabel;
+    const px=left+(si.displayPoint.lng+180)/360*W,py=top+(90-si.displayPoint.lat)/180*H;
     // pin
-    x.beginPath();x.arc(px,py,6,0,Math.PI*2);x.fillStyle=k.c;x.fill();
+    x.beginPath();x.arc(px,py,6,0,Math.PI*2);x.fillStyle=k.color;x.fill();
     x.lineWidth=2;x.strokeStyle='#070a12';x.stroke();
     // glyph de tipo (redundância não-cromática)
-    x.fillStyle='#070a12';x.font='bold 8px ui-monospace,monospace';x.textAlign='center';x.fillText(k.g,px,py+3);x.textAlign='left';
+    x.fillStyle='#070a12';x.font='bold 8px ui-monospace,monospace';x.textAlign='center';x.fillText(k.glyph,px,py+3);x.textAlign='left';
     // selo seeded/pending
-    if(it.prov==='seeded-demo'||it.rev==='pending'){x.beginPath();x.arc(px+5,py-5,3.5,0,Math.PI*2);
-      x.fillStyle=it.prov==='seeded-demo'?'#ffb347':'#9bb4d6';x.fill();x.strokeStyle='#070a12';x.lineWidth=1.5;x.stroke();}
-    // rótulo: tipo + título + confiança (contrato §8 preservado)
-    const lab=k.g+' '+it.title;x.font='11px Inter,system-ui,sans-serif';
+    if(ov.seals.length){x.beginPath();x.arc(px+5,py-5,3.5,0,Math.PI*2);
+      x.fillStyle=ov.seals.includes('seeded-demo')?'#ffb347':'#9bb4d6';x.fill();x.strokeStyle='#070a12';x.lineWidth=1.5;x.stroke();}
+    // rótulo: tipo + título (contrato §8 — texto vem do PRODUTOR 2D)
+    const lab=overlay2DLabelText(ov,si);x.font='11px Inter,system-ui,sans-serif';
     const tw=x.measureText(lab).width;
     x.fillStyle='rgba(8,12,22,.82)';x.fillRect(px+10,py-9,tw+12,17);
     x.strokeStyle='rgba(120,150,200,.3)';x.lineWidth=1;x.strokeRect(px+10,py-9,tw+12,17);
-    x.fillStyle=domOf(it.dom).c;x.fillText(lab,px+16,py+3);
-    c2dPins.push({x:px,y:py,r:10,id:it.id});
+    x.fillStyle=domOf(si.domain).c;x.fillText(lab,px+16,py+3);
+    c2dPins.push({x:px,y:py,r:10,id:si.itemId});
   });
   if(!vis.length){x.fillStyle='rgba(141,160,194,.6)';x.font='13px Inter,sans-serif';x.textAlign='center';
     x.fillText('Nada conhecido neste instante por estas lentes — e isso é informação.',cv.width/2,top+H/2);x.textAlign='left';}
 }
-function drawChip(x,px,py,it,k){
-  const lab=k.g+' '+it.title;x.font='11px Inter,system-ui,sans-serif';const tw=x.measureText(lab).width;
-  x.fillStyle='rgba(8,12,22,.82)';x.fillRect(px,py-2,tw+14,18);x.strokeStyle=k.c+'88';x.lineWidth=1;x.strokeRect(px,py-2,tw+14,18);
-  x.fillStyle=domOf(it.dom).c;x.fillText(lab,px+7,py+11);
+function drawChip(x,px,py,si,ov){
+  const lab=overlay2DLabelText(ov,si);x.font='11px Inter,system-ui,sans-serif';const tw=x.measureText(lab).width;
+  x.fillStyle='rgba(8,12,22,.82)';x.fillRect(px,py-2,tw+14,18);x.strokeStyle=ov.typeLabel.color+'88';x.lineWidth=1;x.strokeRect(px,py-2,tw+14,18);
+  x.fillStyle=domOf(si.domain).c;x.fillText(lab,px+7,py+11);
 }
 function hit2D(mx,my){let best=null,bd=1e9;c2dPins.forEach(p=>{const d=Math.hypot(p.x-mx,p.y-my);if(d<p.r+6&&d<bd){bd=d;best=p.id;}});return best;}
 
@@ -825,32 +668,12 @@ function renderStatic(){
     <p>Modo estático — sem WebGL e sem canvas. O <b>piso epistêmico</b> (tipo, confiança, incerteza, atribuição, selos) sobrevive à degradação total (Art. 12 / §8.3).<br>
     Instante: <b>${dom.disp}</b> · regime ${dom.regime} · canonicalTimeScalar ≈ ${fmtScalar(dom.scalar)}.</p></div>`;
   if(!vis.length){html+=`<div class="scard" style="text-align:center;color:var(--txt-dim)">Nada conhecido neste instante por estas lentes — e isso é informação.</div>`;}
-  // agrupa por estágio vivo
+  // agrupa por estágio vivo — cada cartão §8 vem do PRODUTOR (não reconstruído aqui)
   const w=stageWeights(currentT);const live=STAGES.filter(s=>w[s.id]>0.12);
   live.forEach(stg=>{
-    const its=vis.filter(it=>it.stage===stg.id);if(!its.length)return;
+    const its=vis.filter(si=>si.presentationStage===stg.id);if(!its.length)return;
     html+=`<div class="sgroup-h">${stg.disp} · ${stg.name}</div>`;
-    its.forEach(it=>{const k=ctOf(it.ct);
-      const seal=it.prov==='seeded-demo'?`<span class="badge seed" style="font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(255,179,71,.16);color:#ffb347">seeded-demo</span>`
-        :(it.rev==='pending'?`<span class="badge pend" style="font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(155,180,214,.16);color:#9bb4d6">em revisão</span>`:'');
-      const pips=[0,1,2].map(i=>`<span style="display:inline-block;width:11px;height:4px;border-radius:2px;margin-right:2px;background:${i<confPips(it.conf)?'#37e0d8':'rgba(120,150,200,.2)'}"></span>`).join('');
-      html+=`<div class="scard" style="border-left-color:${domOf(it.dom).c}">
-        <div class="sc-top">
-          <span class="typechip" style="background:${k.c}22;color:${k.c}"><span class="g">${k.g}</span>${k.n}</span>
-          ${seal}<span class="sc-when">${formatYear(it.u[0])} — ${formatYear(it.u[1])}</span>
-        </div>
-        <div class="sc-title">${it.title}</div>
-        <div class="sc-claim">${it.claim}</div>
-        <div class="sc-meta">
-          <div class="row"><span class="k">confiança</span><span>${pips} ${it.conf}</span></div>
-          <div class="row"><span class="k">incerteza</span><span>faixa ${formatYear(it.u[0])} a ${formatYear(it.u[1])} (nunca um ponto)</span></div>
-          <div class="row"><span class="k">domínio</span><span>${domOf(it.dom).nm}</span></div>
-          <div class="row"><span class="k">lugar</span><span>${it.global?'global (sem ponto único)':(it.place||'—')}${it.recon?' · reconstrução (anacronismo)':''}</span></div>
-          <div class="row"><span class="k">proveniência</span><span>${it.prov} · ${it.rev}</span></div>
-          <div class="row"><span class="k">fonte</span><span>${it.src}${it.tier?' · tier '+it.tier:''}</span></div>
-          ${it.claimset?`<div class="row"><span class="k">claimset</span><span>${CLAIMSETS[it.claimset].tema} — pesos assimétricos; sem equivalência forçada</span></div>`:''}
-        </div></div>`;
-    });
+    its.forEach(si=>{ html+=overlayStaticCardHTML(overlayFields(si,SCENE.porta),si); });
   });
   host.innerHTML=html;
 }
