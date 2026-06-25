@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Atlas do Tempo 3D — bootstrap reproduzível.
-# Sobe o banco persistente, aplica esquema + camada de leitura, migra os 35 itens,
-# e roda as suítes de teste. Sucesso = verify.py 10/10 E test_a4.py 10/10.
+# Sobe o banco persistente, aplica esquema + camada de leitura + envelope A3,
+# migra os 35 itens, e roda as suítes de teste.
+# Sucesso = verify.py 10/10 E test_a4.py 10/10 E test_a3.py 10/10.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."   # raiz do repo
@@ -36,16 +37,20 @@ done
 echo "==> (3/6) aplicando DDL (esquema reificado)…"
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/ddl/001-esquema-reificado.sql
 
-echo "==> (4/6) aplicando camada de leitura gateada…"
+echo "==> (4/7) aplicando camada de leitura gateada…"
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/read-layer/010-leitura-simultaneidade.sql
 
-echo "==> (5/6) instalando deps Python e migrando 35 itens…"
+echo "==> (5/7) aplicando envelope MomentResult (D-A3.3 — adição ao lado do A4)…"
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/read-layer/011-momento-envelope.sql
+
+echo "==> (6/7) instalando deps Python e migrando 35 itens…"
 "$PY" -m pip install -q -r db/requirements.txt
 "$PY" db/migration/migrate.py
 
-echo "==> (6/6) verificando invariantes (T1–T10) e simultaneidade A4 (A4-T1..T10)…"
+echo "==> (7/7) verificando invariantes (T1–T10), simultaneidade A4 (A4-T1..T10) e envelope A3 (A3-T1..T10)…"
 "$PY" db/migration/verify.py
 "$PY" db/migration/test_a4.py
+"$PY" db/migration/test_a3.py
 
 echo ""
 echo "==> OK. Banco persistente pronto."

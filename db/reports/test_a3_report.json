@@ -1,0 +1,81 @@
+{
+  "total": 10,
+  "passaram": 10,
+  "falharam": 0,
+  "janelas_canonicas": {
+    "1789 (intervalo do ano)": [
+      -212.0,
+      -210.0
+    ],
+    "GOE ~2,4 Ga": [
+      -2400000000.0,
+      -2400000000.0
+    ],
+    "K-Pg ~66 Ma": [
+      -66050000.0,
+      -65950000.0
+    ]
+  },
+  "testes": [
+    {
+      "id": "A3-T1",
+      "descricao": "função devolve 1 linha: escalares tipados + arrays JSONB esperados",
+      "passou": true,
+      "detalhe": "linhas=1 (esperado 1); colunas faltando=[]; arrays_ok=True."
+    },
+    {
+      "id": "A3-T2",
+      "descricao": "público: todo item isFact=true, selo='público', approved; nada pending/legal/rejected/seeded",
+      "passou": true,
+      "detalhe": "11 itens públicos somados nas janelas; violações (não-fato vazado): 0."
+    },
+    {
+      "id": "A3-T3",
+      "descricao": "cada item tem todas as chaves §8 não-nulas (pública e curatorial)",
+      "passou": true,
+      "detalhe": "faltas pública=nenhuma; faltas curatorial=nenhuma."
+    },
+    {
+      "id": "A3-T4",
+      "descricao": "uncertaintyDisplayPolicy sempre em enum válido (nunca 'omitir')",
+      "passou": true,
+      "detalhe": "fora do enum: nenhum."
+    },
+    {
+      "id": "A3-T5",
+      "descricao": "[N1] todo item afirmativo tem attributionRef.provenanceRef",
+      "passou": true,
+      "detalhe": "itens sem proveniência: nenhum."
+    },
+    {
+      "id": "A3-T6",
+      "descricao": "tempo profundo: item reconstruído presente; nenhum como fato-documentado/medição-direta",
+      "passou": true,
+      "detalhe": "itens reconstrução=2; reconstrução-como-fato=nenhum."
+    },
+    {
+      "id": "A3-T7",
+      "descricao": "curatorial: seeded='demonstração'/¬fato; pending='em-revisão'/¬fato; corpus-approved='fato'",
+      "passou": true,
+      "detalhe": "incoerências=nenhuma; há 'demonstração' (seeded) is_fact=false: True."
+    },
+    {
+      "id": "A3-T8",
+      "descricao": "pública: todo claimSet tem host em items[]; claimSet de host não-público não vaza (1789)",
+      "passou": true,
+      "detalhe": "K-Pg claimSets=1, hosts fora de items=nenhum; 1789 claimSets=0, rev-francesa vazou=False."
+    },
+    {
+      "id": "A3-T9",
+      "descricao": "ClaimSet: pesos assimétricos + fronteira (resolution) presente; sem falsa equivalência",
+      "passou": true,
+      "detalhe": "claimSets checados=4; problemas=nenhum."
+    },
+    {
+      "id": "A3-T10",
+      "descricao": "items(pública) ⊆ items(curatorial); lente sem match → array vazio (não erro)",
+      "passou": true,
+      "detalhe": "pública=6 ⊆ curatorial=10: True; lente-vazia ok: True."
+    }
+  ]
+}
