@@ -87,7 +87,15 @@ RETURNS JSONB AS $$
     'canonicalStart', ki.canonical_start,
     'canonicalEnd',   ki.canonical_end,
     'isGlobal',       ki.is_global,
-    'anachronismNote',ki.anachronism_note
+    'anachronismNote',ki.anachronism_note,
+    -- displayPoint (D-A3.virada, §6 nº 1): ponto de exibição derivado do autoritativo
+    -- (centróide PostGIS da geometry_version) p/ itens georreferenciados; NULL senão.
+    -- ADIÇÃO: não altera nenhuma chave §8 existente; itens sem geometria caem na órbita-hash.
+    'displayPoint',
+      (SELECT jsonb_build_object('lat', round(ST_Y(ST_Centroid(g.geom))::numeric, 5),
+                                 'lng', round(ST_X(ST_Centroid(g.geom))::numeric, 5))
+         FROM core.geometry_version g WHERE g.item_ref = ki.id
+         ORDER BY g.id LIMIT 1)
   )
   FROM core.knowledge_item ki
   CROSS JOIN LATERAL core.f_item_epistemics(ki.id) ep
