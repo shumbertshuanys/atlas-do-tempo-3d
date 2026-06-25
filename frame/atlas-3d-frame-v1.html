@@ -226,9 +226,10 @@
   <div id="gatebox">
     <div class="lens-title" style="margin-bottom:8px">Portão de exibição</div>
     <label class="gate-row"><input type="checkbox" id="g-fact" checked disabled> fato (corpus, aprovado) <span class="badge fact">sempre</span></label>
-    <label class="gate-row"><input type="checkbox" id="g-pend" checked> em revisão <span class="badge pend">pending</span></label>
-    <label class="gate-row"><input type="checkbox" id="g-seed" checked> demonstração <span class="badge seed">seeded</span></label>
-    <div class="lens-foot" style="margin-top:9px">Não-fato nunca é exibido <i>como</i> fato. Selos persistem em todos os modos.</div>
+    <label class="gate-row"><input type="checkbox" id="g-pend"> em revisão <span class="badge pend">pending</span></label>
+    <label class="gate-row"><input type="checkbox" id="g-seed"> demonstração <span class="badge seed">seeded</span></label>
+    <button id="srcbtn" style="width:100%;margin-top:9px;background:rgba(8,12,22,.7);border:1px solid var(--line2);color:var(--txt-dim);font-family:var(--mono);font-size:10px;letter-spacing:.05em;padding:6px;border-radius:6px;cursor:pointer">FONTE: API · pública</button>
+    <div class="lens-foot" style="margin-top:9px">OFF = porta <b>pública</b> (gating por construção). Ligar <i>pending/seeded</i> pede a face <b>curatorial</b> (token, só localhost). Não-fato nunca aparece <i>como</i> fato; selos persistem.</div>
   </div>
 
   <div id="detail" class="hidden">
@@ -277,7 +278,7 @@
 const M = window.AtlasModel;
 const { CT, ctOf, DOMAINS, domOf, STAGES, stageById, regimeLabel,
   ITEMS, CLAIMSETS, shortConf, confPips, formatYear, fmtScalar,
-  fromStaticArray, overlayFields,
+  fromStaticArray, fromEnvelope, canonicalWindowForStage, overlayFields,
   overlayDetailHTML, overlayStaticCardHTML, overlay3DFlagHTML, overlay2DLabelText } = M;
 
 /* DADOS estáticos (ITEMS/CLAIMSETS) e os ClaimSets sensíveis enfileirados (D-A3.1)
@@ -515,16 +516,74 @@ function animate(){
    ===================================================================== */
 let mode='3d';
 let lensOn={historia:true,geologia:true,biologia:true,cosmos:true,quimica:true,fisica:true,clima:true};
-let gate={pending:true,seeded:true};   // fato é sempre on
+let gate={pending:false,seeded:false}; // OFF por padrão → porta PÚBLICA (D-A3.virada)
 let selected=null;
 
-/* SceneModel a partir do array estático (D-A3.7). porta='curatorial' enquanto a
-   FONTE é o array (mostra seeded/pending com selo). A virada (D-A3.virada) troca
-   ESTA linha por fromEnvelope + comutador de papel/endpoint — uma fonte só. */
-let SCENE = fromStaticArray(ITEMS, CLAIMSETS, {porta:'curatorial'});
-let sceneById = {}; SCENE.items.forEach(si=>{sceneById[si.itemId]=si;});
+/* ===================================================================
+   FONTE do SceneModel (D-A3.virada): comutador array ⇄ API.
+   - 'api'   : currentT → janela canônica → /momento/publico (atlas_public)
+               → envelope β → fromEnvelope → SceneModel. Gating é da FONTE.
+   - 'array' : espelho estático local (fallback offline/print) via fromStaticArray.
+   Re-mapa dos gates: ambos OFF → porta PÚBLICA; qualquer ON → CURATORIAL
+   (token, só localhost). Segredo NUNCA embutido — vem de window.ATLAS_*.
+   =================================================================== */
+const API_BASE = (typeof window!=='undefined' && window.ATLAS_API_BASE) || 'http://127.0.0.1:8765';
+const isLocalhost = /^(localhost|127\.0\.0\.1|\[?::1\]?)$/.test(location.hostname) || location.protocol==='file:';
+let sourceMode = 'api';        // a virada: consome a API por padrão (cai p/ 'array' se indisponível)
+let curatorialToken = (isLocalhost && typeof window!=='undefined' && window.ATLAS_CURATORIAL_TOKEN) || null;
+let SCENE, sceneById = {};
+function setScene(sm){ SCENE=sm; sceneById={}; SCENE.items.forEach(si=>{sceneById[si.itemId]=si;}); }
+function portaFor(){ return (gate.pending||gate.seeded) ? 'curatorial' : 'publico'; }
+function rebuildArray(){ setScene(fromStaticArray(ITEMS, CLAIMSETS, {porta:'curatorial'})); } // gate filtra no cliente (array)
+function liveWindow(){
+  const w=stageWeights(currentT), live=STAGES.filter(s=>w[s.id]>0.12);
+  let start=Infinity,end=-Infinity;
+  (live.length?live:[STAGES.reduce((b,s)=>w[s.id]>w[b.id]?s:b,STAGES[0])]).forEach(s=>{
+    const win=canonicalWindowForStage(s.id); start=Math.min(start,win.start); end=Math.max(end,win.end);});
+  return {start,end};
+}
+function domStage(){ const w=stageWeights(currentT); return STAGES.reduce((b,s)=>w[s.id]>w[b.id]?s:b,STAGES[0]); }
+let liveReqId=0;
+async function loadLive(){
+  const porta=portaFor();
+  if(porta==='curatorial' && !(isLocalhost && curatorialToken)){
+    // face curatorial exige token + localhost — sem isso, volta à pública (R-V6: sem segredo no cliente)
+    gate.pending=false; gate.seeded=false; syncGateUI();
+    flash('A face curatorial exige token e roda só em localhost — mantendo a porta pública.');
+    return loadLive();
+  }
+  const {start,end}=liveWindow();
+  const path = porta==='curatorial' ? '/momento/curatorial' : '/momento/publico';
+  const headers = porta==='curatorial' ? {'X-Atlas-Auth': curatorialToken} : {};
+  const myId=++liveReqId;
+  try{
+    const r=await fetch(`${API_BASE}${path}?start=${start}&end=${end}`,{headers});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const env=await r.json();
+    if(myId!==liveReqId) return;                 // descarta resposta obsoleta
+    setScene(fromEnvelope(env,{stage:domStage().id}));
+    afterReload();
+  }catch(e){
+    if(myId!==liveReqId) return;
+    sourceMode='array'; rebuildArray(); afterReload();
+    flash('API indisponível ('+e.message+'). Espelho estático local (degradação honesta).');
+  }
+}
+function afterReload(){ updateLensFoot(); if(mode==='3d')updateLabels3D(); else refreshScene(); updateSourceUI(); }
+let reloadTimer;
+function reload(){
+  if(sourceMode==='api'){ clearTimeout(reloadTimer); reloadTimer=setTimeout(loadLive,250); }
+  else { rebuildArray(); afterReload(); }
+}
+function flash(msg){ const h=document.getElementById('hint'); if(!h)return; h.textContent=msg; h.style.opacity='1'; clearTimeout(flash._t); flash._t=setTimeout(()=>{h.style.opacity='0';},4200); }
+function syncGateUI(){ const p=document.getElementById('g-pend'),s=document.getElementById('g-seed'); if(p)p.checked=gate.pending; if(s)s.checked=gate.seeded; }
+function updateSourceUI(){ const el=document.getElementById('srcbtn'); if(!el)return;
+  el.textContent = sourceMode==='api' ? ('FONTE: API · '+(SCENE&&SCENE.porta==='curatorial'?'curatorial':'pública')) : 'FONTE: espelho local'; }
+// inicialização do SceneModel antes do 1º render (array; loadLive() o substitui no boot)
+rebuildArray();
 
 function gatePass(si){
+  if(sourceMode==='api') return true;   // a porta (endpoint) já gateou na FONTE; cliente não re-filtra
   if(si.selo==='seeded-demo' && !gate.seeded) return false;
   if(si.reviewStatus==='pending' && !gate.pending) return false;
   return true;
@@ -751,14 +810,16 @@ function boot(){
   applyTime(1.0);
   // wiring
   const scrub=document.getElementById('scrub');
-  scrub.addEventListener('input',()=>{togglePlay(false);applyTime(scrub.value/1000);updateLensFoot();});
+  scrub.addEventListener('input',()=>{togglePlay(false);applyTime(scrub.value/1000);updateLensFoot();reload();});
   document.querySelectorAll('#modegroup button').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
-  document.getElementById('g-pend').addEventListener('change',e=>{gate.pending=e.target.checked;updateLensFoot();if(mode==='3d')updateLabels3D();else refreshScene();});
-  document.getElementById('g-seed').addEventListener('change',e=>{gate.seeded=e.target.checked;updateLensFoot();if(mode==='3d')updateLabels3D();else refreshScene();});
+  document.getElementById('g-pend').addEventListener('change',e=>{gate.pending=e.target.checked;reload();});
+  document.getElementById('g-seed').addEventListener('change',e=>{gate.seeded=e.target.checked;reload();});
+  document.getElementById('srcbtn').addEventListener('click',()=>{sourceMode=(sourceMode==='api')?'array':'api';reload();});
   document.getElementById('d-close').addEventListener('click',()=>{selected=null;document.getElementById('detail').classList.add('hidden');if(mode!=='3d')refreshScene();});
   document.getElementById('c2d').addEventListener('click',e=>{const id=hit2D(e.clientX,e.clientY);if(id)select(id);});
   document.getElementById('playbtn').addEventListener('click',()=>togglePlay());
   hintTimer=setTimeout(hideHint,6000);
+  updateSourceUI(); reload();   // 1ª carga ao vivo (sourceMode='api' → /momento/publico)
 }
 
 /* ---------- inicialização com fallback ---------- */
@@ -773,13 +834,15 @@ function start(){
     setMode('2d');
     const scrub=document.getElementById('scrub');
     scrub.addEventListener('input',()=>{currentT=scrub.value/1000;
-      document.getElementById('epoch-name').textContent=STAGES.reduce((a,s)=>stageWeights(currentT)[s.id]>stageWeights(currentT)[a.id]?s:a,STAGES[0]).name;
-      updateLensFoot();refreshScene();});
+      document.getElementById('epoch-name').textContent=domStage().name;
+      updateLensFoot();reload();});
     document.querySelectorAll('#modegroup button').forEach(b=>b.addEventListener('click',()=>{if(!b.disabled)setMode(b.dataset.mode);}));
-    document.getElementById('g-pend').addEventListener('change',e=>{gate.pending=e.target.checked;updateLensFoot();refreshScene();});
-    document.getElementById('g-seed').addEventListener('change',e=>{gate.seeded=e.target.checked;updateLensFoot();refreshScene();});
+    document.getElementById('g-pend').addEventListener('change',e=>{gate.pending=e.target.checked;reload();});
+    document.getElementById('g-seed').addEventListener('change',e=>{gate.seeded=e.target.checked;reload();});
+    document.getElementById('srcbtn').addEventListener('click',()=>{sourceMode=(sourceMode==='api')?'array':'api';reload();});
     document.getElementById('d-close').addEventListener('click',()=>{selected=null;document.getElementById('detail').classList.add('hidden');refreshScene();});
     document.getElementById('c2d').addEventListener('click',e=>{const id=hit2D(e.clientX,e.clientY);if(id)select(id);});
+    updateSourceUI(); reload();   // 1ª carga ao vivo também no caminho sem-WebGL
   }
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();

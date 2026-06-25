@@ -68,6 +68,15 @@ function regimeLabel(stageId) {
   else label = 'globo esquemático · paleogeografia reconstruída.';
   return { regime: s.regime, schematic: true, label };
 }
+/* canonicalWindowForStage (D-A3.virada): estágio de apresentação → janela canônica
+   [start,end] p/ a consulta da API. Meia-largura relativa (1% de |scalar|, piso 1
+   ano): janela larga no tempo profundo, estreita no recente — casa com a escala. */
+function canonicalWindowForStage(stageId) {
+  const s = stageById(stageId);
+  if (!s) return null;
+  const hw = Math.max(1, Math.abs(s.scalar) * 0.01);
+  return { start: s.scalar - hw, end: s.scalar + hw };
+}
 
 /* ---------- helpers de tempo/confiança (puros) ---------- */
 function formatYear(sc) {
@@ -152,6 +161,58 @@ function fromStaticArray(items, claimsets, opts) {
     source: 'static-array', porta,
     stage: opts.stage || null,
     items: scene, claimSets,
+  };
+}
+
+/* =====================================================================
+   fromEnvelope — adapta o MomentResult (β) da API ao MESMO SceneModel.
+   É a VIRADA: troca-se UMA fonte só. O gating é propriedade da FONTE
+   (a função-envelope lê só v_publishable_public) — aqui nada se filtra.
+   ===================================================================== */
+function placeFromRegime(regime) {
+  if (regime === 'paleoPositions') return 'posição reconstruída';
+  if (regime === 'modernGeometry') return 'coordenada';
+  return null;
+}
+function mapEnvelopeItem(it) {
+  const ar = it.attributionRef || {};
+  return {
+    itemId: it.itemId, title: it.title, itemType: it.itemType, domain: it.domain,
+    epistemicType: it.epistemicType, confidenceLevel: it.confidenceLevel, evidenceLevel: it.evidenceLevel || null,
+    selo: it.selo, isFact: it.isFact, reviewStatus: it.reviewStatus,
+    uncertaintyRange: [it.canonicalStart, it.canonicalEnd],
+    uncertaintyDisplayPolicy: it.uncertaintyDisplayPolicy,
+    geometryRegime: it.geometryRegime, reconstructionFlag: it.reconstructionFlag,
+    displayPoint: it.displayPoint || null,
+    attributionRef: { label: ar.label, provenanceRef: ar.provenanceRef, sourceTier: ar.sourceTier },
+    claimSetRef: null,
+    presentationStage: (stageForScalar(it.canonicalStart) || {}).id || null,
+    displayTime: it.displayTime || null,
+    isGlobal: !!it.isGlobal, place: it.isGlobal ? null : placeFromRegime(it.geometryRegime),
+    anachronismNote: it.anachronismNote || null,
+    claim: null, repr: false, claimSet: null,
+  };
+}
+function normalizeEnvelopeClaimSet(cs) {
+  return {
+    claimSetId: cs.claimSetId, host: cs.host, tema: cs.tema,
+    sides: (cs.members || []).map(m => ({ stmt: m.statement, weight: m.weight })),
+    noeq: cs.resolutionBoundary,
+  };
+}
+function fromEnvelope(env, ctx) {
+  ctx = ctx || {};
+  const porta = env.porta === 'publica' ? 'publico' : (env.porta === 'curatorial' ? 'curatorial' : env.porta);
+  const source = porta === 'curatorial' ? 'api-curatorial' : 'api-public';
+  const items = (env.items || []).map(mapEnvelopeItem);
+  const claimSets = (env.claim_sets || []).map(normalizeEnvelopeClaimSet);
+  const byHost = {}; claimSets.forEach(cs => { byHost[cs.host] = cs; });
+  items.forEach(si => { if (byHost[si.itemId]) { si.claimSetRef = byHost[si.itemId].claimSetId; si.claimSet = byHost[si.itemId]; } });
+  return {
+    source, porta, stage: ctx.stage || null, items, claimSets,
+    warnings: { anachronism: env.anachronism_warnings || [], equivalence: env.equivalence_warnings || [] },
+    hiddenSummary: env.hidden_summary || null,
+    publicabilityStatus: env.publicability_status, gatingReason: env.gating_reason, gatingType: env.gating_type,
   };
 }
 
@@ -328,6 +389,7 @@ const API = {
   CT, DOMAINS, ctOf, domOf, STAGES, stageById, stageForScalar, regimeLabel,
   formatYear, fmtScalar, shortConf, confPips, uncertaintyDisplayPolicy, typeFromId,
   buildSceneItemFromStatic, normalizeClaimSet, fromStaticArray,
+  fromEnvelope, mapEnvelopeItem, normalizeEnvelopeClaimSet, canonicalWindowForStage,
   overlayFields, overlayTextualEquivalent,
   overlayDetailHTML, overlayStaticCardHTML, overlay3DFlagHTML, overlay2DLabelText,
   escapeHtml,
