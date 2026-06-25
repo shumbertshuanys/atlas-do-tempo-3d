@@ -66,8 +66,15 @@ Os três artefatos que **provam a API** (do prompt de execução):
 ## 7. Riscos remanescentes
 
 - **R-A3.7** coberto por A3-HTTP-1 (fica vermelho se alguém der EXECUTE da curatorial ao público).
-- **Senhas locais** dos papéis em `020` (`atlas_public`/`atlas_curatorial`) são de **desenvolvimento**;
-  produção deve injetá-las por ambiente, não versionar.
+- **Senhas dos papéis (`020`) — DECISÃO DE PRODUÇÃO PENDENTE (registrada, não tomada).** As credenciais
+  `atlas_public`/`atlas_curatorial` (e o DSN dev homônimo `atlas/atlas/atlas`) são de **desenvolvimento**;
+  produção deve injetá-las por **ambiente**, não versionar. **Decidir antes de a virada sair de localhost**
+  (push de repo já conta como compartilhado). *Recomendação:* **12-factor mínimo** (`.env` no gitignore,
+  `.env.example` com placeholders, `docker-compose` interpolando `${VAR}`); o **gerenciador de segredos**
+  com rotação/auditoria pertence à **Etapa 14** (operação/DPIA), não ao MVP. A virada do **público** usa
+  `atlas_public`; o **curatorial** pode ficar em localhost/rede interna até a E14 definir a auth. *Evidência
+  falsificável para o passo de config:* `git grep` não acha `password=atlas` fora de `.env.example`/docs, e
+  o serviço **recusa subir** sem a variável setada (erra alto, não silenciosamente).
 - **`navigationSuggestions`/`generatedSceneCandidate`** ficaram rasos/vazios no A3 (previsto §5.3).
 
 ## 8. Entregáveis (no repo)
