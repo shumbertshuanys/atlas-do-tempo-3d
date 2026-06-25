@@ -161,6 +161,11 @@
   .c2d-cap{position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:16;font-family:var(--mono);font-size:11px;
     color:var(--txt-faint);letter-spacing:.05em;background:rgba(8,12,22,.7);padding:5px 12px;border-radius:6px;
     border:1px solid var(--line);display:none}
+  /* D-A3.6: rótulo esquemático persistente do 3D — a cena procedural NUNCA é foto (R-V7/§8.2/Art.7) */
+  #regimecap{position:fixed;top:58px;left:50%;transform:translateX(-50%);z-index:16;font-family:var(--mono);font-size:11px;
+    color:var(--seed);letter-spacing:.05em;background:rgba(8,12,22,.7);padding:5px 12px;border-radius:6px;
+    border:1px solid rgba(255,179,71,.35);display:none;max-width:80vw;text-align:center}
+  #regimecap b{color:var(--txt-dim);font-weight:600}
 
   .static-head{max-width:760px;margin:0 auto 18px;text-align:center}
   .static-head h1{font-size:20px;color:#fff;font-weight:600;margin-bottom:5px}
@@ -199,6 +204,7 @@
   <div id="cStatic"></div>
   <div id="labels"></div>
   <div class="c2d-cap" id="c2dcap">projeção esquemática · rótulos preservados (Art. 12)</div>
+  <div id="regimecap">—</div>
 
   <div id="top">
     <div class="brand">ATLAS DO TEMPO <b>3D</b> &nbsp;·&nbsp; <span class="epoch">frame de produção — incremento 1 (A3)</span></div>
@@ -269,7 +275,7 @@
    Vocabulário, STAGES, dados estáticos e PRODUTORES do overlay vêm do módulo;
    o HTML apenas POSICIONA/DESENHA o resultado, nunca reconstrói o §8. */
 const M = window.AtlasModel;
-const { CT, ctOf, DOMAINS, domOf, STAGES, stageById,
+const { CT, ctOf, DOMAINS, domOf, STAGES, stageById, regimeLabel,
   ITEMS, CLAIMSETS, shortConf, confPips, formatYear, fmtScalar,
   fromStaticArray, overlayFields,
   overlayDetailHTML, overlayStaticCardHTML, overlay3DFlagHTML, overlay2DLabelText } = M;
@@ -468,6 +474,9 @@ function applyTime(t){
   document.getElementById('epoch-name').textContent=dom.name;
   document.getElementById('epoch-disp').textContent=dom.disp+'  ·  regime '+dom.regime;
   document.getElementById('epoch-scalar').textContent='canonicalTimeScalar ≈ '+fmtScalar(dom.scalar);
+  // D-A3.6: rótulo esquemático do regime (a cena 3D é reconstrução, nunca foto)
+  const rl=regimeLabel(dom.id),rc=document.getElementById('regimecap');
+  if(rc&&rl)rc.innerHTML='⟳ <b>'+rl.regime+'</b> · '+rl.label;
   refreshScene();
 }
 
@@ -697,6 +706,7 @@ function setMode(m){
   labels.style.display=m==='3d'?'block':'none';
   c2d.style.display=m==='2d'?'block':'none';
   cap.style.display=m==='2d'?'block':'none';
+  const rc=document.getElementById('regimecap');if(rc)rc.style.display=m==='3d'?'block':'none';
   cs.style.display=m==='static'?'block':'none';
   if(m==='2d')draw2D();
   if(m==='static')renderStatic();

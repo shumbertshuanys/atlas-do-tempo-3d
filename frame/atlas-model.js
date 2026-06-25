@@ -56,6 +56,18 @@ function stageForScalar(scalar) {
   for (const s of STAGES) { const d = Math.abs(ls(scalar) - ls(s.scalar)); if (d < bd) { bd = d; best = s; } }
   return best;
 }
+/* regimeLabel (D-A3.6): rótulo de cena ESQUEMÁTICA por estágio. Todo asset é
+   procedural (shaders/fbm) → SEMPRE reconstrução/representação, NUNCA fotografia
+   (R-V7; §8.2; Art.7). O 3D exibe isto de forma persistente; degrada com a cena. */
+function regimeLabel(stageId) {
+  const s = stageById(stageId);
+  if (!s) return null;
+  let label;
+  if (s.kind === 'cosmic') label = 'representação esquemática do regime cósmico — reconstrução de consenso.';
+  else if (s.id === 's1789') label = 'globo esquemático (procedural) — representação cartográfica.';
+  else label = 'globo esquemático · paleogeografia reconstruída.';
+  return { regime: s.regime, schematic: true, label };
+}
 
 /* ---------- helpers de tempo/confiança (puros) ---------- */
 function formatYear(sc) {
@@ -313,7 +325,7 @@ const CLAIMSETS = {
    CAUDA UMD — node (require) e browser (window.AtlasModel)
    ===================================================================== */
 const API = {
-  CT, DOMAINS, ctOf, domOf, STAGES, stageById, stageForScalar,
+  CT, DOMAINS, ctOf, domOf, STAGES, stageById, stageForScalar, regimeLabel,
   formatYear, fmtScalar, shortConf, confPips, uncertaintyDisplayPolicy, typeFromId,
   buildSceneItemFromStatic, normalizeClaimSet, fromStaticArray,
   overlayFields, overlayTextualEquivalent,
