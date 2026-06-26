@@ -48,7 +48,7 @@ Estas não são opiniões de estilo — são garantias estruturais já provadas 
 
 ---
 
-## 4. Estado atual (jun/2026) — API só-leitura (D-A3.3/4/5) verde + gateada
+## 4. Estado atual (jun/2026) — frame AO VIVO contra a API pública (virada feita) + 3D real
 
 | Componente | Estado |
 |---|---|
@@ -59,7 +59,9 @@ Estas não são opiniões de estilo — são garantias estruturais já provadas 
 | `test_a4.py` — simultaneidade gateada A4-T1..T10 | ✅ 10/10 |
 | `test_a3.py` — envelope A3-T1..T10 (público nunca não-fato · todo item §8 · gating por host) | ✅ 10/10 |
 | `test_a3_http.py` — portão/HTTP A3-HTTP-1..5 (grant sem EXECUTE na curatorial · sem credencial de escrita) | ✅ 5/5 |
-| Frame 3D de produção (`frame/atlas-3d-frame-v1.html`) | ⚠️ **ainda NÃO ao vivo.** D-A3.1: ClaimSets frame == corpus (**3 == 3**); D-A3.2: lente `clima` + lookup tolerante. Consome arrays `ITEMS`/`CLAIMSETS` **estáticos** — a API já existe (acima), mas a **virada ao vivo** é a próxima frente. |
+| **Modelo puro do frame (`frame/atlas-model.js`):** fonte ÚNICA do §8 — `fromStaticArray`/`fromEnvelope` (mesmo `SceneModel`), `overlayFields`, produtores overlay→markup; `regimeLabel` (cena esquemática). Framework-free, testável em node. | ✅ **D-A3.7/6/virada** |
+| **Frame 3D de produção (`frame/atlas-3d-frame-v1.html`) — AO VIVO.** Consome `service/atlas_api.py` (`/momento/publico`, papel `atlas_public`) via `fromEnvelope`; comutador de fonte array⇄API; gates re-mapeados a papel/endpoint (OFF→pública; ON→curatorial token/localhost); badge esquemático no 3D. Shaders/câmera intactos. | ✅ **virado** (fallback honesto ao espelho local se a API cair) |
+| `frame/tests/` (node, framework-free) — `3D-T1..5` (degradação cruzada), `ASSET-T1..3` (cena esquemática, nunca foto), `LIVE-T1..4` (virada: público nunca vaza · gating por host · cósmico vazio · cliente sem segredo) | ✅ **5/5 · 3/3 · 4/4** |
 
 Sobre os artefatos em `db/`:
 
@@ -74,12 +76,23 @@ Sobre os artefatos em `db/`:
   são **adição** (D-A3.3/4/5): o envelope nasce no banco, derivado do autoritativo, ao lado das
   funções A4 — **não reescrevem** o miolo. Funções SECURITY DEFINER + `REVOKE EXECUTE FROM PUBLIC`;
   o portão é o GRANT (papéis `atlas_public`/`atlas_curatorial`), não `if` de runtime.
+  **Extensão aditiva (D-A3.virada):** `f_item_envelope_core` agora expõe `displayPoint:{lat,lng}`
+  (centróide PostGIS `ST_Y/ST_X` da `geometry_version`; NULL senão) — adição derivada do autoritativo,
+  nenhuma chave §8 muda (A3-T3 checa presença). **Atenção ao reaplicar `011`:** o `DROP TYPE … CASCADE`
+  recria as funções e **perde os grants de papel** — reaplicar `020` em seguida (o bootstrap já faz).
+- **Config 12-factor (Opção A):** credenciais saem do código para `.env` (gitignored); `.env.example`
+  documenta as 4 vars (`ATLAS_DB_PASSWORD`/`ATLAS_PUBLIC_PASSWORD`/`ATLAS_CURATORIAL_PASSWORD`/
+  `ATLAS_CURATORIAL_TOKEN`). `docker-compose` interpola `${ATLAS_DB_PASSWORD:?}`; o serviço **recusa
+  subir** sem var (exit 2). `db/roles/020` mantém senhas-dev de papel (homônimas, casadas pelo `.env`);
+  gerenciador de segredos com rotação/auditoria (Opção B) fica para a **E14**.
 - **Divergência da carga fixada na descoberta** (`docs/passos/nota-descoberta-a3-api-envelope.md`):
   só **`kpg-causa`** tem host em `v_publishable_public` (`chicxulub`); `rev-francesa`/`goe-ritmo` têm
   host com fonte-por-asset pendente → **não** vazam pela pública (gating por host, §5.5 do plano).
 - **"Reconstruível do bootstrap" está PROVADO em Windows e Linux:**
-  `docker compose down -v && bash scripts/bootstrap.sh` fecha **10/10 + 10/10 + 10/10 + 5/5** em
-  volume novo (carga `claimsets 3 · membros 7 · total 42 · itens 35`), sem contornos manuais.
+  `cp .env.example .env` (ajuste os valores) e então `docker compose down -v && bash scripts/bootstrap.sh`
+  fecha **10/10 + 10/10 + 10/10 + 5/5** em volume novo (carga `claimsets 3 · membros 7 · total 42 ·
+  itens 35`). O bootstrap **recusa seguir sem `.env`** (12-factor). Suítes do frame (node):
+  `3D-T 5/5 · ASSET-T 3/3 · LIVE-T 4/4`.
 - **3 ClaimSets de host `pending` foram removidos do frame** (`direitos-limites`, `inconfidencia`,
   `escravidao-central`) e enfileirados em `docs/roteiro/fila-revisao-claimsets-sensiveis.md`
   (Trilha C / Playbook §5) — aguardam host aprovado para reintegração; conteúdo preservado no git.
@@ -89,56 +102,64 @@ antes rodar os testes e mantê-los verdes.
 
 ---
 
-## 5. Próxima missão: virada ao vivo (frame → API) + 3D em paralelo
+## 5. Virada ao vivo + 3D real — FEITA. Próximas frentes.
 
-Plano de produção em `docs/passos/passo-a3-plano-producao-3d-ligacao-ao-vivo-v1_0.md` (9 pontos);
-plano de execução da API em `docs/passos/passo-a3-plano-execucao-api-so-leitura-v1_0.md`; registro
-de execução em `docs/passos/registro-execucao-a3-api-so-leitura.md` (+ nota de descoberta).
+Plano de execução em `docs/passos/passo-a3-plano-execucao-virada-ao-vivo-3d-v1_0.md`; descoberta em
+`docs/passos/nota-descoberta-a3-virada-3d.md`; handoff em `docs/passos/registro-execucao-a3-virada-3d.md`.
 
-**Já feito:** D-A3.1/D-A3.2 (reconciliação dos ClaimSets + lente `clima`) e **D-A3.3/4/5 (API
-só-leitura)** — envelope `MomentResult` no banco, serviço fino, portão por grant; **provada**
-(A3-T1..10 + A3-HTTP-1..5). A divergência frame↔corpus que gateava a ligação **caiu**, e a API que a
-extingue por construção **existe**.
+**Já feito (esta sessão):** **D-A3.7** (`SceneModel`/`overlayFields` puros; 3 renderizadores DESENHAM
+o §8, não reconstroem) · **D-A3.6** (assets procedurais rotulados esquemáticos, nunca foto) ·
+**D-A3.virada** (frame consome `/momento/publico` via `fromEnvelope`; comutador de fonte; gates→papel;
+`displayPoint` aditivo em `011`) · **Config Opção A** (12-factor). Provado: `3D-T 5/5 · ASSET-T 3/3 ·
+LIVE-T 4/4` + os quatro verdes do banco. A divergência frame↔corpus está **extinta por construção**.
 
-**Próxima missão, nesta ordem:**
+**Próximas frentes (não nesta sessão):**
 
-1. **Bootstrap e confirme o verde** (`bash scripts/bootstrap.sh` → 10/10 + 10/10 + 10/10 + 5/5) antes de avançar (PG1).
-2. **Virada ao vivo (próxima frente):** o frame passa a **consumir a API** (`service/atlas_api.py` →
-   `core.f_momento_publico`) em vez dos arrays estáticos. A classe de divergência frame↔corpus se
-   **extingue por construção** quando `review_status`/selo/`is_fact` vêm sempre do autoritativo.
-3. **3D real (D-A3.6..8), em paralelo desde já contra o array via `SceneModel`:** modelo único +
-   overlay §8 renderer-agnóstico + 3 renderizadores (3D/2D/estático) + assets procedurais dos 3
-   regimes-âncora. A virada ao vivo troca **uma fonte só**.
-4. **Preserve o §8** (contrato visual) nos três renderizadores e o gating por construção em todo degrau.
-
-> As 3 sensíveis (`direitos-limites`, `inconfidencia`, `escravidao-central`) **não** se religam ao
-> vivo enquanto host for `pending`; seguem na fila de revisão (Trilha C). Não publicar sem host aprovado.
+1. **Cósmicos como corpus COM fonte** (tarefa de modelagem registrada): hoje `rep:bigbang/galaxies/sun`
+   são só-frame → estágio cósmico **vazio na porta pública** (honesto). Modelar com fonte para preencher;
+   **nunca** promover seeded.
+2. **Reintegrar as 3 sensíveis** (`direitos-limites`, `inconfidencia`, `escravidao-central`) quando o
+   host sair de `pending` (Trilha C; `docs/roteiro/fila-revisao-claimsets-sensiveis.md`). **Não** religar
+   ao vivo enquanto host for `pending`.
+3. **E14 — segredos Opção B** (gerenciador com rotação/auditoria/RIPD) + auth real da porta curatorial
+   (hoje token só localhost).
+4. **Preservar sempre:** §8 idêntico nos 3 degraus; gating por construção; cena de tempo profundo
+   sempre esquemática/reconstrução.
 
 ---
 
 ## 6. Como rodar (setup)
 
-**Pré-requisitos:** Docker + Docker Compose; Python 3.9+ no host.
+**Pré-requisitos:** Docker + Docker Compose; Python 3.9+ no host; Node (para as suítes do frame).
 
 ```bash
+cp .env.example .env     # 12-factor: credenciais locais (gitignored). Ajuste os valores.
 bash scripts/bootstrap.sh
 ```
 
-Isso: sobe Postgres+PostGIS num **volume persistente** (`atlas-pgdata` — resolve a perda de estado
-entre sessões), aplica o DDL + camada de leitura (`010`) + envelope (`011`) + papéis (`020`), migra a
+Isso: **carrega `.env`** (recusa seguir sem ele), sobe Postgres+PostGIS num **volume persistente**
+(`atlas-pgdata`), aplica o DDL + camada de leitura (`010`) + envelope (`011`) + papéis (`020`), migra a
 carga (`claimsets 3 · membros 7 · total 42 · itens 35`), e roda `verify` + `test_a4` + `test_a3` +
 `test_a3_http` (devem fechar **10/10 + 10/10 + 10/10 + 5/5**).
 
-DSN fixo (casa com `docker-compose.yml`): `host=localhost port=5432 dbname=atlas user=atlas password=atlas`.
-Papéis de leitura (D-A3.5): `atlas_public` / `atlas_curatorial` (senhas locais homônimas; ver `020`).
+Credenciais vêm do `.env` (ver `.env.example`): `ATLAS_DB_PASSWORD` (usuário `atlas`),
+`ATLAS_PUBLIC_PASSWORD`/`ATLAS_CURATORIAL_PASSWORD` (papéis de `020`), `ATLAS_CURATORIAL_TOKEN` (header).
 
-Subir o serviço só-leitura (D-A3.4) e consultar o envelope:
+Suítes do frame (node, sem build): `node frame/tests/test_3d.js` · `test_assets.js` · `test_live.js`
+(**5/5 · 3/3 · 4/4**). As `LIVE-T` rodam sobre fixtures reais em `frame/tests/fixtures/`.
+
+Subir o serviço só-leitura e consultar o envelope (precisa das vars do `.env` no ambiente):
 
 ```bash
-# em um terminal: python service/atlas_api.py  (bind 127.0.0.1:8765)
+set -a; . ./.env; set +a
+python service/atlas_api.py    # bind 127.0.0.1:8765; RECUSA subir sem as vars obrigatórias
 curl "http://127.0.0.1:8765/momento/publico?start=-66050000&end=-65950000"
 # porta curatorial exige header: -H "X-Atlas-Auth: $ATLAS_CURATORIAL_TOKEN"
 ```
+
+O frame (`frame/atlas-3d-frame-v1.html`) consome `/momento/publico` por padrão; sem serviço, cai ao
+espelho estático local. A face curatorial (gates ON) exige token e **só** localhost
+(`window.ATLAS_CURATORIAL_TOKEN`) — segredo **nunca** embutido no cliente.
 
 Consulta manual da função central:
 
@@ -158,10 +179,11 @@ db/read-layer/     camada de leitura gateada — 010-leitura-simultaneidade.sql 
 db/roles/          papéis de leitura — 020-papeis-leitura.sql (atlas_public / atlas_curatorial; portão por grant)
 db/migration/      migrate.py (carga 42) · verify.py (T1–T10) · test_a4.py (A4-T1..T10) · test_a3.py (A3-T1..T10) · test_a3_http.py (A3-HTTP-1..5)
 db/reports/        relatórios verdes de referência (migration/verification/test_a4/test_a3/test_a3_http)
-service/           atlas_api.py — serviço fino só-leitura (2 endpoints, público/curatorial)
-frame/             frame 3D de produção (alvo da ligação) + protótipo original
+service/           atlas_api.py — serviço fino só-leitura (2 endpoints; recusa subir sem var)
+frame/             atlas-model.js (modelo puro: fonte única do §8) · atlas-3d-frame-v1.html (frame AO VIVO) · tests/ (3D-T/ASSET-T/LIVE-T + fixtures/) · protótipo original
+.env.example       modelo das 4 vars (12-factor); copie para .env (gitignored)
 docs/governanca/   Constituição (v1_1) + Playbook (v1_3) + Prompt-mestre  ← LER antes de decidir
-docs/passos/       handoffs por passo (mais recente: registro-execucao-a3-api-so-leitura + nota-descoberta-a3-api-envelope)
+docs/passos/       handoffs por passo (mais recente: registro-execucao-a3-virada-3d + nota-descoberta-a3-virada-3d)
 docs/etapas/       corpus conceitual (Etapas 0–15 e sub-etapas)
 docs/roteiro/      estado-atual, pendências, divergências, decisões
 scripts/           bootstrap.sh
