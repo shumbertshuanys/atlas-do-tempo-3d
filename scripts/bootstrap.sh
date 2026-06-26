@@ -7,7 +7,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."   # raiz do repo
 
-DSN="host=localhost port=5432 dbname=atlas user=atlas password=atlas"
+# 12-factor (Opção A): credenciais vêm do .env (gitignored). Clone fresco deve
+# copiar .env.example -> .env. O bootstrap RECUSA seguir sem .env (erra alto).
+if [ -f .env ]; then set -a; . ./.env; set +a;
+else echo "ERRO: .env ausente. Copie .env.example para .env (valores dev) e rode de novo."; exit 1; fi
+: "${ATLAS_DB_PASSWORD:?defina ATLAS_DB_PASSWORD no .env}"
+
+DSN="host=localhost port=5432 dbname=atlas user=atlas password=${ATLAS_DB_PASSWORD}"
 
 # Interpretador Python: 'python3' (Linux/macOS) ou 'python' (Windows). Override com PY=...
 # Valida EXECUÇÃO real, não só presença no PATH: no Windows o alias da Microsoft

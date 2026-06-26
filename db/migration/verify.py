@@ -24,7 +24,7 @@ try:
 except Exception:
     pass
 
-DSN = "host=localhost dbname=atlas user=atlas password=atlas"
+DSN = "host=localhost dbname=atlas user=atlas password=%s" % os.environ["ATLAS_DB_PASSWORD"]
 
 # diretório de saída relativo ao próprio script (db/migration -> raiz/out),
 # independente do diretório de trabalho e do SO.

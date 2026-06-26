@@ -35,7 +35,7 @@ try:
 except Exception:
     pass
 
-DSN = "host=localhost dbname=atlas user=atlas password=atlas"
+DSN = "host=localhost dbname=atlas user=atlas password=%s" % os.environ["ATLAS_DB_PASSWORD"]
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "out")
 
 JANELAS = {

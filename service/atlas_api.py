@@ -21,17 +21,34 @@ ATLAS_CURATORIAL_TOKEN, ATLAS_API_HOST/PORT.
 """
 import json
 import os
+import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 import psycopg2
 
+# Config 12-factor (Opção A): host/porta/db NÃO são segredo (default ok); as
+# credenciais e o token são OBRIGATÓRIOS — o serviço RECUSA subir sem eles,
+# erra ALTO e não faz fallback silencioso (§5.6 do plano; guarda PG1).
 PG_HOST = os.environ.get("ATLAS_PG_HOST", "localhost")
 PG_PORT = os.environ.get("ATLAS_PG_PORT", "5432")
 PG_DB = os.environ.get("ATLAS_PG_DB", "atlas")
-PUBLIC_PW = os.environ.get("ATLAS_PUBLIC_PW", "atlas_public")
-CURATORIAL_PW = os.environ.get("ATLAS_CURATORIAL_PW", "atlas_curatorial")
-CURATORIAL_TOKEN = os.environ.get("ATLAS_CURATORIAL_TOKEN", "segredo-curatorial")
+
+
+def _require(name):
+    v = os.environ.get(name)
+    if not v:
+        sys.stderr.write(
+            "ERRO: variável de ambiente obrigatória %s ausente.\n"
+            "O serviço NÃO sobe sem ela (12-factor; sem fallback silencioso).\n"
+            "Defina-a no .env (veja .env.example) ou exporte no ambiente.\n" % name)
+        sys.exit(2)
+    return v
+
+
+PUBLIC_PW = _require("ATLAS_PUBLIC_PASSWORD")
+CURATORIAL_PW = _require("ATLAS_CURATORIAL_PASSWORD")
+CURATORIAL_TOKEN = _require("ATLAS_CURATORIAL_TOKEN")
 API_HOST = os.environ.get("ATLAS_API_HOST", "127.0.0.1")
 API_PORT = int(os.environ.get("ATLAS_API_PORT", "8765"))
 

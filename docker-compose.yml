@@ -14,7 +14,9 @@ services:
     environment:
       POSTGRES_DB: atlas
       POSTGRES_USER: atlas
-      POSTGRES_PASSWORD: atlas
+      # 12-factor (Opção A): senha interpolada do .env (gitignored). ':?' faz o
+      # compose ERRAR se ATLAS_DB_PASSWORD estiver ausente — sem default silencioso.
+      POSTGRES_PASSWORD: ${ATLAS_DB_PASSWORD:?defina ATLAS_DB_PASSWORD no .env (veja .env.example)}
     ports:
       - "5432:5432"
     volumes:

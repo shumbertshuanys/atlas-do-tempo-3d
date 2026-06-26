@@ -38,8 +38,8 @@ PORT = int(os.environ.get("ATLAS_TEST_PORT", "8799"))
 TOKEN = "token-teste-curatorial"
 BASE = "http://127.0.0.1:%d" % PORT
 
-DSN_PUBLIC = "host=localhost dbname=atlas user=atlas_public password=atlas_public"
-DSN_CURATORIAL = "host=localhost dbname=atlas user=atlas_curatorial password=atlas_curatorial"
+DSN_PUBLIC = "host=localhost dbname=atlas user=atlas_public password=%s" % os.environ["ATLAS_PUBLIC_PASSWORD"]
+DSN_CURATORIAL = "host=localhost dbname=atlas user=atlas_curatorial password=%s" % os.environ["ATLAS_CURATORIAL_PASSWORD"]
 
 KPG = (-66.05e6, -65.95e6)
 CHAVES_8 = ["itemId", "title", "itemType", "epistemicType", "confidenceLevel",
