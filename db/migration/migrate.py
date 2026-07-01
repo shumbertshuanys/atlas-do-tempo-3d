@@ -195,6 +195,42 @@ ITENS = [
    ct="inferência-científica",cf="alta",ev="registro fóssil",src="PBDB (A)",tier="A",
    pub="publicável",srcPend=False,glob=True,place="planetário",
    cs=-66.0*MA,ce=-60.0*MA,sc=-63.0*MA,stb="Ma",disp="após ~66 Ma",prec="Ma",unc="tempo de recuperação incerto"),
+
+ # ===== Cena CÓSMICA (tempo profundo; sourceTimeBasis=Ga) — corpus COM fonte (Frente A) =====
+ # Tipagem epistêmica ASSINADA (humano, jul/2026): docs/passos/nota-descoberta-cosmicos-frente-a.md §8.
+ # Todos GLOBAIS, sem geometria terrestre → displayPoint NULL, geometryRegime 'semLugarTerrestre'.
+ # NENHUM 'fato-documentado' (ninguém testemunhou t=0); incerteza SEMPRE presente. Sem ClaimSet
+ # (etapa-3.1 §10.7: a expansão é claim único; criacionismo não é claim concorrente).
+ dict(id="evt:big-bang",t="Event",dom="cosmos",lay="Cosmos",ti="Big Bang — início da expansão",
+   ct="inferência-científica",cf="alta",ev="CMB (Planck), nucleossíntese primordial, expansão (Hubble-Lemaître)",
+   src="NASA/ESA — Planck 2018; cosmologia de precisão (PD)",tier="A",
+   pub="publicável",srcPend=False,glob=True,place="universo observável (sem ponto)",
+   cs=-13.807*GA,ce=-13.767*GA,sc=-13.787*GA,stb="Ga",disp="~13,8 Ga (13,787 ± 0,020)",prec="Ga",
+   unc="±0,020 Ga (Planck 2018); a singularidade t=0 é extrapolação do modelo"),
+ dict(id="state:cmb-recombinacao",t="State",dom="cosmos",lay="Cosmos",ti="Fundo cósmico de micro-ondas (recombinação)",
+   ct="medição-direta",cf="alta",ev="espectro de corpo negro do CMB (COBE/Planck)",
+   src="NASA/ESA — Planck 2018; cosmologia de precisão (PD)",tier="A",
+   pub="publicável",srcPend=False,glob=True,place="céu inteiro (radiação de fundo)",
+   cs=-13.80*GA,ce=-13.77*GA,sc=-13.787*GA,stb="Ga",disp="~13,8 Ga (≈ 380 mil anos após o início)",prec="Ga",
+   unc="recombinação ~380 ka após o início; o CMB é observado diretamente"),
+ dict(id="proc:formacao-galaxias",t="Process",dom="cosmos",lay="Cosmos",ti="Formação das primeiras estrelas e galáxias",
+   ct="inferência-científica",cf="média",ev="levantamentos profundos (JWST/Hubble), função de massa estelar",
+   src="NASA/ESA — JWST e levantamentos profundos; astrofísica revisada (PD)",tier="A",
+   pub="publicável",srcPend=False,glob=True,place="universo jovem (sem ponto)",
+   cs=-13.5*GA,ce=-13.0*GA,sc=-13.2*GA,stb="Ga",disp="~13,5–13 Ga",prec="Ga",
+   unc="faixa ~13,5–13 Ga; timing/processo em evolução rápida com o JWST"),
+ dict(id="evt:formacao-sistema-solar",t="Event",dom="cosmos",lay="Cosmos",ti="Formação do Sol e do Sistema Solar",
+   ct="inferência-científica",cf="alta",ev="datação radiométrica de CAIs em meteoritos",
+   src="NASA — datação radiométrica de CAIs; ciência planetária revisada (PD)",tier="A",
+   pub="publicável",srcPend=False,glob=True,place="disco protoplanetário (sem ponto terrestre)",
+   cs=-4.60*GA,ce=-4.55*GA,sc=-4.567*GA,stb="Ga",disp="~4,57 Ga",prec="Ga",
+   unc="4,567 Ga (datação de CAIs — a idade mais antiga do Sistema Solar)"),
+ dict(id="proc:formacao-terra",t="Process",dom="geologia",lay="Geologia",ti="Acreção da Terra",
+   ct="inferência-científica",cf="alta",ev="datação radiométrica (zircões de Jack Hills, meteoritos)",
+   src="USGS — geocronologia (zircões/meteoritos); geociências revisadas (PD)",tier="A",
+   pub="publicável",srcPend=False,glob=True,place="proto-Terra (planetário)",
+   cs=-4.57*GA,ce=-4.50*GA,sc=-4.54*GA,stb="Ga",disp="~4,54 Ga",prec="Ga",
+   unc="~4,54 Ga; acreção ao longo de ~10–100 Ma"),
 ]
 
 # ClaimSets carregados como worked examples (claim-sobre-claims) — 3 conjuntos, 7 membros.
@@ -223,6 +259,8 @@ RELS = [
  ("rel:fotossintese-causou-goe","proc:fotossintese-oxigenica","proc:goe","causou"),
  ("rel:estados-influenciou-bastilha","evt:estados-gerais-1789","evt:queda-bastilha-1789","influenciou"),
  ("rel:chicxulub-causou-inverno","evt:impacto-chicxulub","state:clima-pos-impacto-kpg","causou"),
+ # ponte cósmico→tempo profundo terrestre (Frente A): a acreção da Terra precede o GOE.
+ ("rel:formacao-terra-precede-goe","proc:formacao-terra","proc:goe","precede"),
 ]
 
 def main():
