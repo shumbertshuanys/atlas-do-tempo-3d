@@ -48,20 +48,20 @@ Estas não são opiniões de estilo — são garantias estruturais já provadas 
 
 ---
 
-## 4. Estado atual (jun/2026) — frame AO VIVO contra a API pública (virada feita) + 3D real
+## 4. Estado atual (jul/2026) — frame AO VIVO + 3D real + estágio cósmico COM lastro (Frente A feita)
 
 | Componente | Estado |
 |---|---|
-| Banco reificado (PostgreSQL 16 + PostGIS 3.4) — carga **42**: 35 itens · 3 ClaimSets · 7 membros | ✅ reconstruível do DDL+migração |
+| Banco reificado (PostgreSQL 16 + PostGIS 3.4) — carga **47**: 40 itens · 3 ClaimSets · 7 membros · 21 fontes · 16 públicos | ✅ reconstruível do DDL+migração |
 | Camada de leitura gateada (função "O que acontecia no mundo?") | ✅ pública + curatorial |
 | **API só-leitura — envelope `MomentResult` (forma β):** `core.f_momento_publico`/`_curatorial` (`011-momento-envelope.sql`, **adição**; cada campo §8 do autoritativo, reusando os helpers A4) + serviço fino (`service/atlas_api.py`, 2 endpoints) + portão por grant (`db/roles/020-papeis-leitura.sql`, 2 papéis) | ✅ **existe, gateada e provada.** Ainda **NÃO** ligada ao frame. |
-| `verify.py` — invariantes T1–T10 (fixture T10: 2→3, 4→7, 39→42; `soma_ok` intacto) | ✅ 10/10 |
-| `test_a4.py` — simultaneidade gateada A4-T1..T10 | ✅ 10/10 |
+| `verify.py` — invariantes T1–T10 (inventário T10: itens **40** · total **47**; `soma_ok` intacto) | ✅ 10/10 |
+| `test_a4.py` — simultaneidade gateada A4-T1..T10 (A4-T5 total público no eixo = **16**) | ✅ 10/10 |
 | `test_a3.py` — envelope A3-T1..T10 (público nunca não-fato · todo item §8 · gating por host) | ✅ 10/10 |
 | `test_a3_http.py` — portão/HTTP A3-HTTP-1..5 (grant sem EXECUTE na curatorial · sem credencial de escrita) | ✅ 5/5 |
-| **Modelo puro do frame (`frame/atlas-model.js`):** fonte ÚNICA do §8 — `fromStaticArray`/`fromEnvelope` (mesmo `SceneModel`), `overlayFields`, produtores overlay→markup; `regimeLabel` (cena esquemática). Framework-free, testável em node. | ✅ **D-A3.7/6/virada** |
+| **Modelo puro do frame (`frame/atlas-model.js`):** fonte ÚNICA do §8 — `fromStaticArray`/`fromEnvelope` (mesmo `SceneModel`), `overlayFields`, produtores overlay→markup; `regimeLabel` (cena esquemática); `CT` inclui `medição-direta` hifenizado (Frente A). Framework-free, testável em node. | ✅ **D-A3.7/6/virada + Frente A** |
 | **Frame 3D de produção (`frame/atlas-3d-frame-v1.html`) — AO VIVO.** Consome `service/atlas_api.py` (`/momento/publico`, papel `atlas_public`) via `fromEnvelope`; comutador de fonte array⇄API; gates re-mapeados a papel/endpoint (OFF→pública; ON→curatorial token/localhost); badge esquemático no 3D. Shaders/câmera intactos. | ✅ **virado** (fallback honesto ao espelho local se a API cair) |
-| `frame/tests/` (node, framework-free) — `3D-T1..5` (degradação cruzada), `ASSET-T1..3` (cena esquemática, nunca foto), `LIVE-T1..4` (virada: público nunca vaza · gating por host · cósmico vazio · cliente sem segredo) | ✅ **5/5 · 3/3 · 4/4** |
+| `frame/tests/` (node, framework-free) — `3D-T1..5` (degradação cruzada), `ASSET-T1..3` (cena esquemática, nunca foto), `LIVE-T1..4` (virada: público nunca vaza · gating por host · **cósmico com lastro** · cliente sem segredo), **`COSMO-T1..5`** (cósmico não-vazio · nunca fato-documentado · anti-seeded · sem geometria · zero ClaimSet) | ✅ **5/5 · 3/3 · 4/4 · 5/5** |
 
 Sobre os artefatos em `db/`:
 
@@ -88,11 +88,22 @@ Sobre os artefatos em `db/`:
 - **Divergência da carga fixada na descoberta** (`docs/passos/nota-descoberta-a3-api-envelope.md`):
   só **`kpg-causa`** tem host em `v_publishable_public` (`chicxulub`); `rev-francesa`/`goe-ritmo` têm
   host com fonte-por-asset pendente → **não** vazam pela pública (gating por host, §5.5 do plano).
+- **Frente A — cósmicos como corpus COM fonte (jul/2026, FEITA).** 5 itens cósmicos entraram no
+  `migrate.py` como **adição** (`evt:big-bang`, `state:cmb-recombinacao`, `proc:formacao-galaxias`,
+  `evt:formacao-sistema-solar`, `proc:formacao-terra`), todos **corpus/approved/públicos**,
+  `sourceTimeBasis=Ga`, **sem geometria** (global → `displayPoint` NULL, `geometryRegime
+  semLugarTerrestre`), com `Source`/`provenance_ref` ([N1]). **Nenhum** é `fato-documentado`
+  (o CMB é `medição-direta`; os demais `inferência-científica`); **sem ClaimSet** (etapa-3.1 §10.7).
+  Aresta-ponte `proc:formacao-terra` —`precede`→ `proc:goe`. O estágio cósmico **deixou de vir
+  vazio** na porta pública. Plano/tabela assinada: `docs/passos/plano-cosmicos-corpus-com-fonte-v1_0.md`
+  + `docs/passos/nota-descoberta-cosmicos-frente-a.md`; handoff `registro-execucao-cosmicos-frente-a.md`.
+  O `CT` do frame ganhou a chave hifenizada `medição-direta`; os teasers `rep:*` (sem lastro) foram
+  substituídos, no espelho estático, pelos 5 itens reais do corpus.
 - **"Reconstruível do bootstrap" está PROVADO em Windows e Linux:**
   `cp .env.example .env` (ajuste os valores) e então `docker compose down -v && bash scripts/bootstrap.sh`
-  fecha **10/10 + 10/10 + 10/10 + 5/5** em volume novo (carga `claimsets 3 · membros 7 · total 42 ·
-  itens 35`). O bootstrap **recusa seguir sem `.env`** (12-factor). Suítes do frame (node):
-  `3D-T 5/5 · ASSET-T 3/3 · LIVE-T 4/4`.
+  fecha **10/10 + 10/10 + 10/10 + 5/5** em volume novo (carga `claimsets 3 · membros 7 · total 47 ·
+  itens 40 · fontes 21 · públicos 16`). O bootstrap **recusa seguir sem `.env`** (12-factor). Suítes
+  do frame (node): `3D-T 5/5 · ASSET-T 3/3 · LIVE-T 4/4 · COSMO-T 5/5`.
 - **3 ClaimSets de host `pending` foram removidos do frame** (`direitos-limites`, `inconfidencia`,
   `escravidao-central`) e enfileirados em `docs/roteiro/fila-revisao-claimsets-sensiveis.md`
   (Trilha C / Playbook §5) — aguardam host aprovado para reintegração; conteúdo preservado no git.
@@ -113,11 +124,16 @@ o §8, não reconstroem) · **D-A3.6** (assets procedurais rotulados esquemátic
 `displayPoint` aditivo em `011`) · **Config Opção A** (12-factor). Provado: `3D-T 5/5 · ASSET-T 3/3 ·
 LIVE-T 4/4` + os quatro verdes do banco. A divergência frame↔corpus está **extinta por construção**.
 
+**Frente A — cósmicos como corpus COM fonte: ✅ FEITA (jul/2026).** 5 âncoras (Abordagem 2) entraram
+como corpus fonteado; o estágio cósmico **deixou de vir vazio** na porta pública, sem promover seeded,
+sem foto, sem falsa equivalência. Provado: `COSMO-T 5/5` + re-verde de todas as suítes. Detalhe no §4 e
+em `docs/passos/registro-execucao-cosmicos-frente-a.md`.
+
 **Próximas frentes (não nesta sessão):**
 
-1. **Cósmicos como corpus COM fonte** (tarefa de modelagem registrada): hoje `rep:bigbang/galaxies/sun`
-   são só-frame → estágio cósmico **vazio na porta pública** (honesto). Modelar com fonte para preencher;
-   **nunca** promover seeded.
+1. **Cósmicos — enriquecer** (opcional): mídia real (fotos JWST/Hubble PD com `natureLabel` correto,
+   ainda adiada por F-A.3) e/ou a tensão de Hubble como controvérsia estreita (host público+fonteado),
+   se a `etapa-3.1` justificar. **Nunca** promover seeded; **nunca** transformar a cena em foto.
 2. **Reintegrar as 3 sensíveis** (`direitos-limites`, `inconfidencia`, `escravidao-central`) quando o
    host sair de `pending` (Trilha C; `docs/roteiro/fila-revisao-claimsets-sensiveis.md`). **Não** religar
    ao vivo enquanto host for `pending`.
@@ -139,14 +155,15 @@ bash scripts/bootstrap.sh
 
 Isso: **carrega `.env`** (recusa seguir sem ele), sobe Postgres+PostGIS num **volume persistente**
 (`atlas-pgdata`), aplica o DDL + camada de leitura (`010`) + envelope (`011`) + papéis (`020`), migra a
-carga (`claimsets 3 · membros 7 · total 42 · itens 35`), e roda `verify` + `test_a4` + `test_a3` +
+carga (`claimsets 3 · membros 7 · total 47 · itens 40`), e roda `verify` + `test_a4` + `test_a3` +
 `test_a3_http` (devem fechar **10/10 + 10/10 + 10/10 + 5/5**).
 
 Credenciais vêm do `.env` (ver `.env.example`): `ATLAS_DB_PASSWORD` (usuário `atlas`),
 `ATLAS_PUBLIC_PASSWORD`/`ATLAS_CURATORIAL_PASSWORD` (papéis de `020`), `ATLAS_CURATORIAL_TOKEN` (header).
 
-Suítes do frame (node, sem build): `node frame/tests/test_3d.js` · `test_assets.js` · `test_live.js`
-(**5/5 · 3/3 · 4/4**). As `LIVE-T` rodam sobre fixtures reais em `frame/tests/fixtures/`.
+Suítes do frame (node, sem build): `node frame/tests/test_3d.js` · `test_assets.js` · `test_live.js` ·
+`test_cosmo.js` (**5/5 · 3/3 · 4/4 · 5/5**). As `LIVE-T`/`COSMO-T` rodam sobre fixtures reais em
+`frame/tests/fixtures/`.
 
 Subir o serviço só-leitura e consultar o envelope (precisa das vars do `.env` no ambiente):
 
@@ -180,7 +197,7 @@ db/roles/          papéis de leitura — 020-papeis-leitura.sql (atlas_public /
 db/migration/      migrate.py (carga 42) · verify.py (T1–T10) · test_a4.py (A4-T1..T10) · test_a3.py (A3-T1..T10) · test_a3_http.py (A3-HTTP-1..5)
 db/reports/        relatórios verdes de referência (migration/verification/test_a4/test_a3/test_a3_http)
 service/           atlas_api.py — serviço fino só-leitura (2 endpoints; recusa subir sem var)
-frame/             atlas-model.js (modelo puro: fonte única do §8) · atlas-3d-frame-v1.html (frame AO VIVO) · tests/ (3D-T/ASSET-T/LIVE-T + fixtures/) · protótipo original
+frame/             atlas-model.js (modelo puro: fonte única do §8) · atlas-3d-frame-v1.html (frame AO VIVO) · tests/ (3D-T/ASSET-T/LIVE-T/COSMO-T + fixtures/) · protótipo original
 .env.example       modelo das 4 vars (12-factor); copie para .env (gitignored)
 docs/governanca/   Constituição (v1_1) + Playbook (v1_3) + Prompt-mestre  ← LER antes de decidir
 docs/passos/       handoffs por passo (mais recente: registro-execucao-a3-virada-3d + nota-descoberta-a3-virada-3d)
