@@ -21,7 +21,10 @@ const CT = {
   'reconstrução-modelada': { c: '#ff9e6d', g: '◈', n: 'reconstrução modelada' },
   'estimativa':            { c: '#f4a3c6', g: '~', n: 'estimativa' },
   'hipótese':              { c: '#9bb4d6', g: '?', n: 'hipótese' },
-  // o schema permite estes (ausentes da carga de 35) — mapeados p/ não cair no fail-loud:
+  // o schema permite estes — chave HIFENIZADA canônica (igual ao corpus/claim_type):
+  'medição-direta':        { c: '#8fe3ff', g: '▤', n: 'medição direta' },  // Frente A: usado por state:cmb-recombinacao
+  'aproximação-didática':  { c: '#bcd0ee', g: '≈', n: 'aproximação didática' },
+  // aliases com espaço (compat.; grafia antiga do frame) — mesmo alvo, sem fail-loud:
   'medição direta':        { c: '#8fe3ff', g: '▤', n: 'medição direta' },
   'aproximação didática':  { c: '#bcd0ee', g: '≈', n: 'aproximação didática' },
 };
@@ -350,9 +353,15 @@ function overlay2DLabelText(ov, item) {
    array enquanto a virada não troca para fromEnvelope. Verbatim do frame.
    ===================================================================== */
 const ITEMS = [
-  { id: 'rep:bigbang', stage: 'bigbang', dom: 'cosmos', title: 'Recombinação & fundo cósmico', claim: 'Representação do desacoplamento da radiação ~380 mil anos após o início da expansão. Cena ilustrativa do regime cósmico — não um ponto-evento georreferenciado.', ct: 'reconstrução-modelada', conf: 'média', u: [-13.81e9, -13.78e9], prov: 'corpus', rev: 'approved', global: true, src: 'Cosmologia de consenso (representação)', tier: 'B', repr: true },
-  { id: 'rep:galaxies', stage: 'galaxies', dom: 'cosmos', title: 'Primeiras galáxias', claim: 'Representação da montagem hierárquica de galáxias no universo jovem. Teaser do regime cósmico; o atlas ainda não reivindica objetos individuais aqui.', ct: 'reconstrução-modelada', conf: 'média', u: [-13.4e9, -12.6e9], prov: 'corpus', rev: 'approved', global: true, src: 'Astrofísica de consenso (representação)', tier: 'B', repr: true },
-  { id: 'rep:sun', stage: 'sun', dom: 'cosmos', title: 'Sol e disco protoplanetário', claim: 'Representação da formação do Sol e do disco que origina os planetas. O disco é ilustrativo; a Terra ainda não é um corpo de dados próprio nesta cena.', ct: 'reconstrução-modelada', conf: 'alta', u: [-4.62e9, -4.55e9], prov: 'corpus', rev: 'approved', global: true, src: 'Ciência planetária de consenso (representação)', tier: 'B', repr: true },
+  // ===== Cena CÓSMICA — corpus COM fonte (Frente A). Espelho fiel dos itens do banco
+  // (migrate.py); substitui os antigos teasers rep:* sem lastro. Todos GLOBAIS (sem
+  // displayPoint) → órbita/hash, nunca marcador terrestre; cena permanece esquemática.
+  // NENHUM 'fato-documentado'; incerteza como faixa; sem ClaimSet (etapa-3.1 §10.7). =====
+  { id: 'evt:big-bang', stage: 'bigbang', dom: 'cosmos', title: 'Big Bang — início da expansão', claim: 'Início da expansão do universo há ~13,8 Ga, inferido do fundo cósmico (Planck), da nucleossíntese primordial e da expansão observada. A singularidade t=0 é extrapolação do modelo — não um evento testemunhado.', ct: 'inferência-científica', conf: 'alta', u: [-13.807e9, -13.767e9], prov: 'corpus', rev: 'approved', global: true, src: 'NASA/ESA — Planck 2018; cosmologia de precisão (PD)', tier: 'A' },
+  { id: 'state:cmb-recombinacao', stage: 'bigbang', dom: 'cosmos', title: 'Fundo cósmico de micro-ondas (recombinação)', claim: 'A radiação de fundo em micro-ondas, liberada na recombinação (~380 mil anos após o início), é observada diretamente — o registro mais antigo mensurável do universo.', ct: 'medição-direta', conf: 'alta', u: [-13.80e9, -13.77e9], prov: 'corpus', rev: 'approved', global: true, src: 'NASA/ESA — Planck 2018; cosmologia de precisão (PD)', tier: 'A' },
+  { id: 'proc:formacao-galaxias', stage: 'galaxies', dom: 'cosmos', title: 'Formação das primeiras estrelas e galáxias', claim: 'Montagem das primeiras estrelas e galáxias no universo jovem (~13,5–13 Ga), inferida de levantamentos profundos; o timing é revisado ativamente com o JWST (confiança média).', ct: 'inferência-científica', conf: 'média', u: [-13.5e9, -13.0e9], prov: 'corpus', rev: 'approved', global: true, src: 'NASA/ESA — JWST e levantamentos profundos; astrofísica revisada (PD)', tier: 'A' },
+  { id: 'evt:formacao-sistema-solar', stage: 'sun', dom: 'cosmos', title: 'Formação do Sol e do Sistema Solar', claim: 'Formação do Sol e do disco protoplanetário há ~4,567 Ga, datada por inclusões refratárias (CAIs) em meteoritos — a idade mais antiga do Sistema Solar.', ct: 'inferência-científica', conf: 'alta', u: [-4.60e9, -4.55e9], prov: 'corpus', rev: 'approved', global: true, src: 'NASA — datação radiométrica de CAIs; ciência planetária revisada (PD)', tier: 'A' },
+  { id: 'proc:formacao-terra', stage: 'earth', dom: 'geologia', title: 'Acreção da Terra', claim: 'Acreção da Terra há ~4,54 Ga, ao longo de ~10–100 Ma, datada por zircões e meteoritos. Precede o Grande Evento de Oxigenação (ponte ao tempo profundo terrestre).', ct: 'inferência-científica', conf: 'alta', u: [-4.57e9, -4.50e9], prov: 'corpus', rev: 'approved', global: true, src: 'USGS — geocronologia (zircões/meteoritos); geociências revisadas (PD)', tier: 'A' },
 
   { id: 'proc:goe', stage: 'goe', dom: 'geologia', title: 'Grande Evento de Oxigenação', claim: 'Acúmulo de O₂ livre na atmosfera a partir de ~2,4 Ga, transformando a química de superfície da Terra.', ct: 'inferência-científica', conf: 'alta', u: [-2.5e9, -2.2e9], prov: 'corpus', rev: 'approved', lat: -26, lng: 28, place: 'Cráton do Kaapvaal (registro)', recon: true, src: 'PBDB, geociências', tier: 'A', claimset: 'goe-ritmo' },
   { id: 'proc:fotossintese-oxigenica', stage: 'goe', dom: 'biologia', title: 'Fotossíntese oxigênica', claim: 'Cianobactérias passam a liberar O₂ como subproduto da fotossíntese — a fonte do oxigênio do GOE.', ct: 'inferência-científica', conf: 'alta', u: [-2.7e9, -2.4e9], prov: 'corpus', rev: 'approved', global: true, src: 'PBDB, geomicrobiologia', tier: 'A' },
