@@ -38,7 +38,7 @@ test('LIVE-T2', 'janela 1789 pública: só iluminismo + posse-washington e ZERO 
   return { passou: true, detalhe: '2 itens públicos, 0 ClaimSets (gating por host: rev-francesa não vaza)' };
 });
 
-test('LIVE-T3', 'nenhum item órfão: fromEnvelope só produz o que o envelope traz; ClaimSet só com host exibido; cósmico público vazio', () => {
+test('LIVE-T3', 'nenhum item órfão: fromEnvelope só produz o que o envelope traz; ClaimSet só com host exibido; cósmico público AGORA tem lastro (Frente A)', () => {
   const falhas = [];
   [['kpg', envKpg], ['1789', env1789], ['cosmico', envCosmico]].forEach(([nm, env]) => {
     const sm = M.fromEnvelope(env, {});
@@ -47,10 +47,13 @@ test('LIVE-T3', 'nenhum item órfão: fromEnvelope só produz o que o envelope t
     const ids = new Set(sm.items.map(si => si.itemId));
     sm.claimSets.forEach(cs => { if (!ids.has(cs.host)) falhas.push(nm + ':ClaimSet ' + cs.claimSetId + ' sem host exibido (' + cs.host + ')'); });
   });
-  // cósmico público é vazio por construção (cósmicos sem lastro no corpus — §6 nº 2)
+  // cósmico público DEIXOU de ser vazio: agora traz corpus fonteado (Frente A, §6 nº 1 do plano).
+  // A divergência honesta virou lastro; nenhum item é exibido como não-fato.
   const smC = M.fromEnvelope(envCosmico, { stage: 'bigbang' });
-  if (smC.items.length !== 0) falhas.push('cósmico público deveria ser vazio (honesto), veio ' + smC.items.length);
-  return { passou: falhas.length === 0, detalhe: falhas.length ? falhas.join(', ') : 'sem órfãos; ClaimSets gated por host; cósmico público vazio' };
+  if (smC.items.length === 0) falhas.push('cósmico público veio vazio — deveria ter lastro após a Frente A');
+  const naoFato = smC.items.filter(si => !(si.isFact === true && si.selo === 'público'));
+  if (naoFato.length) falhas.push('cósmico com não-fato: ' + naoFato.map(r => r.itemId).join(', '));
+  return { passou: falhas.length === 0, detalhe: falhas.length ? falhas.join(', ') : 'sem órfãos; ClaimSets gated por host; cósmico público com lastro (' + smC.items.length + ' itens, todos fato)' };
 });
 
 test('LIVE-T4', 'cliente público sem segredo: frame usa /momento/publico por padrão e NÃO embute token/credencial curatorial', () => {

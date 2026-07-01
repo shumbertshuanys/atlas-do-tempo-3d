@@ -24,20 +24,26 @@ test('ASSET-T1', 'todo estágio tem rótulo esquemático (schematic=true) com pa
   return { passou: faltas.length === 0, detalhe: faltas.length ? faltas.join(', ') : M.STAGES.length + ' estágios rotulados como esquemáticos/reconstrução, nenhum como foto' };
 });
 
-test('ASSET-T2', 'os 3 teasers cósmicos são reconstrução-modelada + representação (repr) — nunca foto-fato', () => {
-  const cosmicos = ['rep:bigbang', 'rep:galaxies', 'rep:sun'];
+test('ASSET-T2', 'os cósmicos viraram corpus COM fonte (Frente A): fonteados, nunca seeded, nunca "fato-documentado" — e a cena cósmica segue esquemática (nunca foto)', () => {
+  const cosmicos = ['evt:big-bang', 'state:cmb-recombinacao', 'proc:formacao-galaxias', 'evt:formacao-sistema-solar', 'proc:formacao-terra'];
   const sm = M.fromStaticArray(M.ITEMS, M.CLAIMSETS, { porta: 'curatorial' });
   const faltas = [];
   cosmicos.forEach(id => {
     const si = sm.items.find(i => i.itemId === id);
     if (!si) { faltas.push(id + ':ausente'); return; }
-    if (si.epistemicType !== 'reconstrução-modelada') faltas.push(id + ':tipo!=reconstrução-modelada (' + si.epistemicType + ')');
+    // corpus com fonte — nunca seeded, nunca fato-documentado (ninguém testemunhou t=0)
+    if (si.selo === 'seeded-demo') faltas.push(id + ':seeded (não pode)');
+    if (si.epistemicType === 'fato-documentado') faltas.push(id + ':exibido como fato-documentado');
     const ov = M.overlayFields(si, 'curatorial');
-    if (ov.repr !== true) faltas.push(id + ':sem flag de representação');
-    // a bandeira/painel exibem a natureza de representação (não some)
-    if (!/Representação de cena/.test(M.overlayDetailHTML(ov, si))) faltas.push(id + ':painel sem aviso de representação');
+    if (!ov.attribution || !ov.attribution.label) faltas.push(id + ':sem atribuição de fonte');
   });
-  return { passou: faltas.length === 0, detalhe: faltas.length ? faltas.join(', ') : '3 cósmicos = reconstrução-modelada + representação rotulada' };
+  // a cena cósmica permanece ESQUEMÁTICA (nunca foto) — garantido no rótulo do estágio
+  ['bigbang', 'galaxies', 'sun'].forEach(sid => {
+    const lab = M.regimeLabel(sid);
+    if (!lab || lab.schematic !== true || !/esquemátic|reconstru|representaç/i.test(lab.label)) faltas.push(sid + ':cena não-esquemática');
+    if (/\bfotografia\b|\bfoto\b|fotorrealis/i.test(lab.label)) faltas.push(sid + ':cena reivindica foto');
+  });
+  return { passou: faltas.length === 0, detalhe: faltas.length ? faltas.join(', ') : '5 cósmicos = corpus fonteado, nunca seeded/fato-documentado; cena cósmica esquemática' };
 });
 
 test('ASSET-T3', 'regimeLabel ecoa o regime do estágio (cósmico/geológico/histórico) — rótulo coerente com o tempo', () => {
