@@ -131,9 +131,22 @@ em `docs/passos/registro-execucao-cosmicos-frente-a.md`.
 
 **Próximas frentes (não nesta sessão):**
 
-1. **Cósmicos — enriquecer** (opcional): mídia real (fotos JWST/Hubble PD com `natureLabel` correto,
-   ainda adiada por F-A.3) e/ou a tensão de Hubble como controvérsia estreita (host público+fonteado),
-   se a `etapa-3.1` justificar. **Nunca** promover seeded; **nunca** transformar a cena em foto.
+1. **F-A.3 — mídia cósmica real: PLANEJADA E ASSINADA (execução pendente; frente imediata, E14 em seguida).**
+   Forks travados: **técnica A** (envelope `011` estende `media[]`, padrão aditivo do `displayPoint`;
+   reaplicar `020` após o `CASCADE`) · **cadência 5 de uma vez** · **CMB reforçado com claim-sobre-asset**.
+   `natureLabel` por asset: **Big Bang = `representação-artística`** (sem foto, §10.7) · **CMB = `mapa`**
+   (medição visualizada; casa com `medição-direta`) · **galáxias = `fotografia`** (deep field real, legenda
+   de *look-back time*) · **sistema solar = `fotografia`** (disco protoplanetário **análogo**, legenda "não
+   o nosso Sol") · **Terra = `representação-artística`**. Distribuição: **2 foto · 1 mapa · 2 reconstrução**.
+   Guardrails inegociáveis: cena **sempre esquemática** (asset só no dossiê, **nunca** textura;
+   ASSET-T/COSMO-T4/R-V7) · **licença por asset** no portão da Etapa 1.1 (PD/CC-BY → `media-store`) ·
+   **anti-seeded** (aresta `representa` com proveniência) · suíte nova **`MEDIA-T1..5`** + re-verde de tudo
+   em volume novo. **Execução começa pela sub-checagem read-only do DDL** (`media_asset` já reificada?
+   `nature_label`/`license_profile_ref`/`storage_partition` + aresta `representa`?). Docs:
+   `docs/passos/plano-cosmicos-midia-real-f-a3-v1_0.md` +
+   `docs/passos/f-a3-decisoes-assinadas-handoff-execucao-v1_0.md` (o registro traz o prompt de retomada).
+   **Ainda aberto (opcional, pós-F-A.3):** tensão de Hubble como controvérsia estreita (host
+   público+fonteado), se a `etapa-3.1` justificar. **Nunca** promover seeded; **nunca** virar foto.
 2. **Reintegrar as 3 sensíveis** (`direitos-limites`, `inconfidencia`, `escravidao-central`) quando o
    host sair de `pending` (Trilha C; `docs/roteiro/fila-revisao-claimsets-sensiveis.md`). **Não** religar
    ao vivo enquanto host for `pending`.
@@ -200,7 +213,7 @@ service/           atlas_api.py — serviço fino só-leitura (2 endpoints; recu
 frame/             atlas-model.js (modelo puro: fonte única do §8) · atlas-3d-frame-v1.html (frame AO VIVO) · tests/ (3D-T/ASSET-T/LIVE-T/COSMO-T + fixtures/) · protótipo original
 .env.example       modelo das 4 vars (12-factor); copie para .env (gitignored)
 docs/governanca/   Constituição (v1_1) + Playbook (v1_3) + Prompt-mestre  ← LER antes de decidir
-docs/passos/       handoffs por passo (mais recente: registro-execucao-a3-virada-3d + nota-descoberta-a3-virada-3d)
+docs/passos/       handoffs por passo (mais recente: plano-cosmicos-midia-real-f-a3 + f-a3-decisoes-assinadas-handoff-execucao — planejamento F-A.3 assinado, execução pendente)
 docs/etapas/       corpus conceitual (Etapas 0–15 e sub-etapas)
 docs/roteiro/      estado-atual, pendências, divergências, decisões
 scripts/           bootstrap.sh
