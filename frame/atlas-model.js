@@ -1,4 +1,5 @@
 'use strict';
+(function () {
 /* =====================================================================
    ATLAS DO TEMPO 3D — MODELO PURO (framework-free, testável em node)
    Fonte ÚNICA do contrato visual §8. Sem DOM, sem THREE.
@@ -406,3 +407,6 @@ const API = {
 };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 if (typeof window !== 'undefined') window.AtlasModel = API;
+/* IIFE: consts internos NÃO vazam para o escopo léxico global da página —
+   sem ele, o `const CT` daqui colide com a desestruturação do inline do frame. */
+})();
