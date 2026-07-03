@@ -95,3 +95,64 @@ claimsets sensíveis.
 (4 playbooks, 2 constituições) e o espelho do CLAUDE.md já divergia 465 linhas
 do repo.
 **Revoga:** a prática de espelhar todo o histórico no projeto claude.ai.
+
+## D-20260703-06 — (retroativa) Virada ao vivo do frame 3D
+
+**Decisão:** o frame de produção (`frame/atlas-3d-frame-v1.html`) consome a API
+só-leitura (`/momento/publico`, papel `atlas_public`) via `fromEnvelope`; gates
+da UI re-mapeados a papel/endpoint (OFF→porta pública; ON→curatorial, token só
+localhost); comutador de fonte array⇄API com fallback honesto ao espelho
+estático se a API cair. Executada em jun–jul/2026 (D-A3.virada).
+**Porquê:** extinguir por construção a divergência frame↔corpus.
+**Evidência:** LIVE-T 4/4. **Revoga:** o espelho estático como fonte primária
+do frame (permanece só como fallback/offline).
+
+## D-20260703-07 — (retroativa) Cósmicos como corpus com fonte (Abordagem 2)
+
+**Decisão:** 5 âncoras cósmicas (`evt:big-bang`, `state:cmb-recombinacao`,
+`proc:formacao-galaxias`, `evt:formacao-sistema-solar`, `proc:formacao-terra`)
+entram no `migrate.py` como corpus/approved/públicos, com fonte ([N1]),
+`sourceTimeBasis=Ga`, sem geometria terrestre; nenhum é `fato-documentado`
+(CMB = `medição-direta`; demais = `inferência-científica`); sem ClaimSet.
+**Porquê:** o estágio cósmico vinha vazio na porta pública; teasers `rep:*`
+sem lastro violavam o piso epistêmico.
+**Evidência:** COSMO-T 5/5 + re-verde das demais suítes.
+**Revoga:** os teasers `rep:*` sem fonte no espelho estático.
+
+## D-20260703-08 — (retroativa) F-A.3 (mídia cósmica real) assinada; execução pendente
+
+**Decisão:** aprovado o plano da mídia cósmica real: envelope `011` estende
+`media[]` (padrão aditivo); cadência 5 de uma vez; CMB reforçado com
+claim-sobre-asset; `natureLabel` por asset (Big Bang/Terra =
+`representação-artística` · CMB = `mapa` · galáxias/sistema solar =
+`fotografia` com legendas de look-back/análogo); licença por asset no portão;
+cena sempre esquemática (asset só no dossiê, nunca textura); suíte `MEDIA-T1..5`.
+Execução começa por sub-checagem read-only do DDL.
+**Docs:** `docs/arquivo/passos/plano-cosmicos-midia-real-f-a3-v1_0.md` e
+`docs/arquivo/passos/f-a3-decisoes-assinadas-handoff-execucao-v1_0.md`.
+**Revoga:** nada; frente técnica seguinte.
+
+## D-20260703-09 — (retroativa) Segredos Opção A (12-factor); Opção B adiada para E14
+
+**Decisão:** credenciais saem do código para `.env` gitignored (`.env.example`
+documenta as 4 vars); `docker-compose` interpola `${ATLAS_DB_PASSWORD:?}`;
+bootstrap e serviço RECUSAM subir sem as vars. Gerenciador de segredos com
+rotação/auditoria/RIPD (Opção B) e auth real da porta curatorial ficam para a
+E14.
+**Porquê:** tirar segredo do código já; rotação/auditoria exigem
+infraestrutura que o MVP enxuto ainda não justifica.
+**Revoga:** senhas embutidas em código/compose.
+
+## D-20260703-10 — Revogação do achado "histórico git = 1 commit-monstro"
+
+**Decisão:** revogar a dívida "histórico git = 1 commit-monstro" — era **falso
+positivo de clone raso** (`--depth 1`): o clone usado pela auditoria só via o
+commit `3c37714` ("Snapshot..."); o histórico real do repo já era composto de
+commits lógicos anteriores (ex.: `b16af7e`, `8ffc802`, `375b09f`, `8005767`).
+Nada a corrigir no histórico; R5/R6 seguem valendo daqui em diante.
+**Corrige especificamente:** a dívida 2 do `docs/ESTADO.md` (versão de
+2026-07-03, Chat 1) e o achado "Histórico git = 1 commit-monstro" da auditoria
+arquivada em `docs/arquivo/auditorias/auditoria-jul-2026.md` — a auditoria NÃO
+é editada (documento histórico, não-normativo); esta entrada é a correção.
+**Revoga:** a dívida 2 do ESTADO.md de 2026-07-03 e o achado correspondente da
+auditoria.
