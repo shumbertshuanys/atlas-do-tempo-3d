@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Atlas do Tempo 3D — bootstrap reproduzível.
 # Sobe o banco persistente, aplica esquema + camada de leitura + envelope A3 +
-# papéis de leitura, migra os 35 itens, e roda as suítes de teste.
+# papéis de leitura, migra a carga real (40 itens · 47 claims), e roda as suítes de teste.
 # Sucesso = verify 10/10 E test_a4 10/10 E test_a3 10/10 E test_a3_http 5/5.
 set -euo pipefail
 
@@ -52,7 +52,7 @@ docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/read-la
 echo "==> (6/8) aplicando papéis de leitura (D-A3.5 — portão por grant)…"
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U atlas -d atlas < db/roles/020-papeis-leitura.sql
 
-echo "==> (7/8) instalando deps Python e migrando 35 itens…"
+echo "==> (7/8) instalando deps Python e migrando a carga (40 itens · 47 claims)…"
 "$PY" -m pip install -q -r db/requirements.txt
 "$PY" db/migration/migrate.py
 

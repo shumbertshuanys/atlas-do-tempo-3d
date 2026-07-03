@@ -11,15 +11,18 @@ brasileira (BNCC como camada de conformidade, não como origem do conteúdo).
 
 ## Subir o projeto
 
-Pré-requisitos: **Docker + Docker Compose** e **Python 3.9+**.
+Pré-requisitos: **Docker + Docker Compose**, **Python 3.9+** e **Node** (suítes do frame).
 
 ```bash
+cp .env.example .env     # credenciais locais (12-factor, gitignored) — ajuste os valores
 bash scripts/bootstrap.sh
 ```
 
-Esse comando sobe o banco (Postgres 16 + PostGIS 3.4, em volume persistente), aplica o esquema e a
-camada de leitura, migra os 35 itens e roda as suítes de teste. **Sucesso = `verify.py` 10/10 e
-`test_a4.py` 10/10.**
+Esse comando sobe o banco (Postgres 16 + PostGIS 3.4, em volume persistente), aplica o esquema, a
+camada de leitura, o envelope e os papéis, migra a carga real (**40 itens · 47 claims · 3 ClaimSets ·
+16 públicos**) e roda as suítes de teste. **Sucesso = `verify.py` 10/10 · `test_a4.py` 10/10 ·
+`test_a3.py` 10/10 · `test_a3_http.py` 5/5**, mais as suítes do frame
+(`node frame/tests/test_3d.js` etc.: **3D-T 5/5 · ASSET-T 3/3 · LIVE-T 4/4 · COSMO-T 5/5**).
 
 Consulta da função central (exemplo — simultâneos a 1789):
 
@@ -35,7 +38,7 @@ docker compose exec db psql -U atlas -d atlas \
 | `CLAUDE.md` | Constituição operacional (ler primeiro) |
 | `db/ddl/` | Esquema reificado (DDL) |
 | `db/read-layer/` | Camada de leitura gateada (função de simultaneidade) |
-| `db/migration/` | `migrate.py` (carga) · `verify.py` (T1–T10) · `test_a4.py` (A4-T1..T10) |
+| `db/migration/` | `migrate.py` (carga) · `verify.py` (T1–T10) · `test_a4.py` (A4-T1..T10) · `test_a3.py` (A3-T1..T10) · `test_a3_http.py` (A3-HTTP-1..5) |
 | `db/reports/` | Relatórios verdes de referência |
 | `frame/` | Frame 3D de produção (alvo da próxima ligação) + protótipo original |
 | `docs/ESTADO.md` | **Vivo** — estado atual + próxima missão (ler ao retomar) |
@@ -48,10 +51,9 @@ docker compose exec db psql -U atlas -d atlas \
 
 ## Estado atual
 
-Passo **A4 concluído e verde**: banco reificado (35 itens) + camada de leitura gateada da função
-"O que acontecia no mundo?". O frame 3D de produção ainda usa um **espelho curado estático** e
-**não** consome o banco ao vivo — essa ligação (junto com a produção 3D real, passo **A3**) é a
-próxima missão, detalhada em `docs/passos/passo-a4-leitura-simultaneidade-v1_0.md`.
+O estado vivo (o que está construído, dívidas e a próxima missão) mora em
+[`docs/ESTADO.md`](./docs/ESTADO.md) — resumo: banco reificado com a carga 40/47, frame 3D **ao
+vivo** consumindo a API só-leitura (`/momento/publico`), estágio cósmico com lastro (Frente A).
 
 ## Princípios não-negociáveis (resumo)
 
