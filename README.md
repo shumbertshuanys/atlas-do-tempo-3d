@@ -38,10 +38,11 @@ docker compose exec db psql -U atlas -d atlas \
 | `db/migration/` | `migrate.py` (carga) · `verify.py` (T1–T10) · `test_a4.py` (A4-T1..T10) |
 | `db/reports/` | Relatórios verdes de referência |
 | `frame/` | Frame 3D de produção (alvo da próxima ligação) + protótipo original |
-| `docs/governanca/` | Constituição + Playbook + Prompt-mestre |
-| `docs/passos/` | Handoffs por passo (mais recente: `passo-a4-…`) |
-| `docs/etapas/` | Corpus conceitual (Etapas 0–15) |
-| `docs/roteiro/` | Estado, pendências, divergências, decisões |
+| `docs/ESTADO.md` | **Vivo** — estado atual + próxima missão (ler ao retomar) |
+| `docs/DECISOES.md` | **Vivo** — log de decisões (append-only) |
+| `docs/fila-revisao-claimsets-sensiveis.md` | **Vivo** — fila de revisão humana (Tier 0) |
+| `docs/governanca/` | **Vivo** — Constituição v1.1 |
+| `docs/arquivo/` | Histórico não-normativo: `etapas/` · `passos/` · `governanca/` (playbooks, constituição v1.0, prompt-mestre) · `roteiro/` · `auditorias/` |
 | `docker-compose.yml` | Banco local persistente |
 | `scripts/bootstrap.sh` | Setup reproduzível |
 
