@@ -156,3 +156,18 @@ arquivada em `docs/arquivo/auditorias/auditoria-jul-2026.md` — a auditoria NÃ
 é editada (documento histórico, não-normativo); esta entrada é a correção.
 **Revoga:** a dívida 2 do ESTADO.md de 2026-07-03 e o achado correspondente da
 auditoria.
+
+## D-20260707-01 — Kit de validação de demanda (Chat 3); critérios pré-registrados
+
+**Decisão:** adotado o kit de validação com professores reais em `docs/validacao/`
+(roteiro de demo de 10 min sobre o frame, guia de entrevista semiestruturada,
+critérios de sinal/invalidação, perfil-alvo dos 5, ficha-template + consolidado).
+A demo roda na porta PÚBLICA por padrão (Caminho A); face curatorial só-pending
+(Caminho B) é opcional, local, e nunca liga seeded. Critérios de invalidação ficam
+PRÉ-REGISTRADOS antes das conversas: em caso ambíguo, as camadas educacionais
+(Etapas 6–9) NÃO reabrem; vereditos separados para tese/função central × camadas.
+O veredito pós-conversas entra como nova entrada aqui, com as 5 fichas de
+`docs/validacao/` como evidência (PG1).
+**Porquê:** demanda não validada é o risco nº 1 (auditoria jul/2026); fixar o
+critério antes das conversas evita mover a trave depois (anti-Goodhart).
+**Revoga:** nada. Instrumenta a prioridade (a) do ESTADO.md.

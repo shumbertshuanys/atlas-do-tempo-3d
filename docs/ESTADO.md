@@ -2,7 +2,8 @@
 
 > Documento vivo (regra R2). Atualizar ao fim de toda sessão que mude o estado.
 > Estado mutável mora AQUI — nunca em memória de conversa.
-> Última atualização: 2026-07-03 · Chat 2 (higiene de evidência, Claude Code)
+> Última atualização: 2026-07-07 · Chat 3 (kit de validação entregue, claude.ai;
+> execução das 5 conversas em curso no mundo real)
 
 ## Fase
 
@@ -68,8 +69,12 @@ com fonte ou remover da carga) é tarefa de modelagem futura, do dono.
    → antes de qualquer publicação; não religar ao vivo antes disso.
 2. **E14 — segredos Opção B:** gerenciador com rotação/auditoria/RIPD + auth
    real da porta curatorial (hoje token só localhost).
-3. **Demanda: zero conversas com professores até hoje.** Maior risco do produto
-   inteiro. → Chat 3 (pode correr em paralelo).
+3. **Demanda: em validação (kit do Chat 3 entregue; conversas em execução).**
+   Kit em `docs/validacao/` — roteiro de demo na porta pública, guia de
+   entrevista, critérios de sinal/invalidação PRÉ-REGISTRADOS (D-20260707-01),
+   perfil dos 5, fichas. Segue o maior risco do produto até o veredito, que
+   entra como nova entrada no DECISOES com as 5 fichas como evidência (PG1).
+   Camadas educacionais continuam congeladas até lá.
 4. **8 itens `seeded-demo` na carga** (gateados, nunca públicos): modelar com
    fonte real ou remover — decisão de modelagem do dono (ver verificação acima).
 
@@ -80,7 +85,8 @@ clone raso — ver `docs/DECISOES.md` D-20260703-10.*
 
 ## Prioridades
 
-(a) validar demanda com 5 professores reais (História/Geografia, pública e privada);
+(a) validar demanda com 5 professores reais — **em curso** (kit entregue;
+    execução do dono, no mundo real; veredito → DECISOES);
 (b) laço de ingestão assistida por IA com revisão tierizada — medir itens/hora
     de revisão humana (o número decide a economia do produto);
 (c) fatia vertical Brasil profunda e bonita no frame 3D
@@ -88,8 +94,16 @@ clone raso — ver `docs/DECISOES.md` D-20260703-10.*
 
 ## Próxima missão
 
-**Chat 3 — Roteiro de validação com professores** (claude.ai; execução no mundo
-real). Frente técnica seguinte já **planejada e assinada** (execução pendente):
+**Chat 4 — Spec do laço de ingestão assistida (Tier 0/1)** (claude.ai;
+decisão/desenho, sem código). Especificar o laço em que IA rascunha (fontes
+candidatas, claims tipados, correspondência moderna) e humano revisa — Tier 0
+pleno, Tier 1 amostragem — sempre entrando como `pending` (D-20260703-03).
+Produto: spec enxuto pronto para commit que destrave o Chat 5 (implementação
+v0 + **medição de itens/hora**, o número que decide a economia do produto).
+Guardrails: R7 (spec não vira tomo); IA nunca escreve claim/source/reviewStatus.
+Em paralelo, fora do chat: as 5 conversas do kit (dono, mundo real).
+
+Frente técnica seguinte já **planejada e assinada** (execução pendente):
 **F-A.3 — mídia cósmica real** — plano em
 `docs/arquivo/passos/plano-cosmicos-midia-real-f-a3-v1_0.md`, decisões assinadas
 em `docs/arquivo/passos/f-a3-decisoes-assinadas-handoff-execucao-v1_0.md`
@@ -104,8 +118,8 @@ licença por asset; anti-seeded; suíte nova `MEDIA-T1..5` + re-verde de tudo.
 |---|--------|------|--------|
 | 1 | Governança e limpeza (instruções v2.1, vivos, arquivamento) | claude.ai → Claude Code | ✅ FEITO (2026-07-03) |
 | 2 | Higiene de evidência do repo | Claude Code | ✅ FEITO (2026-07-03) |
-| 3 | Roteiro de validação com professores | claude.ai (execução: mundo real) | PRÓXIMO |
-| 4 | Espec do laço de ingestão assistida (Tier 0/1) | claude.ai | — |
+| 3 | Roteiro de validação com professores | claude.ai (execução: mundo real) | ✅ KIT ENTREGUE (2026-07-07) · conversas em curso |
+| 4 | Espec do laço de ingestão assistida (Tier 0/1) | claude.ai | PRÓXIMO |
 | 5 | Implementação do laço v0 + medição itens/hora | Claude Code | — |
 | 6 | Fatia vertical Brasil (curadoria + fontes A) | claude.ai | — |
 | 7 | Ingestão da fatia + frame + aula-piloto | Claude Code | — |
