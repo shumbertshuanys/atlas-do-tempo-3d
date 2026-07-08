@@ -2,8 +2,9 @@
 
 > Documento vivo (regra R2). Atualizar ao fim de toda sessão que mude o estado.
 > Estado mutável mora AQUI — nunca em memória de conversa.
-> Última atualização: 2026-07-07 · Chat 4 (spec do laço de ingestão entregue,
-> claude.ai; conversas de validação seguem em curso no mundo real)
+> Última atualização: 2026-07-08 · Chat 5 (laço de ingestão v0 implementado e
+> testado — Claude Code; revisão cronometrada de mérito pendente do dono;
+> conversas de validação seguem em curso no mundo real)
 
 ## Fase
 
@@ -39,6 +40,16 @@ a função central "O que acontecia no mundo neste momento?". Camadas educaciona
   públicos, `sourceTimeBasis=Ga`, sem geometria, com fonte ([N1]); nenhum é
   `fato-documentado`; sem ClaimSet. O estágio cósmico deixou de vir vazio na
   porta pública. Detalhe: `docs/arquivo/passos/registro-execucao-cosmicos-frente-a.md`.
+- **Laço de ingestão assistida — v0 IMPLEMENTADO (Chat 5, jul/2026).** CLI
+  `ingestao/laco.py` (6 comandos: rascunhar · validar · triar · lote · revisar ·
+  promover · medir) + módulos puros (vocab espelha o DDL · validação §4 · triagem
+  §5 · manifesto append-only · medição · promoção git-primeiro). Suíte
+  `ingestao/tests/test_laco.py` **14/14**, incl. os dois testes negativos (§10.4).
+  Promoção materializa `ingestao/carga-promovida.jsonl`, consumido **aditivo e
+  dormente** por `migrate.py` (zero mudança em `db/ddl/`/`db/read-layer/`).
+  Rodada de medição pronta: 11 pacotes T1 (`lote-medicao-01`, amostra 100%,
+  semente 20260708) + 3 T0 (fatia Brasil, PG5 `mediado`) validados e triados.
+  Decisões de abertura em D-20260708-01. **Falta o passo humano** (ver missão).
 
 ## Evidência (verificada em 2026-07-03, volume novo: `down -v` + bootstrap)
 
@@ -49,6 +60,7 @@ a função central "O que acontecia no mundo neste momento?". Camadas educaciona
 | `test_a3.py` (A3-T1..T10) | ✅ 10/10 |
 | `test_a3_http.py` (A3-HTTP-1..5) | ✅ 5/5 |
 | Frame (node): 3D-T · ASSET-T · LIVE-T · COSMO-T | ✅ 5/5 · 3/3 · 4/4 · 5/5 |
+| `ingestao/tests/test_laco.py` (LACO-T1..T12, +2 sub) — Chat 5 | ✅ 14/14 |
 
 Reports versionados em `db/reports/` regenerados desta execução (R6).
 
@@ -95,20 +107,31 @@ clone raso — ver `docs/DECISOES.md` D-20260703-10.*
 
 ## Próxima missão
 
-**Chat 5 — Implementação v0 do laço + medição de itens/hora** (Claude Code).
-Implementar exatamente `docs/ingestao/spec-laco-ingestao.md`: CLI mínima
-(rascunhar · validar · triar · revisar com cronômetro · promover · medir),
-manifesto append-only em `ingestao/manifest.jsonl`, promoção que materializa a
-carga **no git** (banco derivado — R1). DoD (PG1, spec §10): ≥1 lote Tier 1
-(≥10 pacotes) e ≥3 pacotes Tier 0 medidos ponta a ponta com timestamps reais;
-report `medicao-ingestao.json` commitado; **teste negativo** (promover pacote
-não-aprovado FALHA; rascunho com `review_status` reprova validação); suítes
-re-verdes com pinos de contagem atualizados no MESMO commit (R6 — atenção:
-`test_a4` pina o total público = 16). Guardrails: zero mudança em `db/ddl/` e
-`db/read-layer/`; IA nunca escreve claim/source/review_status; PG5 ≠ `público`
-promove no máximo a `pending` até papel competente designado (D-20260707-02).
-Duas escolhas do dono na abertura: amostragem inicial T1 e designação de papéis
-para sensível (spec §11). Em paralelo, fora do chat: as 5 conversas do kit.
+**Chat 5 — Passo humano do laço: revisão cronometrada + promoção + re-verde.**
+A máquina do laço está pronta e testada (ver "Construído"); o que resta é
+**estrutural do dono** (a IA nunca é revisor nem promotor). Rodar, na ordem:
+
+1. **Revisar com cronômetro** (mede o número-decisor — spec §1.6):
+   `python ingestao/laco.py revisar <pacote> --papel <papel> --ator <você>`
+   (interativo: abre, mostra o checklist §6.1, lê a decisão; `p` pausa). Para o
+   lote T1 (amostra 100%): os 11 `pkg-t1-*`. Para T0: os 3 `pkg-t0-*`, com os
+   papéis aplicáveis por PG5 (mediado ⇒ o dono NÃO é papel de mérito
+   historiográfico/jurídico — ver §6.2). Decisão de lote:
+   `python ingestao/laco.py lote decidir lote-medicao-01 --desfecho aprovado --ator <você>`.
+2. **Promover os aprovados** (só aprovado promove — teste negativo garante):
+   `python ingestao/laco.py promover <pacote> --ator <você> --commit <hash>`
+   (T1 e T0-público → `approved`; T0 `mediado` → `pending` na fila viva).
+3. **Medir e commitar** (R6, MESMO commit): `python ingestao/laco.py medir`;
+   `bash scripts/bootstrap.sh` para re-verde; **atualizar os pinos junto** —
+   `verify.py` (esper: itens/approved/corpus/claims_total) e o total público
+   (`verify` T5 e `test_a4` T5 pinam **16**), + README (40/47/16) — com
+   `migration_report.json` regenerado como evidência.
+
+Guardrails mantidos: zero mudança em `db/ddl/`/`db/read-layer/`; IA não escreve
+claim/source/review_status (estrutural + teste negativo); PG5 sensível só chega a
+`approved` com papel competente designado (hoje NÃO designado — D-20260708-01).
+Em paralelo, fora do chat: as 5 conversas do kit. **Pendências de higiene:** R8
+(sincronizar espelhos claude.ai) não executável por aqui; nota de handoff.
 
 Frente técnica seguinte já **planejada e assinada** (execução pendente):
 **F-A.3 — mídia cósmica real** — plano em
@@ -127,6 +150,6 @@ licença por asset; anti-seeded; suíte nova `MEDIA-T1..5` + re-verde de tudo.
 | 2 | Higiene de evidência do repo | Claude Code | ✅ FEITO (2026-07-03) |
 | 3 | Roteiro de validação com professores | claude.ai (execução: mundo real) | ✅ KIT ENTREGUE (2026-07-07) · conversas em curso |
 | 4 | Espec do laço de ingestão assistida (Tier 0/1) | claude.ai | ✅ FEITO (2026-07-07) |
-| 5 | Implementação do laço v0 + medição itens/hora | Claude Code | PRÓXIMO |
+| 5 | Implementação do laço v0 + medição itens/hora | Claude Code | ⏳ MÁQUINA FEITA (2026-07-08) · revisão cronometrada do dono pendente |
 | 6 | Fatia vertical Brasil (curadoria + fontes A) | claude.ai | — |
 | 7 | Ingestão da fatia + frame + aula-piloto | Claude Code | — |

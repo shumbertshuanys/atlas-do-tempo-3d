@@ -190,3 +190,31 @@ competente designado por entrada aqui; até lá promove no máximo a `pending` e
 junta-se à fila viva.
 **Revoga:** nada; instrumenta D-20260703-03 e destrava o Chat 5 (implementação
 v0 + medição de itens/hora).
+
+## D-20260708-01 — Laço de ingestão v0 implementado; parâmetros de abertura fixados
+
+**Decisão (abertura do Chat 5, spec §11):** (1) **amostragem do 1º lote Tier 1 =
+100%** — revisar todos os pacotes do primeiro lote para medir o TETO de custo
+humano antes de amostrar; só depois entra o regime 50% (calibração) → 20%
+(mudança desses números = nova entrada aqui). (2) **Papéis competentes para PG5
+≠ `público` NÃO designados** — logo todo pacote sensível promove no máximo a
+`pending` e junta-se à fila viva (`docs/fila-revisao-claimsets-sensiveis.md`);
+`approved` de tema P14 fica travado até designação por entrada aqui (coerente com
+a dívida 1 do ESTADO).
+**Implementação (v0):** CLI em `ingestao/laco.py` (`rascunhar · validar · triar ·
+lote · revisar · promover · medir`); vocabulários fechados espelham o DDL
+(`ingestao/vocab.py`); validação da lista fechada §4 (`validacao.py`); triagem
+conservadora §5 (`triagem.py`); manifesto append-only com timestamps de
+ferramenta (`manifesto.py`); medição do número-decisor (`medicao.py`); promoção
+git-primeiro que materializa `ingestao/carga-promovida.jsonl` (`promocao.py`),
+consumido de forma **aditiva e dormente** por `db/migration/migrate.py` (zero
+mudança em `db/ddl/` e `db/read-layer/`). Suíte `ingestao/tests/test_laco.py`
+verde 14/14, incluindo os dois testes negativos (§10.4): rascunho com
+`review_status` reprova a validação; promover pacote não-`aprovado` falha.
+**Escopo do humano (pendente, estrutural):** a revisão cronometrada de mérito
+(§6.1) é ato do dono — a IA nunca é revisor nem promotor. O lote
+`lote-medicao-01` (11 T1, amostra 100%, semente 20260708) e 3 pacotes T0 da
+fatia Brasil estão validados/triados e prontos; `medicao-ingestao.json` sai com
+números humanos assim que o dono rodar `revisar`/`promover` (e re-verde de banco
+após `bootstrap`, com pinos atualizados no mesmo commit — R6).
+**Revoga:** nada; executa a substância de D-20260707-02/D-20260703-03.

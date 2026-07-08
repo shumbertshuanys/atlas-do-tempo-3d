@@ -150,7 +150,8 @@ docker compose exec db psql -U atlas -d atlas \
 db/ddl/            esquema reificado (DDL) — 001-esquema-reificado.sql — MIOLO PROVADO
 db/read-layer/     camada de leitura gateada — 010-leitura-simultaneidade.sql · 011-momento-envelope.sql — MIOLO PROVADO
 db/roles/          papéis de leitura — 020-papeis-leitura.sql (atlas_public / atlas_curatorial; portão por grant)
-db/migration/      migrate.py (carga) · verify.py (T1–T10) · test_a4.py · test_a3.py · test_a3_http.py
+db/migration/      migrate.py (carga; lê carga aditiva do laço se existir) · verify.py (T1–T10) · test_a4.py · test_a3.py · test_a3_http.py
+ingestao/          laço de ingestão v0 — laco.py (CLI) · vocab/validacao/triagem/manifesto/medicao/promocao · rascunhos/ · manifest.jsonl · carga-promovida.jsonl (git=verdade, R1) · reports/ · tests/test_laco.py
 db/reports/        relatórios verdes de referência (regenerar e commitar JUNTO com a mudança — R6)
 service/           atlas_api.py — serviço fino só-leitura (2 endpoints; recusa subir sem var)
 frame/             atlas-model.js (modelo puro: fonte única do §8) · atlas-3d-frame-v1.html (AO VIVO) · tests/ · protótipo original
