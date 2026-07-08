@@ -1,0 +1,43 @@
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.513292+00:00", "pacote": "pkg-t0-chibata", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T0"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.513801+00:00", "pacote": "pkg-t0-lei-aurea", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T0"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.514037+00:00", "pacote": "pkg-t0-males", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T0"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.514244+00:00", "pacote": "pkg-t1-14bis", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.514594+00:00", "pacote": "pkg-t1-cabo", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.514803+00:00", "pacote": "pkg-t1-krakatoa", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.514996+00:00", "pacote": "pkg-t1-lindbergh", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.515190+00:00", "pacote": "pkg-t1-marconi", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.515378+00:00", "pacote": "pkg-t1-panama", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.515587+00:00", "pacote": "pkg-t1-raiox", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.515780+00:00", "pacote": "pkg-t1-sobral", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.515970+00:00", "pacote": "pkg-t1-suez", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.516161+00:00", "pacote": "pkg-t1-venus", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "pacote_gerado", "t": "2026-07-08T21:01:20.516350+00:00", "pacote": "pkg-t1-wright", "n_claims": 1, "n_fontes": 1, "n_relacoes": 0, "ms_maquina": 1500, "tier_proposto": "T1"}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.589328+00:00", "pacote": "pkg-t0-chibata", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.589644+00:00", "pacote": "pkg-t0-lei-aurea", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.589899+00:00", "pacote": "pkg-t0-males", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.590129+00:00", "pacote": "pkg-t1-14bis", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.590392+00:00", "pacote": "pkg-t1-cabo", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.590609+00:00", "pacote": "pkg-t1-krakatoa", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.590827+00:00", "pacote": "pkg-t1-lindbergh", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.591043+00:00", "pacote": "pkg-t1-marconi", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.591256+00:00", "pacote": "pkg-t1-panama", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.591468+00:00", "pacote": "pkg-t1-raiox", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.591688+00:00", "pacote": "pkg-t1-sobral", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.591942+00:00", "pacote": "pkg-t1-suez", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.592166+00:00", "pacote": "pkg-t1-venus", "resultado": "pass", "n_falhas": 0}
+{"evento": "validacao", "t": "2026-07-08T21:01:20.592381+00:00", "pacote": "pkg-t1-wright", "resultado": "pass", "n_falhas": 0}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:51.887667+00:00", "pacote": "pkg-t1-14bis", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:51.959807+00:00", "pacote": "pkg-t1-cabo", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.033009+00:00", "pacote": "pkg-t1-sobral", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.105667+00:00", "pacote": "pkg-t1-wright", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.178631+00:00", "pacote": "pkg-t1-lindbergh", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.250885+00:00", "pacote": "pkg-t1-raiox", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.324799+00:00", "pacote": "pkg-t1-marconi", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.398342+00:00", "pacote": "pkg-t1-suez", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.471390+00:00", "pacote": "pkg-t1-panama", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.545647+00:00", "pacote": "pkg-t1-venus", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.618990+00:00", "pacote": "pkg-t1-krakatoa", "tier": "T1", "ator": "laço-v0", "tier_proposto": "T1", "tier_calculado": "T1"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.691577+00:00", "pacote": "pkg-t0-lei-aurea", "tier": "T0", "ator": "laço-v0", "tier_proposto": "T0", "tier_calculado": "T0"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.765448+00:00", "pacote": "pkg-t0-chibata", "tier": "T0", "ator": "laço-v0", "tier_proposto": "T0", "tier_calculado": "T0"}
+{"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.839902+00:00", "pacote": "pkg-t0-males", "tier": "T0", "ator": "laço-v0", "tier_proposto": "T0", "tier_calculado": "T0"}
+{"evento": "lote_montado", "t": "2026-07-08T21:01:52.918216+00:00", "lote": "lote-medicao-01", "ids": ["pkg-t1-14bis", "pkg-t1-cabo", "pkg-t1-sobral", "pkg-t1-wright", "pkg-t1-lindbergh", "pkg-t1-raiox", "pkg-t1-marconi", "pkg-t1-suez", "pkg-t1-panama", "pkg-t1-venus", "pkg-t1-krakatoa"], "semente": 20260708, "amostra": ["pkg-t1-14bis", "pkg-t1-cabo", "pkg-t1-krakatoa", "pkg-t1-lindbergh", "pkg-t1-marconi", "pkg-t1-panama", "pkg-t1-raiox", "pkg-t1-sobral", "pkg-t1-suez", "pkg-t1-venus", "pkg-t1-wright"], "amostra_pct": 100, "ator": "laço-v0"}

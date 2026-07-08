@@ -1,0 +1,60 @@
+{
+  "pacote_id": "pkg-t1-sobral",
+  "item": {
+    "id": "evt:eclipse-sobral-1919",
+    "item_type": "Event",
+    "domain": "fisica",
+    "layer": "Astronomia",
+    "title": "Eclipse solar de Sobral (teste da relatividade geral)",
+    "canonical_start": -81.0,
+    "canonical_end": -81.0,
+    "canonical_scalar": -81.0,
+    "source_time_basis": "gregorianCE",
+    "display_time": "29 de maio de 1919",
+    "time_precision": "dia",
+    "time_uncertainty": "data exata",
+    "is_global": false,
+    "anachronism_note": null,
+    "geo": {
+      "lat": -3.69,
+      "lng": -40.35,
+      "place": "Sobral, Ceará",
+      "is_paleo": false,
+      "is_reconstruction": false,
+      "modern_correspondence": null
+    }
+  },
+  "claims": [
+    {
+      "local_id": "c1",
+      "statement": "A observação do eclipse de 29/05/1919 mediu a deflexão da luz estelar consistente com a RG.",
+      "claim_type": "medição-direta",
+      "confidence": "alta",
+      "evidence_level": "medição astronômica",
+      "uncertainty_profile": "data exata",
+      "bindings": [
+        {
+          "source_local_id": "s1",
+          "locator": "p. 291"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "local_id": "s1",
+      "title": "Dyson, Eddington & Davidson (1920), Phil. Trans. R. Soc. A 220",
+      "authority_tier": "A",
+      "license": "domínio público",
+      "uri": "https://royalsocietypublishing.org",
+      "is_aggregator": false
+    }
+  ],
+  "relations": [],
+  "claim_set": null,
+  "pg5": "público",
+  "tier_proposto": "T1",
+  "pessoa_viva_citada": false,
+  "contem_dado_menor": false,
+  "ms_maquina": 1500
+}

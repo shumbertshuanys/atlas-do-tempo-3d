@@ -1,0 +1,60 @@
+{
+  "pacote_id": "pkg-t1-krakatoa",
+  "item": {
+    "id": "evt:erupcao-krakatoa-1883",
+    "item_type": "Event",
+    "domain": "geologia",
+    "layer": "Vulcanismo",
+    "title": "Erupção do Krakatoa de 1883",
+    "canonical_start": -117.0,
+    "canonical_end": -117.0,
+    "canonical_scalar": -117.0,
+    "source_time_basis": "gregorianCE",
+    "display_time": "27 de agosto de 1883",
+    "time_precision": "dia",
+    "time_uncertainty": "data exata",
+    "is_global": false,
+    "anachronism_note": null,
+    "geo": {
+      "lat": -6.1,
+      "lng": 105.42,
+      "place": "Estreito de Sunda",
+      "is_paleo": false,
+      "is_reconstruction": false,
+      "modern_correspondence": null
+    }
+  },
+  "claims": [
+    {
+      "local_id": "c1",
+      "statement": "Em 27/08/1883 a erupção paroxística do Krakatoa foi registrada global e instrumentalmente.",
+      "claim_type": "fato-documentado",
+      "confidence": "alta",
+      "evidence_level": "registro documental/instrumental",
+      "uncertainty_profile": "data exata",
+      "bindings": [
+        {
+          "source_local_id": "s1",
+          "locator": "p. 1 (relatório)"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "local_id": "s1",
+      "title": "Royal Society (1888), The Eruption of Krakatoa and Subsequent Phenomena",
+      "authority_tier": "A",
+      "license": "domínio público",
+      "uri": "https://archive.org",
+      "is_aggregator": false
+    }
+  ],
+  "relations": [],
+  "claim_set": null,
+  "pg5": "público",
+  "tier_proposto": "T1",
+  "pessoa_viva_citada": false,
+  "contem_dado_menor": false,
+  "ms_maquina": 1500
+}

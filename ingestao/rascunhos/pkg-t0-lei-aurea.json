@@ -1,0 +1,60 @@
+{
+  "pacote_id": "pkg-t0-lei-aurea",
+  "item": {
+    "id": "evt:lei-aurea-1888",
+    "item_type": "Event",
+    "domain": "historia",
+    "layer": "Brasil",
+    "title": "Lei Áurea (abolição da escravidão)",
+    "canonical_start": -112.0,
+    "canonical_end": -112.0,
+    "canonical_scalar": -112.0,
+    "source_time_basis": "gregorianCE",
+    "display_time": "13 de maio de 1888",
+    "time_precision": "dia",
+    "time_uncertainty": "data exata",
+    "is_global": false,
+    "anachronism_note": "Tema regido pelas Leis 10.639/2003 e 11.645/2008; abolição não encerra o racismo estrutural.",
+    "geo": {
+      "lat": -22.9,
+      "lng": -43.18,
+      "place": "Rio de Janeiro",
+      "is_paleo": false,
+      "is_reconstruction": false,
+      "modern_correspondence": null
+    }
+  },
+  "claims": [
+    {
+      "local_id": "c1",
+      "statement": "A Lei nº 3.353 de 13/05/1888 declarou extinta a escravidão no Brasil.",
+      "claim_type": "fato-documentado",
+      "confidence": "alta",
+      "evidence_level": "documental",
+      "uncertainty_profile": "data exata",
+      "bindings": [
+        {
+          "source_local_id": "s1",
+          "locator": "Lei nº 3.353, art. 1º"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "local_id": "s1",
+      "title": "Coleção das Leis do Império do Brasil — Lei nº 3.353/1888",
+      "authority_tier": "A",
+      "license": "domínio público",
+      "uri": "https://www2.camara.leg.br",
+      "is_aggregator": false
+    }
+  ],
+  "relations": [],
+  "claim_set": null,
+  "pg5": "mediado",
+  "tier_proposto": "T0",
+  "pessoa_viva_citada": false,
+  "contem_dado_menor": false,
+  "ms_maquina": 1500
+}

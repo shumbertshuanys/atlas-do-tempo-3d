@@ -1,0 +1,60 @@
+{
+  "pacote_id": "pkg-t1-raiox",
+  "item": {
+    "id": "evt:descoberta-raios-x-1895",
+    "item_type": "Event",
+    "domain": "fisica",
+    "layer": "Física",
+    "title": "Descoberta dos raios X (Röntgen)",
+    "canonical_start": -105.0,
+    "canonical_end": -105.0,
+    "canonical_scalar": -105.0,
+    "source_time_basis": "gregorianCE",
+    "display_time": "8 de novembro de 1895",
+    "time_precision": "dia",
+    "time_uncertainty": "data exata",
+    "is_global": false,
+    "anachronism_note": null,
+    "geo": {
+      "lat": 49.79,
+      "lng": 9.94,
+      "place": "Würzburg, Alemanha",
+      "is_paleo": false,
+      "is_reconstruction": false,
+      "modern_correspondence": null
+    }
+  },
+  "claims": [
+    {
+      "local_id": "c1",
+      "statement": "Em 08/11/1895 Wilhelm Röntgen registrou uma nova radiação penetrante, os raios X.",
+      "claim_type": "fato-documentado",
+      "confidence": "alta",
+      "evidence_level": "documental",
+      "uncertainty_profile": "data exata",
+      "bindings": [
+        {
+          "source_local_id": "s1",
+          "locator": "comunicação de 1895"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "local_id": "s1",
+      "title": "Röntgen (1895), Sitzungsberichte der Würzburger Physik.-Medic. Gesellschaft",
+      "authority_tier": "A",
+      "license": "domínio público",
+      "uri": "https://archive.org",
+      "is_aggregator": false
+    }
+  ],
+  "relations": [],
+  "claim_set": null,
+  "pg5": "público",
+  "tier_proposto": "T1",
+  "pessoa_viva_citada": false,
+  "contem_dado_menor": false,
+  "ms_maquina": 1500
+}

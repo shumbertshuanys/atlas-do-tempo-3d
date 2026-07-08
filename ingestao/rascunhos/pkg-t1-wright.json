@@ -1,0 +1,60 @@
+{
+  "pacote_id": "pkg-t1-wright",
+  "item": {
+    "id": "evt:primeiro-voo-wright-1903",
+    "item_type": "Event",
+    "domain": "historia",
+    "layer": "Ciência e técnica",
+    "title": "Primeiro voo motorizado dos irmãos Wright",
+    "canonical_start": -97.0,
+    "canonical_end": -97.0,
+    "canonical_scalar": -97.0,
+    "source_time_basis": "gregorianCE",
+    "display_time": "17 de dezembro de 1903",
+    "time_precision": "dia",
+    "time_uncertainty": "data exata",
+    "is_global": false,
+    "anachronism_note": null,
+    "geo": {
+      "lat": 36.02,
+      "lng": -75.67,
+      "place": "Kitty Hawk, Carolina do Norte",
+      "is_paleo": false,
+      "is_reconstruction": false,
+      "modern_correspondence": null
+    }
+  },
+  "claims": [
+    {
+      "local_id": "c1",
+      "statement": "Em 17/12/1903 o Flyer dos Wright realizou o primeiro voo motorizado sustentado e controlado.",
+      "claim_type": "fato-documentado",
+      "confidence": "alta",
+      "evidence_level": "documental",
+      "uncertainty_profile": "data exata",
+      "bindings": [
+        {
+          "source_local_id": "s1",
+          "locator": "ficha do Wright Flyer"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "local_id": "s1",
+      "title": "Smithsonian National Air and Space Museum — acervo Wright",
+      "authority_tier": "A",
+      "license": "CC BY",
+      "uri": "https://airandspace.si.edu",
+      "is_aggregator": false
+    }
+  ],
+  "relations": [],
+  "claim_set": null,
+  "pg5": "público",
+  "tier_proposto": "T1",
+  "pessoa_viva_citada": false,
+  "contem_dado_menor": false,
+  "ms_maquina": 1500
+}

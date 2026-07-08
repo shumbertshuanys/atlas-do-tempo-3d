@@ -1,0 +1,60 @@
+{
+  "pacote_id": "pkg-t0-males",
+  "item": {
+    "id": "evt:levante-dos-males-1835",
+    "item_type": "Event",
+    "domain": "historia",
+    "layer": "Brasil",
+    "title": "Levante dos Malês",
+    "canonical_start": -165.0,
+    "canonical_end": -165.0,
+    "canonical_scalar": -165.0,
+    "source_time_basis": "gregorianCE",
+    "display_time": "24–25 de janeiro de 1835",
+    "time_precision": "dia",
+    "time_uncertainty": "intervalo de dias",
+    "is_global": false,
+    "anachronism_note": "História afro-brasileira e das religiões de matriz africana (Leis 10.639/2003 e 11.645/2008).",
+    "geo": {
+      "lat": -12.97,
+      "lng": -38.51,
+      "place": "Salvador, Bahia",
+      "is_paleo": false,
+      "is_reconstruction": false,
+      "modern_correspondence": null
+    }
+  },
+  "claims": [
+    {
+      "local_id": "c1",
+      "statement": "Em 24–25/01/1835 africanos muçulmanos escravizados e libertos se levantaram em Salvador.",
+      "claim_type": "fato-documentado",
+      "confidence": "alta",
+      "evidence_level": "documental",
+      "uncertainty_profile": "intervalo de dias",
+      "bindings": [
+        {
+          "source_local_id": "s1",
+          "locator": "autos do processo, 1835"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "local_id": "s1",
+      "title": "Documentação judicial e historiografia do Levante dos Malês",
+      "authority_tier": "B",
+      "license": "domínio público",
+      "uri": "https://arquivonacional.gov.br",
+      "is_aggregator": false
+    }
+  ],
+  "relations": [],
+  "claim_set": null,
+  "pg5": "mediado",
+  "tier_proposto": "T0",
+  "pessoa_viva_citada": false,
+  "contem_dado_menor": false,
+  "ms_maquina": 1500
+}

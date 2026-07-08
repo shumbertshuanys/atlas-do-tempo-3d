@@ -1,0 +1,40 @@
+{
+  "gerado_em": "2026-07-08T21:02:06.736790+00:00",
+  "hash_manifesto": "6604fc3b44ec1ded7a98d655e0fc426e2ab1f08cd92f9c5ee47de1c7fd3220e9",
+  "n_eventos": 43,
+  "amostras_completas": 0,
+  "amostras_descartadas": 0,
+  "numero_decisor": "minutos humanos por item aprovado, por tier",
+  "anti_goodhart": "o número decide a economia do produto e melhora o rascunho da IA; nunca é meta de produtividade do revisor, nunca encurta o checklist (Art.13)",
+  "tier_0": {
+    "n_itens_aprovados": 0,
+    "min_por_item_media": null,
+    "min_por_item_mediana": null,
+    "itens_por_hora": null,
+    "claims_por_hora": null
+  },
+  "tier_1": {
+    "n_itens_aprovados": 0,
+    "min_por_item_media": null,
+    "min_por_item_mediana": null,
+    "itens_por_hora": null,
+    "claims_por_hora": null
+  },
+  "lotes": [
+    {
+      "lote": "lote-medicao-01",
+      "n_ids": 11,
+      "n_amostrados": 11,
+      "semente": 20260708,
+      "desfecho": null,
+      "min_lote": 0.0,
+      "itens_aprovados": 0
+    }
+  ],
+  "taxa_devolucao": {
+    "devolvidos": 0,
+    "total_decididos": 0,
+    "taxa": null
+  },
+  "custo_maquina_ms_informativo": 21000
+}

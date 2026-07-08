@@ -1,0 +1,91 @@
+{
+  "total": 14,
+  "passaram": 14,
+  "falharam": 0,
+  "testes": [
+    {
+      "id": "LACO-T1",
+      "descricao": "pacote T1 bem-formado passa a validação",
+      "passou": true,
+      "detalhe": "falhas=[]"
+    },
+    {
+      "id": "LACO-T2",
+      "descricao": "NEGATIVO: rascunho com review_status reprova validação (§3.1/§10.4)",
+      "passou": true,
+      "detalhe": "ok=False; falhas=[\"campo-proibido: 'review_status' presente no rascunho (§3.1/§4.2) — nasce só na promoção humana\"]"
+    },
+    {
+      "id": "LACO-T2.provenance_status",
+      "descricao": "NEGATIVO: provenance_status no rascunho reprova validação",
+      "passou": true,
+      "detalhe": "falhas=[\"campo-proibido: 'provenance_status' presente no rascunho (§3.1/§4.2) — nasce só na promoção humana\"]"
+    },
+    {
+      "id": "LACO-T2.per_asset_source_confirmed",
+      "descricao": "NEGATIVO: per_asset_source_confirmed no rascunho reprova validação",
+      "passou": true,
+      "detalhe": "falhas=[\"campo-proibido: 'per_asset_source_confirmed' presente no rascunho (§3.1/§4.2) — nasce só na promoção humana\"]"
+    },
+    {
+      "id": "LACO-T3",
+      "descricao": "[N1]: binding com localizador vazio reprova (§4.3)",
+      "passou": true,
+      "detalhe": "falhas=['[N1] claims[0] binding com localizador VAZIO (página/URL/trecho §4.3)']"
+    },
+    {
+      "id": "LACO-T4",
+      "descricao": "3Z: start>end e scalar fora do intervalo reprovam (§4.4)",
+      "passou": true,
+      "detalhe": ""
+    },
+    {
+      "id": "LACO-T5",
+      "descricao": "geo: paleo ⇒ reconstrução (§4.5)",
+      "passou": true,
+      "detalhe": "falhas=['geo: paleoposição sem is_reconstruction (paleo ⇒ reconstrução §4.5 / CHECK do banco)']"
+    },
+    {
+      "id": "LACO-T6",
+      "descricao": "id: colisão com corpus e padrão inválido reprovam (§4.6)",
+      "passou": true,
+      "detalhe": ""
+    },
+    {
+      "id": "LACO-T7",
+      "descricao": "3Z número-seco reprova; agregador como fonte reprova (§4.4/Art.5)",
+      "passou": true,
+      "detalhe": ""
+    },
+    {
+      "id": "LACO-T8",
+      "descricao": "triagem conservadora: T1 só quando TODAS; senão T0 (§5)",
+      "passou": true,
+      "detalhe": "T1=T1 motivos=[]"
+    },
+    {
+      "id": "LACO-T9",
+      "descricao": "ClaimSet: resolution vazia no rascunho + tier T0 obrigatório (§3.2/§5)",
+      "passou": true,
+      "detalhe": "falhas=['fronteira: claim_set.resolution deve ser VAZIA no rascunho — escrita só à mão pelo revisor (§3.2/§6.1.10)', 'triagem: ClaimSet proposto exige tier T0 obrigatório (§3.2/§5)']"
+    },
+    {
+      "id": "LACO-T10",
+      "descricao": "NEGATIVO: promover não-aprovado FALHA; aprovado promove; sensível→pending (§7/§10.4)",
+      "passou": true,
+      "detalhe": "recusa_sem=True recusa_dev=True approved=True pending=True"
+    },
+    {
+      "id": "LACO-T11",
+      "descricao": "cronometria: decidido−aberto−pausas; aberto-sem-decisão descartado (§1.5)",
+      "passou": true,
+      "detalhe": "segundos=240.0 incompletas=1"
+    },
+    {
+      "id": "LACO-T12",
+      "descricao": "medição: minutos/item e itens/hora por tier (§1.6/§8)",
+      "passou": true,
+      "detalhe": "t0={'n_itens_aprovados': 1, 'min_por_item_media': 2.0, 'min_por_item_mediana': 2.0, 'itens_por_hora': 30.0, 'claims_por_hora': 60.0}"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "pacote_id": "pkg-t0-chibata",
+  "item": {
+    "id": "evt:revolta-da-chibata-1910",
+    "item_type": "Event",
+    "domain": "historia",
+    "layer": "Brasil",
+    "title": "Revolta da Chibata",
+    "canonical_start": -90.0,
+    "canonical_end": -90.0,
+    "canonical_scalar": -90.0,
+    "source_time_basis": "gregorianCE",
+    "display_time": "22–27 de novembro de 1910",
+    "time_precision": "dia",
+    "time_uncertainty": "intervalo de dias",
+    "is_global": false,
+    "anachronism_note": "Tema de história afro-brasileira (Lei 10.639/2003).",
+    "geo": {
+      "lat": -22.9,
+      "lng": -43.15,
+      "place": "Baía de Guanabara, Rio de Janeiro",
+      "is_paleo": false,
+      "is_reconstruction": false,
+      "modern_correspondence": null
+    }
+  },
+  "claims": [
+    {
+      "local_id": "c1",
+      "statement": "Em novembro de 1910 marinheiros liderados por João Cândido se revoltaram contra os castigos físicos.",
+      "claim_type": "fato-documentado",
+      "confidence": "alta",
+      "evidence_level": "documental",
+      "uncertainty_profile": "intervalo de dias",
+      "bindings": [
+        {
+          "source_local_id": "s1",
+          "locator": "fundo Marinha, 1910"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "local_id": "s1",
+      "title": "Arquivo Nacional — documentação da Revolta da Chibata",
+      "authority_tier": "B",
+      "license": "domínio público",
+      "uri": "https://arquivonacional.gov.br",
+      "is_aggregator": false
+    }
+  ],
+  "relations": [],
+  "claim_set": null,
+  "pg5": "mediado",
+  "tier_proposto": "T0",
+  "pessoa_viva_citada": false,
+  "contem_dado_menor": false,
+  "ms_maquina": 1500
+}

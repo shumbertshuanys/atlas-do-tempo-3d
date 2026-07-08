@@ -28,6 +28,12 @@ DSN = "host=localhost dbname=atlas user=atlas password=%s" % os.environ["ATLAS_D
 # independente do diretório de trabalho e do SO.
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "out")
 
+# Carga ADITIVA do laço de ingestão (git primeiro — R1; spec §7). Arquivo
+# append-only materializado pela promoção humana. AUSENTE ⇒ carga dormente:
+# migrate.py se comporta exatamente como antes (suítes-base intactas).
+PROMOVIDOS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          "..", "..", "ingestao", "carga-promovida.jsonl")
+
 # --------------------------------------------------------------------------
 # 35 itens extraídos do protótipo. Campos canônicos (cs,ce,scalar,stb,disp,prec,unc)
 # derivados das strings de data do protótipo segundo o datum 3Z (T0=2000.0 CE).
@@ -358,6 +364,100 @@ def main():
     cu.execute("""INSERT INTO iso.media_asset_isolated(id,nature_label,license_label,share_alike,attribution_text)
                   VALUES('iso:osm-base','mapa','ODbL',true,'© OpenStreetMap contributors, ODbL');""")
 
+    # -------------------------------------------------------------------
+    # Carga ADITIVA: itens PROMOVIDOS pelo laço de ingestão assistida
+    # (spec docs/ingestao/spec-laco-ingestao.md §7). Consome
+    # ingestao/carga-promovida.jsonl ao lado de ITENS, sem tocar o DDL: usa as
+    # mesmas tabelas/CHECKs provados. review_status e provenance_status já vêm
+    # gravados pelo ATO HUMANO de promoção (nunca pela IA). Ausente ⇒ zero itens.
+    # -------------------------------------------------------------------
+    n_promovidos = 0
+    if os.path.exists(PROMOVIDOS):
+        with open(PROMOVIDOS, encoding="utf-8") as fp:
+            for linha in fp:
+                linha = linha.strip()
+                if not linha:
+                    continue
+                reg = json.loads(linha)
+                it = reg["item"]; pkg = reg["pacote_id"]
+                rev = reg["review_status"]; provst = reg["provenance_status"]
+                conf = bool(reg.get("per_asset_source_confirmed", rev == "approved"))
+                node(it["id"], "item")
+                cu.execute("""INSERT INTO core.knowledge_item
+                  (id,item_type,domain,layer,title,canonical_start,canonical_end,canonical_scalar,
+                   source_time_basis,display_time,time_precision,time_uncertainty,
+                   review_status,provenance_status,per_asset_source_confirmed,is_global,anachronism_note)
+                  VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);""",
+                  (it["id"], it["item_type"], it["domain"], it.get("layer"), it["title"],
+                   it["canonical_start"], it["canonical_end"], it["canonical_scalar"],
+                   it["source_time_basis"], it["display_time"], it.get("time_precision"),
+                   it.get("time_uncertainty"), rev, provst, conf,
+                   bool(it.get("is_global", False)), it.get("anachronism_note")))
+
+                sid_de = {}
+                for s in reg["sources"]:
+                    sid = "src:%s:%s" % (pkg, s["local_id"])
+                    node(sid, "source")
+                    cu.execute("INSERT INTO core.source(id,title,source_type,authority_tier,license,uri) "
+                               "VALUES(%s,%s,%s,%s,%s,%s);",
+                               (sid, s["title"], "domínio", s["authority_tier"], s.get("license"), s.get("uri")))
+                    sid_de[s["local_id"]] = sid
+
+                # claims + proveniência: o localizador do binding vira
+                # provenance_metadata (dataset_snapshot) — [N1] materializado.
+                for c in reg["claims"]:
+                    b = (c.get("bindings") or [{}])[0]
+                    sid = sid_de.get(b.get("source_local_id"))
+                    pid = "prov:%s:%s" % (pkg, c["local_id"])
+                    cu.execute("INSERT INTO core.provenance_metadata(id,source_id,method,dataset_snapshot,scale_version,created_by) "
+                               "VALUES(%s,%s,%s,%s,%s,%s);",
+                               (pid, sid, "ingestão-laço", b.get("locator"), "3Z",
+                                "promocao:" + (reg.get("promotor") or "")))
+                    cid = "claim:%s:%s" % (pkg, c["local_id"])
+                    node(cid, "claim")
+                    cu.execute("""INSERT INTO core.claim(id,subject_ref,statement,claim_type,evidence_level,confidence,review_status,provenance_ref)
+                                  VALUES(%s,%s,%s,%s,%s,%s,%s,%s);""",
+                               (cid, it["id"], c["statement"], c["claim_type"], c.get("evidence_level"),
+                                c["confidence"], rev, pid))
+
+                geo = it.get("geo")
+                if isinstance(geo, dict) and geo.get("lat") is not None and geo.get("lng") is not None:
+                    cu.execute("""INSERT INTO core.geometry_version(id,item_ref,geom,is_paleo,is_reconstruction,scale_version)
+                                  VALUES(%s,%s,ST_SetSRID(ST_MakePoint(%s,%s),4326),%s,%s,%s);""",
+                               ("geom:" + it["id"], it["id"], geo["lng"], geo["lat"],
+                                bool(geo.get("is_paleo")), bool(geo.get("is_reconstruction")), "3Z"))
+
+                for k, r in enumerate(reg.get("relations") or []):
+                    b = (r.get("bindings") or [{}])[0]
+                    sid = sid_de.get(b.get("source_local_id"))
+                    pid = "prov:%s:rel%d" % (pkg, k)
+                    cu.execute("INSERT INTO core.provenance_metadata(id,source_id,method,dataset_snapshot,scale_version,created_by) "
+                               "VALUES(%s,%s,%s,%s,%s,%s);",
+                               (pid, sid, "ingestão-laço", b.get("locator"), "3Z", "promocao"))
+                    rid = r.get("local_id") or ("rel:%s:%d" % (pkg, k))
+                    node(rid, "relationship")
+                    cu.execute("""INSERT INTO core.relationship(id,src_ref,dst_ref,relation_type,is_affirmative,provenance_ref,review_status)
+                                  VALUES(%s,%s,%s,%s,true,%s,%s);""",
+                               (rid, r["src_ref"], r["dst_ref"], r["relation_type"], pid, rev))
+
+                # ClaimSet (se houver): resolution escrita à mão pelo revisor (§6.1.10).
+                cset = reg.get("claim_set")
+                if isinstance(cset, dict):
+                    csid = "cset:%s" % pkg
+                    node(csid, "claim_set")
+                    cu.execute("INSERT INTO core.claim_set(id,subject_ref,tema,resolution) VALUES(%s,%s,%s,%s);",
+                               (csid, it["id"], cset.get("tema"), cset.get("resolution")))
+                    hpid = "prov:%s:%s" % (pkg, reg["claims"][0]["local_id"])
+                    for mi, m in enumerate(cset.get("members") or []):
+                        mcid = "claim:%s:m%d" % (pkg, mi)
+                        node(mcid, "claim")
+                        cu.execute("""INSERT INTO core.claim(id,subject_ref,statement,claim_type,confidence,review_status,provenance_ref)
+                                      VALUES(%s,%s,%s,%s,%s,%s,%s);""",
+                                   (mcid, csid, m["statement"], "interpretação", "média", rev, hpid))
+                        cu.execute("INSERT INTO core.claim_set_member(claim_set_id,claim_id,weight,stance) VALUES(%s,%s,%s,%s);",
+                                   (csid, mcid, m.get("weight"), m.get("stance")))
+                n_promovidos += 1
+
     cx.commit()
 
     # relatório de carga
@@ -382,6 +482,7 @@ def main():
       "fontes_por_asset_pendentes": one("SELECT count(*) FROM core.knowledge_item WHERE per_asset_source_confirmed=false"),
       "exibivel_curatorial": one("SELECT count(*) FROM core.v_displayable_curatorial"),
       "publicavel_publico": one("SELECT count(*) FROM core.v_publishable_public"),
+      "promovidos_laco": n_promovidos,
     }
     os.makedirs(OUT_DIR, exist_ok=True)
     with open(os.path.join(OUT_DIR, "migration_report.json"),"w",encoding="utf-8") as f:
