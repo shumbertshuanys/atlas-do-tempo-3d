@@ -2,8 +2,8 @@
 
 > Documento vivo (regra R2). Atualizar ao fim de toda sessão que mude o estado.
 > Estado mutável mora AQUI — nunca em memória de conversa.
-> Última atualização: 2026-07-07 · Chat 3 (kit de validação entregue, claude.ai;
-> execução das 5 conversas em curso no mundo real)
+> Última atualização: 2026-07-07 · Chat 4 (spec do laço de ingestão entregue,
+> claude.ai; conversas de validação seguem em curso no mundo real)
 
 ## Fase
 
@@ -87,21 +87,28 @@ clone raso — ver `docs/DECISOES.md` D-20260703-10.*
 
 (a) validar demanda com 5 professores reais — **em curso** (kit entregue;
     execução do dono, no mundo real; veredito → DECISOES);
-(b) laço de ingestão assistida por IA com revisão tierizada — medir itens/hora
-    de revisão humana (o número decide a economia do produto);
+(b) laço de ingestão assistida por IA com revisão tierizada — **spec pronto**
+    (Chat 4: `docs/ingestao/spec-laco-ingestao.md`, D-20260707-02); falta a
+    implementação v0 e a medição de itens/hora (o número decide a economia);
 (c) fatia vertical Brasil profunda e bonita no frame 3D
     (eixo 1500 · 1789 · 1822 · 1888 · 1914 · 1945 + simultaneidade mundial).
 
 ## Próxima missão
 
-**Chat 4 — Spec do laço de ingestão assistida (Tier 0/1)** (claude.ai;
-decisão/desenho, sem código). Especificar o laço em que IA rascunha (fontes
-candidatas, claims tipados, correspondência moderna) e humano revisa — Tier 0
-pleno, Tier 1 amostragem — sempre entrando como `pending` (D-20260703-03).
-Produto: spec enxuto pronto para commit que destrave o Chat 5 (implementação
-v0 + **medição de itens/hora**, o número que decide a economia do produto).
-Guardrails: R7 (spec não vira tomo); IA nunca escreve claim/source/reviewStatus.
-Em paralelo, fora do chat: as 5 conversas do kit (dono, mundo real).
+**Chat 5 — Implementação v0 do laço + medição de itens/hora** (Claude Code).
+Implementar exatamente `docs/ingestao/spec-laco-ingestao.md`: CLI mínima
+(rascunhar · validar · triar · revisar com cronômetro · promover · medir),
+manifesto append-only em `ingestao/manifest.jsonl`, promoção que materializa a
+carga **no git** (banco derivado — R1). DoD (PG1, spec §10): ≥1 lote Tier 1
+(≥10 pacotes) e ≥3 pacotes Tier 0 medidos ponta a ponta com timestamps reais;
+report `medicao-ingestao.json` commitado; **teste negativo** (promover pacote
+não-aprovado FALHA; rascunho com `review_status` reprova validação); suítes
+re-verdes com pinos de contagem atualizados no MESMO commit (R6 — atenção:
+`test_a4` pina o total público = 16). Guardrails: zero mudança em `db/ddl/` e
+`db/read-layer/`; IA nunca escreve claim/source/review_status; PG5 ≠ `público`
+promove no máximo a `pending` até papel competente designado (D-20260707-02).
+Duas escolhas do dono na abertura: amostragem inicial T1 e designação de papéis
+para sensível (spec §11). Em paralelo, fora do chat: as 5 conversas do kit.
 
 Frente técnica seguinte já **planejada e assinada** (execução pendente):
 **F-A.3 — mídia cósmica real** — plano em
@@ -119,7 +126,7 @@ licença por asset; anti-seeded; suíte nova `MEDIA-T1..5` + re-verde de tudo.
 | 1 | Governança e limpeza (instruções v2.1, vivos, arquivamento) | claude.ai → Claude Code | ✅ FEITO (2026-07-03) |
 | 2 | Higiene de evidência do repo | Claude Code | ✅ FEITO (2026-07-03) |
 | 3 | Roteiro de validação com professores | claude.ai (execução: mundo real) | ✅ KIT ENTREGUE (2026-07-07) · conversas em curso |
-| 4 | Espec do laço de ingestão assistida (Tier 0/1) | claude.ai | PRÓXIMO |
-| 5 | Implementação do laço v0 + medição itens/hora | Claude Code | — |
+| 4 | Espec do laço de ingestão assistida (Tier 0/1) | claude.ai | ✅ FEITO (2026-07-07) |
+| 5 | Implementação do laço v0 + medição itens/hora | Claude Code | PRÓXIMO |
 | 6 | Fatia vertical Brasil (curadoria + fontes A) | claude.ai | — |
 | 7 | Ingestão da fatia + frame + aula-piloto | Claude Code | — |

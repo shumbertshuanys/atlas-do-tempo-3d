@@ -45,6 +45,7 @@ docker compose exec db psql -U atlas -d atlas \
 | `docs/DECISOES.md` | **Vivo** — log de decisões (append-only) |
 | `docs/fila-revisao-claimsets-sensiveis.md` | **Vivo** — fila de revisão humana (Tier 0) |
 | `docs/validacao/` | **Vivo** — kit de validação de demanda (demo, entrevista, fichas) |
+| `docs/ingestao/` | **Vivo** — spec do laço de ingestão assistida (Tier 0/1) |
 | `docs/governanca/` | **Vivo** — Constituição v1.1 |
 | `docs/arquivo/` | Histórico não-normativo: `etapas/` · `passos/` · `governanca/` (playbooks, constituição v1.0, prompt-mestre) · `roteiro/` · `auditorias/` |
 | `docker-compose.yml` | Banco local persistente |

@@ -171,3 +171,22 @@ O veredito pós-conversas entra como nova entrada aqui, com as 5 fichas de
 **Porquê:** demanda não validada é o risco nº 1 (auditoria jul/2026); fixar o
 critério antes das conversas evita mover a trave depois (anti-Goodhart).
 **Revoga:** nada. Instrumenta a prioridade (a) do ESTADO.md.
+
+## D-20260707-02 — Spec do laço de ingestão assistida (Tier 0/1)
+
+**Decisão:** adotar `docs/ingestao/spec-laco-ingestao.md` (Chat 4) como desenho
+normativo do laço IA-rascunha → humano-revisa, executando D-20260703-03. Fixa:
+pacote de ingestão como unidade; "item revisado" por tier (T0 = checklist
+integral por todos os papéis aplicáveis; T1 = 100% de validação automática +
+amostra do lote com zero defeito crítico, lote inteiro devolve em falha);
+cronometria só por timestamps de ferramenta em manifesto append-only;
+número-decisor = **minutos humanos por item aprovado, por tier**; validação
+automática que BLOQUEIA (Art. 13); triagem conservadora com PG5 — na dúvida,
+Tier 0 (Art. 9); promoção humana que materializa na **carga do repo** (banco
+permanece derivado do git — R1); IA estruturalmente impedida de escrever
+`claim`/`source`/`review_status` (campos inexistentes no formato de rascunho +
+teste negativo). Sensível (PG5 ≠ `público`) só chega a `approved` com papel
+competente designado por entrada aqui; até lá promove no máximo a `pending` e
+junta-se à fila viva.
+**Revoga:** nada; instrumenta D-20260703-03 e destrava o Chat 5 (implementação
+v0 + medição de itens/hora).

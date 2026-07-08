@@ -158,6 +158,7 @@ docs/ESTADO.md     VIVO — estado atual + próxima missão (ler ao retomar)
 docs/DECISOES.md   VIVO — log de decisões (append-only)
 docs/fila-revisao-claimsets-sensiveis.md   VIVO — fila de revisão humana (Tier 0)
 docs/validacao/    VIVO — kit de validação de demanda (Chat 3): demo, entrevista, fichas
+docs/ingestao/     VIVO — spec do laço de ingestão assistida (Tier 0/1, Chat 4)
 docs/governanca/   Constituição v1.1 (viva)
 docs/arquivo/      histórico NÃO-NORMATIVO — etapas/ · passos/ · governanca/ (playbooks, constituição v1.0, prompt-mestre) · roteiro/ · auditorias/
 scripts/           bootstrap.sh
