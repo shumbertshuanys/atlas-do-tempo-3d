@@ -43,19 +43,19 @@
       "id": "A4-T4",
       "descricao": "público em [todo o eixo]: toda linha é corpus+approved+selo público+is_fact",
       "passou": true,
-      "detalhe": "16 linhas; violações (não-fato vazado): 0."
+      "detalhe": "27 linhas; violações (não-fato vazado): 0."
     },
     {
       "id": "A4-T5",
-      "descricao": "total público no eixo inteiro é 16",
+      "descricao": "total público no eixo inteiro é 27",
       "passou": true,
-      "detalhe": "obtido: 16."
+      "detalhe": "obtido: 27."
     },
     {
       "id": "A4-T6",
       "descricao": "público ⊂ curatorial-fato; diferença = corpus-approved com fonte-por-asset pendente",
       "passou": true,
-      "detalhe": "público=16 ⊂ fato=20: True; |fato\\público|=4 == src-pendente=4: True."
+      "detalhe": "público=27 ⊂ fato=31: True; |fato\\público|=4 == src-pendente=4: True."
     },
     {
       "id": "A4-T7",

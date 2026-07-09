@@ -218,3 +218,43 @@ fatia Brasil estão validados/triados e prontos; `medicao-ingestao.json` sai com
 números humanos assim que o dono rodar `revisar`/`promover` (e re-verde de banco
 após `bootstrap`, com pinos atualizados no mesmo commit — R6).
 **Revoga:** nada; executa a substância de D-20260707-02/D-20260703-03.
+
+## D-20260709-01 — Primeira rodada de medição do laço FECHADA; número-decisor com rótulos
+
+**Decisão:** fechar a rodada 1 de medição do laço de ingestão assistida. O dono
+revisou com cronômetro os 14 pacotes, decidiu `lote-medicao-01` como **aprovado**
+e promoveu os 14 (11 T1 → `approved`/públicos; 3 T0 PG5 `mediado` → `pending`,
+registrados na fila viva `docs/fila-revisao-claimsets-sensiveis.md` — papéis P14
+seguem não designados, D-20260708-01).
+
+**Número medido** (número-decisor: minutos humanos por item aprovado, por tier —
+`ingestao/reports/medicao-ingestao.json`, gerado 2026-07-09, 20 amostras completas,
+0 descartadas). O JSON de medição não carrega rótulos; os rótulos normativos
+desta rodada ficam AQUI:
+
+- **Tier 1 — 0,02 min/item (média = mediana; ~3.000 itens/hora; 11 itens).**
+  Rótulo: **TETO** — lote 1 com amostra **100%** (11/11, semente 20260708),
+  sem amortização; o regime de amostragem 50% → 20% (D-20260708-01) só
+  barateia daqui em diante. Mudar o regime = nova entrada aqui.
+- **Tier 0 — 0,26 min/item média · 0,11 mediana (3 itens).**
+  Rótulo: **custo PARCIAL** — é só o trecho do dono até `pending`; os papéis
+  P14 (historiográfica, editorial, vieses) **não foram executados** porque não
+  estão designados. O custo integral do "item revisado" T0 (checklist §6.1 por
+  todos os papéis aplicáveis) ainda NÃO foi medido — não usar 0,26 como custo
+  de T0 em nenhuma conta de economia.
+- **Taxa de defeito no lote 1: 0** (0 devolvidos / 14 decididos). Com amostra
+  100% e zero defeito crítico, o desenho "lote inteiro devolve em falha" não
+  foi exercitado nesta rodada.
+
+**Evidência (PG1/R6):** carga promovida `ingestao/carga-promovida.jsonl`
+consumida por `migrate.py`; banco reconstruído do git (DROP SCHEMA
+core/derived/iso + `bootstrap.sh`; o `down -v` do volume é ato do humano) —
+`migration_report.json`: **54 itens · 46 corpus · 39 approved · 15 pending ·
+61 claims · 35 fontes · 27 públicos · 14 promovidos_laco**. Pinos atualizados
+no mesmo commit (verify T3=39/T5=27/T10; A4-T5=27; README/CLAUDE.md/bootstrap
+54/61/27). Suítes: verify 10/10 · test_a4 10/10 · test_a3 10/10 · test_a3_http
+5/5 · frame 5/5·3/3·4/4·5/5 · laço 14/14.
+
+**Revoga:** nada. Fecha o escopo humano pendente de D-20260708-01; destrava a
+decisão de regime de amostragem do próximo lote T1 e a designação de papéis P14
+(cada uma exige nova entrada aqui).

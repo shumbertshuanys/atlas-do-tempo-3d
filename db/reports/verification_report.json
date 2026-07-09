@@ -25,7 +25,7 @@
       "tipo": "positivo",
       "esperado": "view curatorial não contém pending/legal-review/rejected",
       "passou": true,
-      "detalhe": "0 itens não-aprovados vazaram; 28 itens exibíveis no total."
+      "detalhe": "0 itens não-aprovados vazaram; 39 itens exibíveis no total."
     },
     {
       "id": "T4",
@@ -41,7 +41,7 @@
       "tipo": "positivo",
       "esperado": "view pública = approved ∩ corpus ∩ fonte-confirmada; zero seeded-demo",
       "passou": true,
-      "detalhe": "seeded-demo vazados ao público: 0; total público: 16; itens públicos fora do contrato: 0."
+      "detalhe": "seeded-demo vazados ao público: 0; total público: 27; itens públicos fora do contrato: 0."
     },
     {
       "id": "T6",
@@ -81,7 +81,7 @@
       "tipo": "positivo",
       "esperado": "contagens batem; claims_total = claims_de_item + claims_membros",
       "passou": true,
-      "detalhe": "obtido {\"itens\": 40, \"approved\": 28, \"pending\": 12, \"legal_review\": 0, \"seeded\": 8, \"corpus\": 32, \"claims_total\": 47, \"claims_de_item\": 40, \"claims_membros\": 7, \"claimsets\": 3}."
+      "detalhe": "obtido {\"itens\": 54, \"approved\": 39, \"pending\": 15, \"legal_review\": 0, \"seeded\": 8, \"corpus\": 46, \"claims_total\": 61, \"claims_de_item\": 54, \"claims_membros\": 7, \"claimsets\": 3}."
     }
   ]
 }

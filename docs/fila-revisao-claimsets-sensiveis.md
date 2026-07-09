@@ -34,3 +34,21 @@ Cada ClaimSet só retorna ao frame/corpus quando **o host for aprovado** (todas 
 aplicáveis aprovadas → `reviewStatus = approved`) e o ClaimSet for modelado no corpus
 (`claim_set` + `claim_set_member`, fronteira manual), espelhando o padrão de `rev-francesa`.
 Até lá: não exibir como fato, não publicar (Art. 6, gating por construção do A4).
+
+## Itens do laço de ingestão promovidos como `pending` (rodada 1 — 2026-07-09)
+
+Pacotes Tier 0 (PG5 `mediado`) da primeira rodada do laço de ingestão assistida,
+promovidos pelo dono a `pending` porque **os papéis competentes P14 não estão
+designados** (D-20260708-01): sensível promove no máximo a `pending` e entra nesta
+fila. O `promover` não escreve aqui — este registro é o rastro (R-A3.2).
+
+| Pacote | Item (corpus) | Título | Sensibilidade (PG5) | Papéis de revisão exigidos |
+|---|---|---|---|---|
+| `pkg-t0-males` | `evt:levante-dos-males-1835` | Levante dos Malês | `mediado` — P14 (história afro-brasileira e religiões de matriz africana; Leis 10.639/2003 e 11.645/2008) | historiográfica, editorial, vieses |
+| `pkg-t0-chibata` | `evt:revolta-da-chibata-1910` | Revolta da Chibata | `mediado` — P14 (história afro-brasileira; Lei 10.639/2003) | historiográfica, editorial, vieses |
+| `pkg-t0-lei-aurea` | `evt:lei-aurea-1888` | Lei Áurea (abolição da escravidão) | `mediado` — P14 (escravidão e racismo estrutural; Leis 10.639/2003 e 11.645/2008) | historiográfica, editorial, vieses |
+
+Condição de saída destes três: designação dos papéis P14 por entrada no
+`DECISOES.md` + checklist §6.1 integral por todos os papéis aplicáveis (spec do
+laço, T0) → só então `review_status = approved` e publicação. Até lá: existem no
+corpus como `pending`, invisíveis na porta pública por construção (A4/T5).

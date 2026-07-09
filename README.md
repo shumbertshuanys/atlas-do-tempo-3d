@@ -19,8 +19,8 @@ bash scripts/bootstrap.sh
 ```
 
 Esse comando sobe o banco (Postgres 16 + PostGIS 3.4, em volume persistente), aplica o esquema, a
-camada de leitura, o envelope e os papéis, migra a carga real (**40 itens · 47 claims · 3 ClaimSets ·
-16 públicos**) e roda as suítes de teste. **Sucesso = `verify.py` 10/10 · `test_a4.py` 10/10 ·
+camada de leitura, o envelope e os papéis, migra a carga real (**54 itens · 61 claims · 3 ClaimSets ·
+27 públicos**, incluindo a carga promovida pelo laço de ingestão) e roda as suítes de teste. **Sucesso = `verify.py` 10/10 · `test_a4.py` 10/10 ·
 `test_a3.py` 10/10 · `test_a3_http.py` 5/5**, mais as suítes do frame
 (`node frame/tests/test_3d.js` etc.: **3D-T 5/5 · ASSET-T 3/3 · LIVE-T 4/4 · COSMO-T 5/5**).
 
@@ -54,7 +54,7 @@ docker compose exec db psql -U atlas -d atlas \
 ## Estado atual
 
 O estado vivo (o que está construído, dívidas e a próxima missão) mora em
-[`docs/ESTADO.md`](./docs/ESTADO.md) — resumo: banco reificado com a carga 40/47, frame 3D **ao
+[`docs/ESTADO.md`](./docs/ESTADO.md) — resumo: banco reificado com a carga 54/61, frame 3D **ao
 vivo** consumindo a API só-leitura (`/momento/publico`), estágio cósmico com lastro (Frente A).
 
 ## Princípios não-negociáveis (resumo)

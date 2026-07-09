@@ -104,7 +104,7 @@ vaz = one("SELECT count(*) FROM core.v_displayable_curatorial WHERE review_statu
 tot = one("SELECT count(*) FROM core.v_displayable_curatorial")
 reg("T3", "Art.6", "positivo",
     "view curatorial não contém pending/legal-review/rejected",
-    vaz == 0 and tot == 28,
+    vaz == 0 and tot == 39,
     "%d itens não-aprovados vazaram; %d itens exibíveis no total." % (vaz, tot))
 
 # ---------------------------------------------------------------------------
@@ -149,7 +149,7 @@ fora = one("""SELECT count(*) FROM core.v_publishable_public
                          AND per_asset_source_confirmed)""")
 reg("T5", "§9 / Art.6", "positivo",
     "view pública = approved ∩ corpus ∩ fonte-confirmada; zero seeded-demo",
-    seeded_pub == 0 and pub == 16 and fora == 0,
+    seeded_pub == 0 and pub == 27 and fora == 0,
     "seeded-demo vazados ao público: %d; total público: %d; itens públicos fora do contrato: %d." % (seeded_pub, pub, fora))
 
 # ---------------------------------------------------------------------------
@@ -279,9 +279,9 @@ obtido = {
     "claimsets": one("SELECT count(*) FROM core.claim_set"),
 }
 esper = {
-    "itens": 40, "approved": 28, "pending": 12, "legal_review": 0,
-    "seeded": 8, "corpus": 32, "claims_total": 47,
-    "claims_de_item": 40, "claims_membros": 7, "claimsets": 3,
+    "itens": 54, "approved": 39, "pending": 15, "legal_review": 0,
+    "seeded": 8, "corpus": 46, "claims_total": 61,
+    "claims_de_item": 54, "claims_membros": 7, "claimsets": 3,
 }
 soma_ok = obtido["claims_total"] == obtido["claims_de_item"] + obtido["claims_membros"]
 reg("T10", "carga/3Z", "positivo",

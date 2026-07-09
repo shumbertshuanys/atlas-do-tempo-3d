@@ -85,11 +85,12 @@ for nome, (s, e) in INSTANTES.items():
         "%d linhas; violações (não-fato vazado): %d." % (len(rs), len(viola)))
 
 # ---------------------------------------------------------------------------
-# A4-T5 — total público no eixo inteiro = 16 (11 originais + 5 cósmicos, Frente A).
+# A4-T5 — total público no eixo inteiro = 27 (11 originais + 5 cósmicos, Frente A
+# + 11 T1 do laço de ingestão, lote-medicao-01).
 # ---------------------------------------------------------------------------
 tot_pub = len(rows_publica(-1e12, 1e12))
-reg("A4-T5", "total público no eixo inteiro é 16",
-    tot_pub == 16, "obtido: %d." % tot_pub)
+reg("A4-T5", "total público no eixo inteiro é 27",
+    tot_pub == 27, "obtido: %d." % tot_pub)
 
 # ---------------------------------------------------------------------------
 # A4-T6 — §9.2 (F2): público ⊂ curatorial-fato, e a diferença são exatamente

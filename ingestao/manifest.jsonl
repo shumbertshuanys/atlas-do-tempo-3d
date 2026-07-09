@@ -41,3 +41,58 @@
 {"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.765448+00:00", "pacote": "pkg-t0-chibata", "tier": "T0", "ator": "laço-v0", "tier_proposto": "T0", "tier_calculado": "T0"}
 {"evento": "triagem_confirmada", "t": "2026-07-08T21:01:52.839902+00:00", "pacote": "pkg-t0-males", "tier": "T0", "ator": "laço-v0", "tier_proposto": "T0", "tier_calculado": "T0"}
 {"evento": "lote_montado", "t": "2026-07-08T21:01:52.918216+00:00", "lote": "lote-medicao-01", "ids": ["pkg-t1-14bis", "pkg-t1-cabo", "pkg-t1-sobral", "pkg-t1-wright", "pkg-t1-lindbergh", "pkg-t1-raiox", "pkg-t1-marconi", "pkg-t1-suez", "pkg-t1-panama", "pkg-t1-venus", "pkg-t1-krakatoa"], "semente": 20260708, "amostra": ["pkg-t1-14bis", "pkg-t1-cabo", "pkg-t1-krakatoa", "pkg-t1-lindbergh", "pkg-t1-marconi", "pkg-t1-panama", "pkg-t1-raiox", "pkg-t1-sobral", "pkg-t1-suez", "pkg-t1-venus", "pkg-t1-wright"], "amostra_pct": 100, "ator": "laço-v0"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:53:58.734369+00:00", "pacote": "pkg-t0-males", "papel": "editorial", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:54:28.398723+00:00", "pacote": "pkg-t0-males", "papel": "editorial", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:54:34.679970+00:00", "pacote": "pkg-t0-males", "papel": "geotemporal", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:54:37.036923+00:00", "pacote": "pkg-t0-males", "papel": "geotemporal", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:54:43.235308+00:00", "pacote": "pkg-t0-males", "papel": "licenca", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:54:46.192840+00:00", "pacote": "pkg-t0-males", "papel": "licenca", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:54:51.617417+00:00", "pacote": "pkg-t0-chibata", "papel": "editorial", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:54:53.550423+00:00", "pacote": "pkg-t0-chibata", "papel": "editorial", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:54:59.269059+00:00", "pacote": "pkg-t0-chibata", "papel": "geotemporal", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:55:01.901949+00:00", "pacote": "pkg-t0-chibata", "papel": "geotemporal", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:55:07.253543+00:00", "pacote": "pkg-t0-chibata", "papel": "licenca", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:55:09.244997+00:00", "pacote": "pkg-t0-chibata", "papel": "licenca", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:55:16.701703+00:00", "pacote": "pkg-t0-lei-aurea", "papel": "editorial", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:55:18.642210+00:00", "pacote": "pkg-t0-lei-aurea", "papel": "editorial", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:55:23.379823+00:00", "pacote": "pkg-t0-lei-aurea", "papel": "geotemporal", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:55:25.212453+00:00", "pacote": "pkg-t0-lei-aurea", "papel": "geotemporal", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:55:29.849289+00:00", "pacote": "pkg-t0-lei-aurea", "papel": "licenca", "ator": "victor", "tier": "T0"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:55:31.587188+00:00", "pacote": "pkg-t0-lei-aurea", "papel": "licenca", "ator": "victor", "tier": "T0", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:55:46.104252+00:00", "pacote": "pkg-t1-14bis", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:55:47.645600+00:00", "pacote": "pkg-t1-14bis", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:55:52.209417+00:00", "pacote": "pkg-t1-cabo", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:55:53.410009+00:00", "pacote": "pkg-t1-cabo", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:55:59.290295+00:00", "pacote": "pkg-t1-krakatoa", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:00.570260+00:00", "pacote": "pkg-t1-krakatoa", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:56:05.707103+00:00", "pacote": "pkg-t1-lindbergh", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:06.991716+00:00", "pacote": "pkg-t1-lindbergh", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:56:12.269231+00:00", "pacote": "pkg-t1-marconi", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:13.740294+00:00", "pacote": "pkg-t1-marconi", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:56:18.816921+00:00", "pacote": "pkg-t1-panama", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:20.052484+00:00", "pacote": "pkg-t1-panama", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:56:24.378836+00:00", "pacote": "pkg-t1-raiox", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:25.637404+00:00", "pacote": "pkg-t1-raiox", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:56:30.194814+00:00", "pacote": "pkg-t1-sobral", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:31.189635+00:00", "pacote": "pkg-t1-sobral", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:56:35.614193+00:00", "pacote": "pkg-t1-suez", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:36.546990+00:00", "pacote": "pkg-t1-suez", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:56:41.860908+00:00", "pacote": "pkg-t1-venus", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:43.078603+00:00", "pacote": "pkg-t1-venus", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "pacote_aberto", "t": "2026-07-09T21:56:47.860379+00:00", "pacote": "pkg-t1-wright", "papel": "revisor-unico", "ator": "victor", "tier": "T1"}
+{"evento": "pacote_decidido", "t": "2026-07-09T21:56:48.778869+00:00", "pacote": "pkg-t1-wright", "papel": "revisor-unico", "ator": "victor", "tier": "T1", "desfecho": "aprovado"}
+{"evento": "lote_decidido", "t": "2026-07-09T21:57:23.172487+00:00", "lote": "lote-medicao-01", "desfecho": "aprovado", "ator": "victor"}
+{"evento": "promovido", "t": "2026-07-09T21:57:23.390993+00:00", "pacote": "pkg-t1-14bis", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:23.532120+00:00", "pacote": "pkg-t1-cabo", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:23.670654+00:00", "pacote": "pkg-t1-krakatoa", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:23.814262+00:00", "pacote": "pkg-t1-lindbergh", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:23.966167+00:00", "pacote": "pkg-t1-marconi", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:24.108289+00:00", "pacote": "pkg-t1-panama", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:24.250017+00:00", "pacote": "pkg-t1-raiox", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:24.391026+00:00", "pacote": "pkg-t1-sobral", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:24.530905+00:00", "pacote": "pkg-t1-suez", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:24.671902+00:00", "pacote": "pkg-t1-venus", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:24.826063+00:00", "pacote": "pkg-t1-wright", "ator": "victor", "tier": "T1", "review_status": "approved"}
+{"evento": "promovido", "t": "2026-07-09T21:57:25.036536+00:00", "pacote": "pkg-t0-males", "ator": "victor", "tier": "T0", "review_status": "pending"}
+{"evento": "promovido", "t": "2026-07-09T21:57:25.188496+00:00", "pacote": "pkg-t0-chibata", "ator": "victor", "tier": "T0", "review_status": "pending"}
+{"evento": "promovido", "t": "2026-07-09T21:57:25.339938+00:00", "pacote": "pkg-t0-lei-aurea", "ator": "victor", "tier": "T0", "review_status": "pending"}

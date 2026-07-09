@@ -108,7 +108,7 @@ bash scripts/bootstrap.sh
 
 Isso: **carrega `.env`** (recusa seguir sem ele), sobe Postgres+PostGIS num **volume persistente**
 (`atlas-pgdata`), aplica o DDL + camada de leitura (`010`) + envelope (`011`) + papéis (`020`), migra a
-carga real (**40 itens · 47 claims · 3 ClaimSets · 16 públicos**), e roda `verify` + `test_a4` +
+carga real (**54 itens · 61 claims · 3 ClaimSets · 27 públicos**, com a carga promovida do laço), e roda `verify` + `test_a4` +
 `test_a3` + `test_a3_http` (devem fechar **10/10 + 10/10 + 10/10 + 5/5**).
 
 Credenciais vêm do `.env` (ver `.env.example`): `ATLAS_DB_PASSWORD` (usuário `atlas`),
